@@ -34,10 +34,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-            ],
-            'ziggy' => fn () => [
-                ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
+                'roles' => $request->user()?->getRoleNames() ?? [],
+                'can' => $request->user()
+                    ? $request->user()->getAllPermissions()->pluck('name')->mapWithKeys(fn ($p) => [$p => true])
+                    : [],
             ],
         ];
     }

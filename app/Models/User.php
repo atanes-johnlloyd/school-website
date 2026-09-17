@@ -9,11 +9,16 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    use Notifiable;
+    use HasRoles;
+    
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -29,4 +34,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function adminPosition(): BelongsTo
+    {
+        return $this->belongsTo(AdminPosition::class);
+    }
 }
+
