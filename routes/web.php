@@ -140,5 +140,8 @@ Route::middleware(['auth', 'role:student'])
             [\App\Http\Controllers\Student\AssignmentController::class, 'submit'])
             ->name('assignments.submit');
     });
-    
+// Temporary test route for Student Home
+Route::get('/student/home', function () {
+    return Inertia::render('Student/Home');
+});
 require __DIR__.'/auth.php';
