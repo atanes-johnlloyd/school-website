@@ -31,7 +31,7 @@ class AssignmentFlowTest extends TestCase
         $teacher = $this->teacherUser($classroom);
 
         $response = $this->actingAs($teacher)->postJson(
-            route('teacher.assignments.store', $classroom->id),
+            route('teacher.classes.assignments.store', $classroom->id),
             [
                 'title'        => 'Essay on Rizal',
                 'instructions' => 'Write 500 words.',
@@ -63,7 +63,7 @@ class AssignmentFlowTest extends TestCase
         $student = User::where('id', $classroom->students->first()->user_id)->first();
 
         $response = $this->actingAs($student)
-            ->getJson(route('student.assignments.index', $classroom->id));
+            ->getJson(route('student.classes.assignments.index', $classroom->id));
 
         $response->assertOk()
                  ->assertJsonFragment(['title' => 'Quiz 1']);

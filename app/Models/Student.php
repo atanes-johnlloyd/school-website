@@ -24,4 +24,14 @@ class Student extends Model
     public function submissions()       { return $this->hasMany(AssignmentSubmission::class); }
     public function quizAttempts()      { return $this->hasMany(QuizAttempt::class); }
     public function grades()            { return $this->hasMany(Grade::class); }
+
+    public function classes()
+    {
+        return $this->belongsToMany(
+            ClassRoom::class,
+            'class_students',
+            'student_id',
+            'class_id'
+        )->withPivot('status', 'enrolled_at')->withTimestamps();
+    }
 }

@@ -141,12 +141,10 @@
 
         <!-- Subtext Paragraph -->
         <div class="overflow-hidden py-1">
-          <p class="text-2xl md:text-3xl lg:text-[32px] text-[#005506] font-normal leading-[1.5] max-w-5xl"
+          <p class="text-2xl md:text-3xl mt-5 lg:text-[30px] text-[#005506] font-normal leading-[1.5] max-w-5xl"
             :class="isHeroVisible ? 'animate-subtext-synced-reveal' : 'invisible'">
-            Step into a Senior High community designed for your success. Access
-            <br>
+            Step into a Senior High community designed for your success. Access<br>
             specialized academic tracks, hands-on learning tools, and dedicated
-            <br>
             mentorship to turn your passion into a future-ready career.
           </p>
         </div>

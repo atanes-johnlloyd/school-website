@@ -11,6 +11,13 @@ const isMobileMenuOpen = ref(false)
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
+
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
 </script>
 
 <template>
@@ -28,8 +35,12 @@ function toggleMobileMenu() {
     <!-- Navigation Bar Content -->
     <nav class="relative z-20 h-full flex items-center justify-between px-6 md:px-16 text-white">
       
-      <!-- Logo & Brand Title -->
-      <div class="flex items-center gap-3 md:gap-4">
+      <!-- Logo & Brand Title (Clicking scrolls to top) -->
+      <a 
+        href="#" 
+        @click.prevent="scrollToTop" 
+        class="flex items-center gap-3 md:gap-4 cursor-pointer"
+      >
         <img 
           :src="sshsLogo" 
           alt="SSHS Logo" 
@@ -38,20 +49,23 @@ function toggleMobileMenu() {
         <span class="font-bold text-xl md:text-2xl tracking-wide uppercase select-none">
           SALAWAG LMS
         </span>
-      </div>
+      </a>
 
       <!-- Desktop Links -->
       <div class="hidden md:flex items-center gap-8 text-base font-semibold">
-        <Link 
-          :href="route('dashboard')" 
-          class="hover:text-[#ffd51c] transition-colors duration-200"
+        <!-- Home Link (Scrolls to top instead of pointing to dashboard/login) -->
+        <a 
+          href="#" 
+          @click.prevent="scrollToTop" 
+          class="hover:text-[#ffd51c] transition-colors duration-200 cursor-pointer"
         >
           Home
-        </Link>
+        </a>
         
         <!-- Divider Line -->
         <div class="h-5 w-[1px] bg-white/40"></div>
 
+        <!-- Log in Link (Only this navigates to /login) -->
         <Link 
           :href="route('login')" 
           class="hover:text-[#ffd51c] transition-colors duration-200"
@@ -77,8 +91,20 @@ function toggleMobileMenu() {
       v-if="isMobileMenuOpen" 
       class="md:hidden relative z-30 bg-[#005506] px-6 py-4 flex flex-col gap-4 text-white border-t border-white/10"
     >
-      <Link :href="route('dashboard')" class="hover:text-[#ffd51c]">Home</Link>
-      <Link :href="route('login')" class="hover:text-[#ffd51c]">Log in</Link>
+      <a 
+        href="#" 
+        @click.prevent="scrollToTop(); isMobileMenuOpen = false" 
+        class="hover:text-[#ffd51c] cursor-pointer"
+      >
+        Home
+      </a>
+      <Link 
+        :href="route('login')" 
+        @click="isMobileMenuOpen = false"
+        class="hover:text-[#ffd51c]"
+      >
+        Log in
+      </Link>
     </div>
   </header>
 </template>
