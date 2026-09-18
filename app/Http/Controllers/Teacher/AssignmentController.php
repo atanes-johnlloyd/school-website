@@ -28,6 +28,9 @@ class AssignmentController extends Controller
                 'is_published'      => $a->is_published,
                 'allow_late'        => $a->allow_late,
                 'submissions_count' => $a->submissions_count,
+                'file_path' => $a->file_path,
+                'has_file'  => (bool) $a->file_path,
+                'download_url' => $a->file_path ? route('teacher.submissions.download', $a->id) : null,
             ]);
 
         $payload = [
@@ -89,6 +92,9 @@ class AssignmentController extends Controller
                 'feedback'     => $s->feedback,
                 'graded_at'    => $s->graded_at?->toIso8601String(),
                 'text_content' => $s->text_content,
+                'file_path' => $s->file_path,
+                'has_file'  => (bool) $s->file_path,
+                'download_url' => $s->file_path ? route('teacher.submissions.download', $s->id) : null,
             ]);
 
         $payload = [

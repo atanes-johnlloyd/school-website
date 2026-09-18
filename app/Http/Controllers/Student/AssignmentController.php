@@ -8,6 +8,9 @@ use App\Models\Assignment;
 use App\Models\ClassRoom;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 class AssignmentController extends Controller
 {
@@ -35,6 +38,10 @@ class AssignmentController extends Controller
                         'status'       => $sub->status,
                         'grade'        => $sub->grade,
                         'submitted_at' => $sub->submitted_at?->toIso8601String(),
+                        'has_file'    => (bool) $sub->file_path,
+                        'download_url' => $sub->file_path
+                            ? route('student.assignments.submission.download', $assignment->id)
+                            : null,
                     ] : null,
                 ];
             });
@@ -115,8 +122,26 @@ class AssignmentController extends Controller
                 : back()->with('error', 'Late submissions are not allowed.');
         }
 
+        $filePath = $existing?->file_path;   // keep old file unless a new one is uploaded
+
+        if ($request->hasFile('file')) {
+            // Delete old file if replacing
+            if ($filePath && Storage::exists($filePath)) {
+                Storage::delete($filePath);
+            }
+
+            $file = $request->file('file');
+            // Store under submissions/{class_id}/{assignment_id}/{uuid}.{ext}
+            $filePath = $file->storeAs(
+                "submissions/{$assignment->class_id}/{$assignment->id}",
+                Str::uuid() . '.' . $file->getClientOriginalExtension(),
+                'local'   // storage/app (private)
+            );
+        }
+
         $data = [
             'text_content' => $request->validated('text_content'),
+            'file_path'    => $filePath,
             'submitted_at' => now(),
             'status'       => $isLate ? 'late' : 'submitted',
         ];
@@ -130,15 +155,22 @@ class AssignmentController extends Controller
             ]));
         }
 
-        if ($request->wantsJson()) {
-            return response()->json([
+        return $request->wantsJson()
+            ? response()->json([
                 'message'    => $isLate ? 'Submitted (late).' : 'Submitted.',
                 'submission' => $submission->fresh(),
-            ], 201);
-        }
+            ], 201)
+            : redirect()->route('student.assignments.show', $assignment->id)
+                        ->with('success', $isLate ? 'Submitted (late).' : 'Submitted.');
+    }
 
-        return redirect()
-            ->route('student.assignments.show', $assignment->id)
-            ->with('success', $isLate ? 'Submitted (late).' : 'Submitted.');
+    public function downloadSubmission(Request $request, Assignment $assignment)
+    {
+        abort_unless($assignment->classroom->hasStudent($request->user()), 403);
+        $studentId  = $request->user()->student->id;
+        $submission = $assignment->submissionFor($studentId);
+        abort_unless($submission?->file_path && Storage::exists($submission->file_path), 404);
+
+        return Storage::download($submission->file_path);
     }
 }

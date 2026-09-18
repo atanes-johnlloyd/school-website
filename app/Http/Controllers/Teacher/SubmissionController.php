@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionController extends Controller
 {
@@ -49,5 +50,13 @@ class SubmissionController extends Controller
         }
 
         return back()->with('success', 'Grade saved.');
+    }
+    
+    public function download(Request $request, \App\Models\AssignmentSubmission $submission)
+    {
+        abort_unless($submission->assignment->classroom->isTaughtBy($request->user()), 403);
+        abort_unless($submission->file_path && Storage::exists($submission->file_path), 404);
+
+        return Storage::download($submission->file_path);
     }
 }
