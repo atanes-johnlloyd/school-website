@@ -188,5 +188,8 @@ class DatabaseSeeder extends Seeder
         if ($systemAdminPosition) {
             $admin->syncPermissions($systemAdminPosition->default_permissions);
         }
+
+        $this->call(DemoDataSeeder::class);
+        $this->call(TestUsersSeeder::class);
     }
 }

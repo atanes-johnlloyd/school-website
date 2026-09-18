@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Section extends Model
 {
     use SoftDeletes;
-
+    use HasFactory;
+    
     protected $fillable = [
         'school_year_id', 'strand_id', 'grade_level',
         'name', 'adviser_id', 'max_capacity',

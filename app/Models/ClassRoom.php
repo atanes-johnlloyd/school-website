@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ClassRoom extends Model
 {
     use SoftDeletes;
-
+    use HasFactory;
+    
     protected $table = 'classes';
 
     protected $fillable = [
@@ -36,11 +38,33 @@ class ClassRoom extends Model
     public function quizzes()      { return $this->hasMany(Quiz::class, 'class_id'); }
     public function grades()       { return $this->hasMany(Grade::class, 'class_id'); }
     public function announcements(){ return $this->hasMany(Announcement::class, 'class_id'); }
-
+    
     public function students()
     {
         return $this->belongsToMany(Student::class, 'class_students', 'class_id', 'student_id')
                     ->withPivot('status', 'enrolled_at')
                     ->withTimestamps();
+    }
+
+    public function isTaughtBy(?User $user): bool
+    {
+        if (! $user || ! $user->teacher) {
+            return false;
+        }
+
+        return $this->teacher_id === $user->teacher->id;
+    }
+
+    public function hasStudent(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return \DB::table('class_students')
+            ->join('students', 'students.id', '=', 'class_students.student_id')
+            ->where('class_students.class_id', $this->id)
+            ->where('students.user_id', $user->id)
+            ->exists();
     }
 }
