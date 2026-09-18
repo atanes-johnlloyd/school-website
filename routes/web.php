@@ -13,13 +13,9 @@ use App\Http\Controllers\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Student\ClassController as StudentClassController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 
+// AFTER:
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin'       => Route::has('login'),
-        'canRegister'    => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
-    ]);
+    return Inertia::render('Student/Home');
 });
 
 // ─────────────────────────────────────────────────────────────
