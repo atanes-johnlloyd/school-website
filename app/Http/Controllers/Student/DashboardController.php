@@ -21,10 +21,26 @@ class DashboardController extends Controller
 
         $activeTerm = Term::where('is_active', true)->first();
 
-        // ─── Class scope ───
-        $classroomIds = $student->classes()
+        // ─── Query Student Enrolled Classes ───
+        $classesQuery = $student->classes()
             ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
-            ->pluck('classes.id');
+            ->with([
+                'subject:id,code,name',
+                'section:id,name',
+                'teacher.user:id,name',
+            ]);
+
+        $classroomIds = (clone $classesQuery)->pluck('classes.id');
+
+        // ─── Format Classes/Subjects to match Index page structure ───
+        $classesPaginator = $classesQuery->paginate(10);
+        $classesPaginator->through(fn ($c) => [
+            'id'           => $c->id,
+            'subject'      => $c->subject?->name ?? 'Untitled Subject',
+            'subject_code' => $c->subject?->code ?? 'N/A',
+            'section'      => $c->section?->name ?? 'N/A',
+            'teacher'      => $c->teacher?->user?->name ?? 'TBA',
+        ]);
 
         // ─── Counts ───
         $stats = [
@@ -41,7 +57,7 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        // ─── Upcoming deadlines (next 7 days, unpublished ones too — student should see what's coming) ───
+        // ─── Upcoming deadlines ───
         $upcomingDeadlines = Assignment::query()
             ->whereIn('class_id', $classroomIds)
             ->published()
@@ -61,7 +77,7 @@ class DashboardController extends Controller
                 'points'     => $a->points,
             ]);
 
-        // ─── Recent announcements (cross-class, last 5) ───
+        // ─── Recent announcements ───
         $recentAnnouncements = Announcement::query()
             ->whereIn('class_id', $classroomIds)
             ->published()
@@ -86,6 +102,7 @@ class DashboardController extends Controller
             ]);
 
         $payload = [
+            'classes'              => $classesPaginator, // ← Pass enrolled classes here
             'stats'                => $stats,
             'upcoming_deadlines'   => $upcomingDeadlines,
             'recent_announcements' => $recentAnnouncements,
@@ -97,12 +114,5 @@ class DashboardController extends Controller
         }
 
         return \Inertia\Inertia::render('Student/Dashboard', $payload);
-
-        return response()->json([
-            'stats'                => $stats,
-            'upcoming_deadlines'   => $upcomingDeadlines,
-            'recent_announcements' => $recentAnnouncements,
-            'active_term'          => $activeTerm?->name,
-        ]);
     }
 }
