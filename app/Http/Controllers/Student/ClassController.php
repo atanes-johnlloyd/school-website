@@ -145,21 +145,21 @@ class ClassController extends Controller
 
     public function show(Request $request, ClassRoom $classroom)
     {
-        $student = $request->user()->student; //[cite: 22]
+        $student = $request->user()->student;
 
         // Authorization: student must be enrolled in this class
-        $isEnrolled = $classroom->students()->where('students.id', $student?->id)->exists(); //[cite: 22]
+        $isEnrolled = $classroom->students()->where('students.id', $student?->id)->exists();
 
-        if (! $student || ! $isEnrolled) { //[cite: 22]
-            abort(403); //[cite: 22]
+        if (! $student || ! $isEnrolled) {
+            abort(403);
         }
 
-        $classroom->load(['subject', 'section', 'term', 'teacher.user:id,name']); //[cite: 22]
+        $classroom->load(['subject', 'section', 'term', 'teacher.user:id,name']);
 
-        // Fetch assignments with the logged-in student's submission status
+        // Fetch assignments using the published scope defined on your Assignment model
         $assignments = Assignment::query()
             ->where('class_id', $classroom->id)
-            ->where('is_published', true)
+            ->published() // ← Changed from ->where('is_published', true)
             ->with(['submissions' => fn ($q) => $q->where('student_id', $student->id)])
             ->orderBy('due_at', 'asc')
             ->get()
@@ -168,7 +168,7 @@ class ClassController extends Controller
                 return [
                     'id'         => $assignment->id,
                     'title'      => $assignment->title,
-                    'due_at'     => $assignment->due_at,
+                    'due_at'     => $assignment->due_at?->toIso8601String() ?? $assignment->due_at,
                     'points'     => $assignment->points,
                     'submission' => $submission ? [
                         'status' => $submission->status,
@@ -178,13 +178,13 @@ class ClassController extends Controller
             });
 
         return Inertia::render('Student/Classes/Show', [
-            'classroom' => [ //[cite: 22]
-                'id'           => $classroom->id, //[cite: 22]
-                'subject'      => $classroom->subject?->name, //[cite: 22]
-                'subject_code' => $classroom->subject?->code, //[cite: 22]
-                'section'      => $classroom->section?->name, //[cite: 22]
-                'teacher'      => $classroom->teacher?->user?->name, //[cite: 22]
-                'term'         => $classroom->term?->name, //[cite: 22]
+            'classroom' => [
+                'id'           => $classroom->id,
+                'subject'      => $classroom->subject?->name,
+                'subject_code' => $classroom->subject?->code,
+                'section'      => $classroom->section?->name,
+                'teacher'      => $classroom->teacher?->user?->name,
+                'term'         => $classroom->term?->name,
             ],
             'assignments' => $assignments,
         ]);

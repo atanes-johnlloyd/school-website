@@ -16,8 +16,8 @@
         <!-- HEADER ROW -->
         <div class="space-y-1">
           <div class="flex items-center gap-2 font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase">
-            <span class="text-[#005506]">MY</span>
-            <span class="text-transparent" style="-webkit-text-stroke: 1.5px #005506;">CLASSES</span>
+              <span class="text-[#005506]">STUDENT</span>
+              <span class="text-transparent" style="-webkit-text-stroke: 1.5px #005506;">DASHBOARD</span>
           </div>
           
           <p class="text-xs sm:text-sm italic font-medium text-slate-600">
