@@ -192,15 +192,21 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
     ->name('student.')
     ->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
+        
+        // Classes Catalog Route
         Route::get('/classes', [StudentClassController::class, 'index'])->name('classes.index');
+        
+        // 👈 ADD THIS MISSING ROUTE HERE:
+        Route::get('/classes/{classroom}', [StudentClassController::class, 'show'])->name('classes.show');
+
         Route::get('/assessments', function () {
             return Inertia::render('Student/Assessments/Index');
         })->name('assessments.index');
+        
         Route::get('/grades', function () {
             return Inertia::render('Student/Grades/Index');
         })->name('grades.index');
 
-        // 👈 ADD THIS ROUTE FOR THE CALENDAR PAGE
         Route::get('/calendar', function () {
             return Inertia::render('Student/Calendar/Index');
         })->name('calendar.index');
