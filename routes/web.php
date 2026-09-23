@@ -55,6 +55,31 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::get('/classes', [TeacherClassController::class, 'index'])->name('classes.index');
         Route::get('/classes/{classroom}', [TeacherClassController::class, 'show'])->name('classes.show');
 
+        // Gradebook
+        Route::get('/gradebook', function () {
+            return Inertia::render('Teacher/Gradebook/Index');
+        })->name('gradebook.index');
+
+        // Daily Attendance
+        Route::get('/attendance', function () {
+            return Inertia::render('Teacher/DailyAttendance/Index');
+        })->name('attendance.index');
+
+        // Assignments & Tasks
+        Route::get('/tasks', function () {
+            return Inertia::render('Teacher/Assignments/Index');
+        })->name('tasks.index');
+
+        // DepEd LR Resources
+        Route::get('/resources', function () {
+            return Inertia::render('Teacher/Resources/Index');
+        })->name('resources.index');
+
+        // Quiz Hub & Exam Bank
+        Route::get('/quizzes', function () {
+            return Inertia::render('Teacher/Quizzes/Index');
+        })->name('quizzes.index');
+
         // Assignments
         Route::get(
             '/classes/{classroom}/assignments',
@@ -192,17 +217,17 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
     ->name('student.')
     ->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Classes Catalog Route
         Route::get('/classes', [StudentClassController::class, 'index'])->name('classes.index');
-        
+
         // 👈 ADD THIS MISSING ROUTE HERE:
         Route::get('/classes/{classroom}', [StudentClassController::class, 'show'])->name('classes.show');
 
         Route::get('/assessments', function () {
             return Inertia::render('Student/Assessments/Index');
         })->name('assessments.index');
-        
+
         Route::get('/grades', function () {
             return Inertia::render('Student/Grades/Index');
         })->name('grades.index');

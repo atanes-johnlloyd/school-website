@@ -12,124 +12,16 @@
     <!-- Main Workspace Canvas -->
     <main :class="['flex-1 relative overflow-y-auto min-h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
 
-      <!-- TOP NAVIGATION BAR (Exact copy from Dashboard) -->
-      <header
-        class="flex flex-col-reverse lg:flex-row lg:items-center justify-between px-6 md:px-10 py-5 bg-[#F9F7F1] dark:bg-[#232D26] sticky top-0 z-30 gap-4 lg:gap-8 transition-colors duration-300">
-
-        <!-- Search Bar -->
-        <div class="relative w-full max-w-2xl">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 dark:text-gray-400">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </span>
-          <input type="text" placeholder="Search learners (LRN), strand records, advisories.."
-            class="w-full pl-12 pr-4 py-3 rounded-full bg-white dark:bg-[#2D3A31] border border-gray-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907] text-sm text-gray-700 dark:text-slate-200 shadow-sm transition-colors" />
-        </div>
-
-        <!-- Right Controls & Profile -->
-        <div class="flex items-center justify-end gap-5 md:gap-6 shrink-0 relative">
-
-          <!-- Font Size Toggle -->
-          <div
-            class="hidden md:flex items-center bg-[#EAE7DF] dark:bg-[#3F4F43] rounded-full p-1 gap-1 transition-colors">
-            <button @click="changeFontSize('sm')"
-              :class="fontSizeMode === 'sm' ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-              class="px-3 py-1 rounded-full text-xs font-bold transition-colors">A-</button>
-            <button @click="changeFontSize('base')"
-              :class="fontSizeMode === 'base' ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-              class="px-3 py-1 rounded-full text-xs font-black transition-colors">A</button>
-            <button @click="changeFontSize('lg')"
-              :class="fontSizeMode === 'lg' ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-              class="px-3 py-1 rounded-full text-xs font-bold transition-colors">A+</button>
-          </div>
-
-          <!-- Theme Toggle -->
-          <button @click="toggleDarkMode"
-            class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-            <svg v-if="!isDark" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM12 20V4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20Z" />
-            </svg>
-            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-              </path>
-            </svg>
-          </button>
-
-          <!-- Notifications Bell & Dropdown -->
-          <div class="relative">
-            <button @click="toggleNotifications"
-              class="relative text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                </path>
-              </svg>
-              <span
-                class="absolute top-0 right-0.5 block w-2 h-2 rounded-full bg-red-600 ring-2 ring-[#F9F7F1] dark:ring-[#232D26]"></span>
-            </button>
-
-            <div v-if="showNotifications"
-              class="absolute right-0 mt-3 w-72 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
-              <div class="p-3 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50 dark:bg-[#232D26]">
-                <h4 class="text-sm font-bold text-gray-800 dark:text-white">Notifications</h4>
-              </div>
-              <div class="p-4 text-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400">No new notifications.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Profile & Dropdown -->
-          <div class="relative flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-300 dark:border-[#3F4F43]">
-            <button @click="toggleProfile" class="flex items-center gap-3 focus:outline-none">
-              <img src="https://ui-avatars.com/api/?name=Maria+Santos&background=random" alt="Maria Santos"
-                class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] object-cover cursor-pointer" />
-              <div class="hidden sm:block text-left">
-                <p class="text-sm font-bold text-gray-900 dark:text-slate-100 leading-none">Maria Santos, LPT</p>
-                <p class="text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] mt-1 tracking-wide">SHS Faculty •
-                  STEM</p>
-              </div>
-            </button>
-
-            <div v-if="showProfile"
-              class="absolute right-0 top-12 mt-2 w-48 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
-              <ul class="py-1">
-                <li>
-                  <a href="#"
-                    class="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#3F4F43]">My
-                    Profile</a>
-                </li>
-                <li>
-                  <a href="#"
-                    class="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#3F4F43]">Account
-                    Settings</a>
-                </li>
-                <li class="border-t border-gray-100 dark:border-[#3F4F43]">
-                  <a href="#"
-                    class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-[#3F4F43]">Sign
-                    Out</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-      </header>
-
-      <!-- Overlay to close dropdowns -->
-      <div v-if="showNotifications || showProfile" @click="closeDropdowns" class="fixed inset-0 z-20"></div>
+      <!-- Reusable Top Navigation Component -->
+      <navbartop searchPlaceholder="Search learners (LRN), strand records, advisories.."
+        @font-size-changed="(size) => fontSizeMode = size" />
 
       <!-- MAIN PAGE CONTENT -->
       <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
 
         <!-- CLASSES HERO BANNER -->
         <div
-          class="relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] flex flex-col justify-center">
+          class="relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] flex flex-col justify-center anim-fade-down">
           <!-- Background Image properly aligned and fitted -->
           <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000&auto=format&fit=crop"
             alt="Classes Hub Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
@@ -140,7 +32,7 @@
           <!-- Inner Content Container -->
           <div class="relative z-10 p-6 sm:p-8 md:p-10 flex flex-col justify-center">
 
-            <!-- Top Badges (DepEd LIS Synced removed) -->
+            <!-- Top Badges -->
             <div class="flex flex-wrap items-center gap-2.5 mb-4">
               <span
                 class="bg-[#005506] text-white border border-emerald-400/30 text-[11px] md:text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
@@ -171,7 +63,8 @@
 
           <!-- 1. TOTAL ACTIVE LEARNERS -->
           <div
-            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4">
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4"
+            style="animation-delay: 100ms;">
             <div class="flex items-start justify-between">
               <span
                 class="text-[15px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Total
@@ -202,7 +95,8 @@
 
           <!-- 2. TEACHING WORKLOAD -->
           <div
-            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4">
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4"
+            style="animation-delay: 200ms;">
             <div class="flex items-start justify-between">
               <span
                 class="text-[15px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Teaching
@@ -226,7 +120,8 @@
 
           <!-- 3. ADVISORY ASSIGNMENT -->
           <div
-            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4">
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4"
+            style="animation-delay: 300ms;">
             <div class="flex items-start justify-between">
               <span
                 class="text-[15px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Advisory
@@ -250,7 +145,8 @@
 
           <!-- 4. MIDTERM GWA HEALTH -->
           <div
-            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4">
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-4"
+            style="animation-delay: 400ms;">
             <div class="flex items-start justify-between">
               <span
                 class="text-[15px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Midterm
@@ -285,7 +181,8 @@
 
           <!-- Section Header & Semester Status -->
           <div
-            class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43]">
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col md:flex-row md:items-center justify-between gap-4"
+            style="animation-delay: 500ms;">
             <div class="space-y-1">
               <h3 class="text-base md:text-lg font-black text-slate-800 dark:text-white">Teaching Assignments & Rosters
               </h3>
@@ -310,7 +207,8 @@
 
             <!-- CARD 1: ADVISORY SECTION (Jose Rizal) -->
             <div
-              class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6"
+              style="animation-delay: 600ms;">
 
               <div class="space-y-4">
                 <!-- Top Badges -->
@@ -400,7 +298,8 @@
 
             <!-- CARD 2: SUBJECT CLASS (Archimedes) -->
             <div
-              class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6"
+              style="animation-delay: 700ms;">
 
               <div class="space-y-4">
                 <!-- Top Badges -->
@@ -482,7 +381,8 @@
 
             <!-- CARD 3: SUBJECT CLASS (Alan Turing) -->
             <div
-              class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6"
+              style="animation-delay: 800ms;">
 
               <div class="space-y-4">
                 <!-- Top Badges -->
@@ -564,271 +464,304 @@
           </div>
 
           <!-- SECTION ROSTER TABLE WITH TABULATOR FILTER -->
-        <div class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-6">
-          
-          <!-- Header Info -->
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#3F4F43] pb-6">
-            <div class="space-y-1">
-              <div class="flex items-center gap-3">
-                <h3 class="text-base sm:text-lg font-black text-slate-800 dark:text-white">
-                  Section Roster: Grade 12 STEM – Jose Rizal
-                </h3>
-                <span class="bg-[#EAF3EC] dark:bg-emerald-950/50 text-[#005506] dark:text-[#86EFAC] border border-emerald-200/60 dark:border-emerald-900/40 text-xs font-bold px-3 py-1 rounded-full">
-                  Room 302
-                </span>
+          <div
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-6"
+            style="animation-delay: 900ms;">
+
+            <!-- Header Info -->
+            <div
+              class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#3F4F43] pb-6">
+              <div class="space-y-1">
+                <div class="flex items-center gap-3">
+                  <h3 class="text-base sm:text-lg font-black text-slate-800 dark:text-white">
+                    Section Roster: Grade 12 STEM – Jose Rizal
+                  </h3>
+                  <span
+                    class="bg-[#EAF3EC] dark:bg-emerald-950/50 text-[#005506] dark:text-[#86EFAC] border border-emerald-200/60 dark:border-emerald-900/40 text-xs font-bold px-3 py-1 rounded-full">
+                    Room 302
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  Official DepEd SF-1 Learner Register with live RFID tap-in timestamps and quarter transmutation.
+                </p>
               </div>
+            </div>
+
+            <!-- Search Bar & Tabulator Filter Pills -->
+            <div
+              class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#F9F7F1] dark:bg-[#232D26] p-4 rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
+              <!-- Search input -->
+              <div class="relative w-full md:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </span>
+                <input type="text" placeholder="Search by student name, LRN.."
+                  class="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907] text-xs text-slate-700 dark:text-slate-200 shadow-sm" />
+              </div>
+
+              <!-- Tabulator Filter Buttons -->
+              <div class="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+                <button
+                  class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all">
+                  All (45)
+                </button>
+                <button
+                  class="bg-white dark:bg-[#2D3A31] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-slate-200 dark:border-[#3F4F43]">
+                  Male (23)
+                </button>
+                <button
+                  class="bg-white dark:bg-[#2D3A31] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-slate-200 dark:border-[#3F4F43]">
+                  Female (22)
+                </button>
+                <button
+                  class="bg-white dark:bg-[#2D3A31] text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-amber-200 dark:border-amber-900/30 flex items-center gap-1">
+                  <span>★</span> With Honors (14)
+                </button>
+                <button
+                  class="bg-white dark:bg-[#2D3A31] text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-red-200 dark:border-red-900/30 flex items-center gap-1">
+                  <span>⚠️</span> At Risk (1)
+                </button>
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200/60 dark:border-[#3F4F43]">
+                    <th class="py-3.5 px-4">No. / LRN</th>
+                    <th class="py-3.5 px-4">Learner Full Name</th>
+                    <th class="py-3.5 px-4">Gender</th>
+                    <th class="py-3.5 px-4">RFID Status (Today)</th>
+                    <th class="py-3.5 px-4">Midterm Transmuted</th>
+                    <th class="py-3.5 px-4">Honors Standing</th>
+                    <th class="py-3.5 px-4">Guardian Contact</th>
+                  </tr>
+                </thead>
+                <tbody
+                  class="divide-y divide-slate-100 dark:divide-[#3F4F43] text-xs font-medium text-slate-700 dark:text-slate-200">
+
+                  <!-- Row 1 -->
+                  <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
+                    <td class="py-4 px-4 font-mono">
+                      <span class="font-bold text-slate-900 dark:text-white">#01</span><br>
+                      <span class="text-[11px] text-slate-400">109384729104</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Juan+Carlos+Dela+Cruz&background=random"
+                          alt="Juan Carlos"
+                          class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                        <div>
+                          <p class="font-bold text-slate-900 dark:text-white">Dela Cruz, Juan Carlos M.</p>
+                          <p class="text-[11px] text-slate-500">Seat 01 • Class President</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Male</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Tapped 07:12 AM</span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 mt-0.5">18-day streak</p>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">95</span>
+                      <span class="text-[11px] text-slate-500 block mt-0.5">General Physics</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-extrabold text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 border border-amber-200 dark:border-amber-900/30">
+                        ★ With High Honors
+                      </span>
+                    </td>
+                    <td class="py-4 px-4 font-mono text-[11px]">
+                      0917-812-2045<br>
+                      <span class="text-slate-500 font-sans">Mrs. Elena Cruz</span>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2 -->
+                  <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
+                    <td class="py-4 px-4 font-mono">
+                      <span class="font-bold text-slate-900 dark:text-white">#02</span><br>
+                      <span class="text-[11px] text-slate-400">109384729105</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Clarissa+Mae+Santos&background=random"
+                          alt="Clarissa Mae"
+                          class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                        <div>
+                          <p class="font-bold text-slate-900 dark:text-white">Santos, Clarissa Mae V.</p>
+                          <p class="text-[11px] text-slate-500">Seat 02 • Science Club VP</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Female</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Tapped 07:18 AM</span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 mt-0.5">24-day streak</p>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">99</span>
+                      <span class="text-[11px] text-slate-500 block mt-0.5">Top 1 STEM Section</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-amber-400 text-amber-950 font-black text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 shadow-sm">
+                        ★ Highest Honors (Apex)
+                      </span>
+                    </td>
+                    <td class="py-4 px-4 font-mono text-[11px]">
+                      0920-918-4421<br>
+                      <span class="text-slate-500 font-sans">Engr. Roberto Santos</span>
+                    </td>
+                  </tr>
+
+                  <!-- Row 3 -->
+                  <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
+                    <td class="py-4 px-4 font-mono">
+                      <span class="font-bold text-slate-900 dark:text-white">#03</span><br>
+                      <span class="text-[11px] text-slate-400">109384729112</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-10 h-10 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 font-black flex items-center justify-center shrink-0 border border-rose-200">
+                          KA
+                        </div>
+                        <div>
+                          <p class="font-bold text-slate-900 dark:text-white">Alcantara, Kenneth D.</p>
+                          <p class="text-[11px] text-rose-600 font-semibold">Pending 2 Lab Experiments</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Male</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-1.5 text-red-600 dark:text-red-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span>Unrecorded / Late</span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 mt-0.5">3 consecutive absences</p>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-2.5 py-1 rounded-lg">84</span>
+                      <span class="text-[11px] text-red-600 block mt-0.5 font-semibold">Intervention</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-slate-100 dark:bg-[#3F4F43] text-slate-600 dark:text-slate-300 font-semibold text-[11px] px-3 py-1 rounded-full">
+                        Regular Passing
+                      </span>
+                    </td>
+                    <td class="py-4 px-4 font-mono text-[11px]">
+                      0919-444-1982<br>
+                      <span class="text-slate-500 font-sans">Mrs. Tessie Alcantara</span>
+                    </td>
+                  </tr>
+
+                  <!-- Row 4 -->
+                  <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
+                    <td class="py-4 px-4 font-mono">
+                      <span class="font-bold text-slate-900 dark:text-white">#04</span><br>
+                      <span class="text-[11px] text-slate-400">109384729119</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Hannah+Sofia+Villafuerte&background=random"
+                          alt="Hannah Sofia"
+                          class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                        <div>
+                          <p class="font-bold text-slate-900 dark:text-white">Villafuerte, Hannah Sofia B.</p>
+                          <p class="text-[11px] text-slate-500">Seat 04 • Lead Researcher</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Female</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Tapped 07:22 AM</span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 mt-0.5">15-day streak</p>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">94</span>
+                      <span class="text-[11px] text-slate-500 block mt-0.5">Physics & Math</span>
+                    </td>
+                    <td class="py-4 px-4">
+                      <span
+                        class="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-900/30">
+                        ★ With Honors
+                      </span>
+                    </td>
+                    <td class="py-4 px-4 font-mono text-[11px]">
+                      0928-123-9842<br>
+                      <span class="text-slate-500 font-sans">Capt. Ben Villafuerte</span>
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
               <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                Official DepEd SF-1 Learner Register with live RFID tap-in timestamps and quarter transmutation.
+                Showing 4 of 45 verified learners • <span class="font-bold text-slate-700 dark:text-slate-200">100%
+                  Enrollment SF-1 Match</span>
               </p>
+
+              <div class="flex items-center gap-1.5">
+                <button
+                  class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#232D26] cursor-not-allowed">
+                  Previous
+                </button>
+                <button
+                  class="w-9 h-9 rounded-xl bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-bold flex items-center justify-center shadow-sm">
+                  1
+                </button>
+                <button
+                  class="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center justify-center transition-colors">
+                  2
+                </button>
+                <button
+                  class="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center justify-center transition-colors">
+                  3
+                </button>
+                <button
+                  class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#2D3A31] hover:bg-slate-50 transition-colors">
+                  Next
+                </button>
+              </div>
             </div>
+
           </div>
-
-          <!-- Search Bar & Tabulator Filter Pills -->
-          <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#F9F7F1] dark:bg-[#232D26] p-4 rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
-            <!-- Search input -->
-            <div class="relative w-full md:w-80">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </span>
-              <input 
-                type="text" 
-                placeholder="Search by student name, LRN.." 
-                class="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907] text-xs text-slate-700 dark:text-slate-200 shadow-sm" 
-              />
-            </div>
-
-            <!-- Tabulator Filter Buttons -->
-            <div class="flex flex-wrap items-center gap-1.5 overflow-x-auto">
-              <button class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all">
-                All (45)
-              </button>
-              <button class="bg-white dark:bg-[#2D3A31] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-slate-200 dark:border-[#3F4F43]">
-                Male (23)
-              </button>
-              <button class="bg-white dark:bg-[#2D3A31] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-slate-200 dark:border-[#3F4F43]">
-                Female (22)
-              </button>
-              <button class="bg-white dark:bg-[#2D3A31] text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-amber-200 dark:border-amber-900/30 flex items-center gap-1">
-                <span>★</span> With Honors (14)
-              </button>
-              <button class="bg-white dark:bg-[#2D3A31] text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 px-4 py-2 rounded-xl text-xs font-semibold transition-all border border-red-200 dark:border-red-900/30 flex items-center gap-1">
-                <span>⚠️</span> At Risk (1)
-              </button>
-            </div>
-          </div>
-
-          <!-- Table Container -->
-          <div class="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-[#F9F7F1] dark:bg-[#232D26] text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200/60 dark:border-[#3F4F43]">
-                  <th class="py-3.5 px-4">No. / LRN</th>
-                  <th class="py-3.5 px-4">Learner Full Name</th>
-                  <th class="py-3.5 px-4">Gender</th>
-                  <th class="py-3.5 px-4">RFID Status (Today)</th>
-                  <th class="py-3.5 px-4">Midterm Transmuted</th>
-                  <th class="py-3.5 px-4">Honors Standing</th>
-                  <th class="py-3.5 px-4">Guardian Contact</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-[#3F4F43] text-xs font-medium text-slate-700 dark:text-slate-200">
-                
-                <!-- Row 1 -->
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
-                  <td class="py-4 px-4 font-mono">
-                    <span class="font-bold text-slate-900 dark:text-white">#01</span><br>
-                    <span class="text-[11px] text-slate-400">109384729104</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                      <img src="https://ui-avatars.com/api/?name=Juan+Carlos+Dela+Cruz&background=random" alt="Juan Carlos" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
-                      <div>
-                        <p class="font-bold text-slate-900 dark:text-white">Dela Cruz, Juan Carlos M.</p>
-                        <p class="text-[11px] text-slate-500">Seat 01 • Class President</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Male</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
-                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>Tapped 07:12 AM</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-0.5">18-day streak</p>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">95</span>
-                    <span class="text-[11px] text-slate-500 block mt-0.5">General Physics</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-extrabold text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 border border-amber-200 dark:border-amber-900/30">
-                      ★ With High Honors
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 font-mono text-[11px]">
-                    0917-812-2045<br>
-                    <span class="text-slate-500 font-sans">Mrs. Elena Cruz</span>
-                  </td>
-                </tr>
-
-                <!-- Row 2 -->
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
-                  <td class="py-4 px-4 font-mono">
-                    <span class="font-bold text-slate-900 dark:text-white">#02</span><br>
-                    <span class="text-[11px] text-slate-400">109384729105</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                      <img src="https://ui-avatars.com/api/?name=Clarissa+Mae+Santos&background=random" alt="Clarissa Mae" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
-                      <div>
-                        <p class="font-bold text-slate-900 dark:text-white">Santos, Clarissa Mae V.</p>
-                        <p class="text-[11px] text-slate-500">Seat 02 • Science Club VP</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Female</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
-                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>Tapped 07:18 AM</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-0.5">24-day streak</p>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">99</span>
-                    <span class="text-[11px] text-slate-500 block mt-0.5">Top 1 STEM Section</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-amber-400 text-amber-950 font-black text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 shadow-sm">
-                      ★ Highest Honors (Apex)
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 font-mono text-[11px]">
-                    0920-918-4421<br>
-                    <span class="text-slate-500 font-sans">Engr. Roberto Santos</span>
-                  </td>
-                </tr>
-
-                <!-- Row 3 -->
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
-                  <td class="py-4 px-4 font-mono">
-                    <span class="font-bold text-slate-900 dark:text-white">#03</span><br>
-                    <span class="text-[11px] text-slate-400">109384729112</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 font-black flex items-center justify-center shrink-0 border border-rose-200">
-                        KA
-                      </div>
-                      <div>
-                        <p class="font-bold text-slate-900 dark:text-white">Alcantara, Kenneth D.</p>
-                        <p class="text-[11px] text-rose-600 font-semibold">Pending 2 Lab Experiments</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Male</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-1.5 text-red-600 dark:text-red-400 font-bold">
-                      <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                      <span>Unrecorded / Late</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-0.5">3 consecutive absences</p>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-2.5 py-1 rounded-lg">84</span>
-                    <span class="text-[11px] text-red-600 block mt-0.5 font-semibold">Intervention</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-slate-100 dark:bg-[#3F4F43] text-slate-600 dark:text-slate-300 font-semibold text-[11px] px-3 py-1 rounded-full">
-                      Regular Passing
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 font-mono text-[11px]">
-                    0919-444-1982<br>
-                    <span class="text-slate-500 font-sans">Mrs. Tessie Alcantara</span>
-                  </td>
-                </tr>
-
-                <!-- Row 4 -->
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
-                  <td class="py-4 px-4 font-mono">
-                    <span class="font-bold text-slate-900 dark:text-white">#04</span><br>
-                    <span class="text-[11px] text-slate-400">109384729119</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                      <img src="https://ui-avatars.com/api/?name=Hannah+Sofia+Villafuerte&background=random" alt="Hannah Sofia" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
-                      <div>
-                        <p class="font-bold text-slate-900 dark:text-white">Villafuerte, Hannah Sofia B.</p>
-                        <p class="text-[11px] text-slate-500">Seat 04 • Lead Researcher</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-slate-100 dark:bg-[#3F4F43] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-1 rounded-lg text-[11px]">Female</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
-                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>Tapped 07:22 AM</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-0.5">15-day streak</p>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="font-bold text-slate-900 dark:text-white bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg">94</span>
-                    <span class="text-[11px] text-slate-500 block mt-0.5">Physics & Math</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px] px-3 py-1 rounded-full inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-900/30">
-                      ★ With Honors
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 font-mono text-[11px]">
-                    0928-123-9842<br>
-                    <span class="text-slate-500 font-sans">Capt. Ben Villafuerte</span>
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination Footer -->
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Showing 4 of 45 verified learners • <span class="font-bold text-slate-700 dark:text-slate-200">100% Enrollment SF-1 Match</span>
-            </p>
-
-            <div class="flex items-center gap-1.5">
-              <button class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-[#232D26] cursor-not-allowed">
-                Previous
-              </button>
-              <button class="w-9 h-9 rounded-xl bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-bold flex items-center justify-center shadow-sm">
-                1
-              </button>
-              <button class="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center justify-center transition-colors">
-                2
-              </button>
-              <button class="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center justify-center transition-colors">
-                3
-              </button>
-              <button class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#2D3A31] hover:bg-slate-50 transition-colors">
-                Next
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        
 
         </div>
 
@@ -840,40 +773,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
+import navbartop from '@/Components/navbartop.vue'
 
-// UI State Management
-const showNotifications = ref(false)
-const showProfile = ref(false)
-const toggleNotifications = () => { showNotifications.value = !showNotifications.value; showProfile.value = false; }
-const toggleProfile = () => { showProfile.value = !showProfile.value; showNotifications.value = false; }
-const closeDropdowns = () => { showNotifications.value = false; showProfile.value = false; }
-
-// Dark Mode Toggle Logic
-const isDark = ref(false)
-const toggleDarkMode = () => {
-  isDark.value = !isDark.value
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-    localStorage.setItem('theme', 'dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-    localStorage.setItem('theme', 'light')
-  }
-}
-
-// Font Scaling Logic
+// Font Scaling State Managed Locally via navbartop event
 const fontSizeMode = ref('base')
-const changeFontSize = (size) => { fontSizeMode.value = size }
-
-onMounted(() => {
-  if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    isDark.value = true
-    document.documentElement.classList.add('dark')
-  }
-})
 </script>
 
 <style scoped>
@@ -894,6 +800,52 @@ onMounted(() => {
 
 .animate-overlay {
   animation: pulse-opacity 6s infinite ease-in-out;
+}
+
+/* Scroll-driven view animations that replay every time you scroll back to them */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-fade-down {
+  animation: fadeInDown linear both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+}
+
+.anim-slide-up {
+  animation: slideUpFade linear both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 30%;
+}
+
+.anim-fade-down {
+  animation: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-up {
+  opacity: 0;
+  animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* TEXT SCALING OVERRIDES */

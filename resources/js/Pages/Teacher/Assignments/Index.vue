@@ -1,157 +1,190 @@
 <template>
-  <Head :title="`Assignments - ${classroom.subject} - Salawag LMS`" />
 
-  <div class="min-h-screen flex bg-[#e8f5e9] font-['Inter'] relative">
-    
+  <Head title="Assignment & Classwork Evaluation Manager - Salawag LMS" />
+
+  <div class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300">
+
     <!-- Sticky Sidebar Navigation -->
-    <div class="sticky top-0 h-screen z-30 shrink-0">
-      <Sidebar />
+    <div class="sticky top-0 h-screen z-40 shrink-0 shadow-lg">
+      <Sidebart />
     </div>
 
     <!-- Main Workspace Canvas -->
-    <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between">
-      
-      <div class="relative z-10 p-6 md:p-10 space-y-8 flex-1 pb-24">
-        
-        <!-- HEADER ROW -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="space-y-1 max-w-2xl">
-            <div class="flex items-center gap-2 font-['Anton'] text-2xl sm:text-3xl md:text-4xl tracking-wide uppercase leading-tight">
-              <span class="text-[#005506]">Assignments</span>
-            </div>
-            
-            <p class="text-xs sm:text-sm font-semibold text-slate-600">
-              Subject: <span class="text-slate-800 font-bold">{{ classroom.subject }}</span>
-              <span class="text-slate-300 mx-2">|</span> 
-              Section: <span class="text-slate-800 font-bold">{{ classroom.section }}</span>
-            </p>
+    <main :class="['flex-1 relative overflow-y-auto min-h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
 
-            <!-- Accent Star Line -->
-            <div class="flex items-center gap-2 pt-1 max-w-sm">
-              <div class="h-[2px] w-full bg-[#005506]"></div>
-              <span class="text-[#005506] text-xs">★</span>
-            </div>
-          </div>
+      <!-- Reusable Top Navigation Component -->
+      <navbartop searchPlaceholder="Search assignments, rubric-grade tasks, student turn-ins.."
+        @font-size-changed="(size) => fontSizeMode = size" />
 
-          <!-- Actions -->
-          <div class="flex items-center gap-3 shrink-0">
-            <Link 
-              :href="route('teacher.classes.show', classroom.id)"
-              class="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all duration-200"
-            >
-              ← Back to Class
-            </Link>
-            <Link 
-              :href="route('teacher.classes.assignments.create', classroom.id)"
-              class="inline-flex items-center gap-2 bg-[#005506] hover:bg-[#003d04] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:shadow transition-all duration-200 active:scale-95"
-            >
-              + Create Assignment
-            </Link>
+      <!-- MAIN PAGE CONTENT -->
+      <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
+
+        <!-- ASSIGNMENTS HERO BANNER WITH ANIMATED OVERLAY -->
+        <div
+          class="relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[260px] flex flex-col justify-center">
+          <!-- Background Image properly aligned and fitted -->
+          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000&auto=format&fit=crop"
+            alt="Assignments Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+
+          <!-- Animated Green Overlay -->
+          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 p-6 sm:p-8 md:p-10 max-w-3xl space-y-4">
+
+            <!-- Quarter Badge -->
+            <div
+              class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white border border-white/20 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm">
+              <span>📅</span> SY 2025–2026 • Quarter 2 Evaluation
+            </div>
+
+            <!-- Main Title & Description -->
+            <div class="space-y-3">
+              <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                Assignments & Classwork Evaluation Manager
+              </h2>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
+                Review artifacts, rubric-grade DepEd performance tasks, track turn-ins across Senior High STEM & TVL
+                sections, and grant gamified Salawag Spark bonuses.
+              </p>
+            </div>
+
           </div>
         </div>
 
-        <div class="relative z-10 flex border-b border-slate-200/80 gap-2 sm:gap-6">
-            <Link
-              :href="route('teacher.classes.show', classroom.id)"
-              class="pb-3 text-xs sm:text-sm font-semibold text-slate-500 hover:text-[#005506] border-b-2 border-transparent transition-colors"
-            >
-              Students
-            </Link>
+        <!-- 4-CARD ASSIGNMENT METRICS GRID -->
+        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-            <button class="pb-3 text-xs sm:text-sm font-bold border-b-2 border-[#005506] text-[#005506] transition-colors">
-              Assignments
-            </button>
+          <!-- 1. TOTAL ACTIVE TASKS -->
+          <div
+            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Total
+                  Active Tasks</span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                    </path>
+                  </svg>
+                </div>
+              </div>
 
-            <button disabled class="pb-3 text-xs sm:text-sm font-semibold text-slate-300 cursor-not-allowed">
-              Lessons (soon)
-            </button>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-slate-900 dark:text-white">6</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Published Tasks</span>
+              </div>
+            </div>
 
-            <button disabled class="pb-3 text-xs sm:text-sm font-semibold text-slate-300 cursor-not-allowed">
-              Grades (soon)
-            </button>
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
+              <span>📈</span>
+              <span>2 Sections completing today</span>
+            </div>
           </div>
 
-        <!-- MAIN SECTION CANVAS -->
-        <div class="relative rounded-3xl p-6 sm:p-8 overflow-hidden space-y-6">
-          <div 
-            class="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-15 rounded-3xl"
-            :style="{ backgroundImage: `url(${dashboardBg})` }"
-          ></div>
+          <!-- 2. AWAITING EVALUATION -->
+          <div
+            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Awaiting
+                  Evaluation</span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                  </svg>
+                </div>
+              </div>
 
-          <!-- EMPTY STATE -->
-          <div 
-            v-if="!assignments.length" 
-            class="relative z-10 bg-white/90 backdrop-blur-sm rounded-2xl p-12 text-center text-slate-500 border border-slate-200/60 shadow-sm space-y-2"
-          >
-            <p class="font-bold text-slate-700 text-base sm:text-lg">No assignments created yet</p>
-            <p class="text-xs sm:text-sm text-slate-500">Get started by creating your first assignment for this class section.</p>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-orange-600 dark:text-orange-400">42</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Submissions</span>
+              </div>
+            </div>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <span class="shrink-0">👥</span>
+              <span class="truncate">STEM Rizal, Archimedes, TVL-Turing</span>
+            </div>
           </div>
 
-          <!-- ASSIGNMENTS DATA TABLE -->
-          <div v-else class="relative z-10 bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-emerald-900/5 text-slate-600 uppercase text-[11px] font-extrabold tracking-wider border-b border-slate-200/60">
-                    <th class="px-6 py-3.5">Assignment Title</th>
-                    <th class="px-6 py-3.5">Due Date</th>
-                    <th class="px-6 py-3.5">Max Points</th>
-                    <th class="px-6 py-3.5">Submissions</th>
-                    <th class="px-6 py-3.5">Status</th>
-                    <th class="px-6 py-3.5 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
-                  <tr 
-                    v-for="a in assignments" 
-                    :key="a.id" 
-                    class="hover:bg-emerald-50/40 transition-colors"
-                  >
-                    <td class="px-6 py-4 font-bold text-slate-800">
-                      <div class="flex items-center gap-2">
-                        <span>{{ a.title }}</span>
-                        <span v-if="a.has_file" class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-mono" title="Has attached file">📎 File</span>
-                      </div>
-                    </td>
+          <!-- 3. GRADED THIS WEEK -->
+          <div
+            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Graded
+                  This Week</span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
 
-                    <td class="px-6 py-4 font-semibold" :class="isOverdue(a.due_at) ? 'text-amber-600' : 'text-slate-600'">
-                      {{ a.due_at ? new Date(a.due_at).toLocaleString() : 'No due date' }}
-                    </td>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-[#005506] dark:text-[#86EFAC]">89</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Evaluated</span>
+              </div>
+            </div>
 
-                    <td class="px-6 py-4 font-medium text-slate-600">
-                      {{ a.points }} pts
-                    </td>
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
+              <span>⏱️</span>
+              <span>Turnaround: 1.4d (Target ≤ 2.0d)</span>
+            </div>
+          </div>
 
-                    <td class="px-6 py-4 font-bold text-slate-700">
-                      {{ a.submissions_count }}
-                    </td>
+          <!-- 4. MISSING / OVERDUE -->
+          <div
+            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Missing
+                  / Overdue</span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/30">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                    </path>
+                  </svg>
+                </div>
+              </div>
 
-                    <td class="px-6 py-4">
-                      <span 
-                        class="text-xs font-bold px-2.5 py-1 rounded-full border"
-                        :class="a.is_published 
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
-                          : 'bg-slate-100 text-slate-600 border-slate-200'"
-                      >
-                        {{ a.is_published ? 'Published' : 'Draft' }}
-                      </span>
-                    </td>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-rose-600 dark:text-rose-400">3</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Learners</span>
+              </div>
+            </div>
 
-                    <td class="px-6 py-4 text-right">
-                      <Link 
-                        :href="route('teacher.assignments.show', a.id)"
-                        class="bg-[#005506] hover:bg-[#003d04] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm inline-block transition-transform active:scale-95"
-                      >
-                        View & Grade →
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-xs font-bold">
+              <span class="text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                <span>✉️</span> Dispatched
+              </span>
+              <a href="#" class="text-[#005506] dark:text-[#86EFAC] hover:underline">
+                View 3 LRNs
+              </a>
             </div>
           </div>
 
         </div>
+
+
 
       </div>
 
@@ -161,20 +194,113 @@
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
-import Sidebar from '@/Components/Sidebar.vue'
-import dashboardBg from '@/../assets/img/dashboardbackground.png'
+import { ref } from 'vue'
+import { Head } from '@inertiajs/vue3'
+import Sidebart from '@/Components/Sidebart.vue'
+import navbartop from '@/Components/navbartop.vue'
 
-defineProps({
-  classroom: Object,
-  assignments: Array,
-})
-
-function isOverdue(due) {
-  return due && new Date(due) < new Date()
-}
+// Font Scaling State Managed Locally via navbartop event
+const fontSizeMode = ref('base')
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Breathing opacity animation for the green background layer */
+@keyframes pulse-opacity {
+
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.animate-overlay {
+  animation: pulse-opacity 6s infinite ease-in-out;
+}
+
+/* TEXT SCALING OVERRIDES */
+.text-scale-sm :deep(.text-xs) {
+  font-size: 0.65rem !important;
+  line-height: 0.85rem !important;
+}
+
+.text-scale-sm :deep(.text-sm) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.text-scale-sm :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-sm :deep(.text-lg) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-sm :deep(.text-xl) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-sm :deep(.text-3xl) {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.text-scale-sm :deep(.sm\:text-4xl) {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.text-scale-sm :deep(.md\:text-5xl) {
+  font-size: 2.25rem !important;
+  line-height: 1 !important;
+}
+
+.text-scale-lg :deep(.text-xs) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-sm) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-lg :deep(.text-base) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-lg :deep(.text-lg) {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-lg :deep(.text-xl) {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.text-scale-lg :deep(.text-3xl) {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+.text-scale-lg :deep(.sm\:text-4xl) {
+  font-size: 2.75rem !important;
+  line-height: 1 !important;
+}
+
+.text-scale-lg :deep(.md\:text-5xl) {
+  font-size: 3.5rem !important;
+  line-height: 1 !important;
+}
 </style>
