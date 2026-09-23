@@ -12,121 +12,117 @@
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between">
       
       <!-- Main Content Container -->
-      <div class="relative z-10 p-6 md:p-10 space-y-8 flex-1 pb-10">
+      <div class="relative z-10 p-6 md:p-8 space-y-6 flex-1 pb-16">
         
-        <!-- HEADER ROW: STUDENT SUBJECTS TITLE -->
-        <div class="space-y-1">
-          <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none">
-            <!-- Solid Emerald Fill for STUDENT -->
-            <span class="text-[#005506]">STUDENT</span>
-            <!-- Reverse Fill-Stroke Animation for SUBJECTS -->
-            <span class="animated-reverse-stroke-text">SUBJECTS</span>
+        <!-- DASHBOARD-MATCHED HERO BANNER -->
+        <div class="w-full bg-[#004d08] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] relative overflow-hidden space-y-4">
+          <div class="space-y-1">
+            <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none">
+              <span class="text-white">STUDENT</span>
+              <span class="animated-stroke-text">SUBJECTS</span>
+            </div>
+            <p class="text-xs sm:text-sm italic font-medium text-emerald-100/80">
+              "Your journey to knowledge starts with one click."
+            </p>
+            <div class="flex items-center gap-2 pt-1 max-w-xl">
+              <div class="h-[1.5px] w-full bg-white/40"></div>
+              <span class="text-white text-xs">★</span>
+            </div>
           </div>
-          
-          <p class="text-xs sm:text-sm italic font-medium text-slate-600">
-            "Your journey to knowledge starts with one click."
-          </p>
 
-          <!-- Decorative Star Divider Line -->
-          <div class="flex items-center gap-2 pt-1 max-w-md">
-            <div class="h-[2px] w-full bg-[#005506] animate-line-expand"></div>
-            <span class="text-[#005506] text-xs">★</span>
+          <!-- Hero Meta Info & Telemetry Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2">
+            
+            <!-- Left Info Block -->
+            <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 overflow-hidden shrink-0 shadow-inner flex items-center justify-center text-3xl">
+                🎓
+              </div>
+              <div class="space-y-1 text-center sm:text-left">
+                <div class="inline-block bg-white/15 backdrop-blur-sm text-emerald-100 text-[11px] font-bold px-3 py-0.5 rounded-full border border-white/10">
+                  {{ activeTerm || 'S.Y. 2026-2027 • 1st Semester' }}
+                </div>
+                <h2 class="font-bold text-lg sm:text-xl text-white tracking-tight leading-snug">
+                  Senior High School Curriculum
+                </h2>
+                <p class="text-xs text-emerald-100/70 font-medium">
+                  Grade 12 STEM - Section Rizal • {{ filteredClasses.length }} Active Subjects
+                </p>
+              </div>
+            </div>
+
+            <!-- Right Quick Telemetry Counters -->
+            <div class="lg:col-span-5 grid grid-cols-2 gap-3">
+              <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-emerald-100/80">Enrolled Track</span>
+                <div class="text-xl font-extrabold text-amber-300 my-0.5">STEM</div>
+                <span class="text-[10px] text-emerald-100/70">Academic Strand</span>
+              </div>
+              <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-emerald-100/80">Course Progress</span>
+                <div class="text-xl font-extrabold text-white my-0.5">72%</div>
+                <span class="text-[10px] text-emerald-100/70">Semester Completion</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- SEARCH AND FILTER BAR -->
-        <form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-center gap-3 w-full">
-          
-          <!-- Search Input Box -->
-          <div class="relative flex-1 w-full">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        <!-- SEARCH AND FILTER TOOLBAR -->
+        <div class="rounded-3xl bg-[#fbfdf9] border border-slate-200/80 p-4 sm:p-5 shadow-sm">
+          <form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-center gap-3 w-full">
+            
+            <!-- Search Input Box -->
+            <div class="relative flex-1 w-full">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input 
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search subjects, codes, or teachers..." 
+                class="w-full pl-11 pr-4 py-3 bg-[#f5f7f2] border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#004d08] focus:bg-white transition-all shadow-xs"
+              />
             </div>
-            <input 
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search subjects, codes, or teachers..." 
-              class="w-full pl-11 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-[#005506]/30 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#005506] focus:bg-white transition-all shadow-sm"
-              @input="handleQuickSearch"
-            />
-          </div>
 
-          <!-- Filter Dropdown Button -->
-          <div class="relative w-full sm:w-auto">
+            <!-- Category Filter Pills -->
+            <div class="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+              <button 
+                type="button"
+                v-for="cat in categories" 
+                :key="cat.id"
+                @click="setCategory(cat.id)"
+                :class="[
+                  'px-4 py-3 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-xs',
+                  selectedCategory === cat.id 
+                    ? 'bg-[#004d08] text-white' 
+                    : 'bg-[#f5f7f2] text-slate-700 hover:bg-[#e4ede1]'
+                ]"
+              >
+                {{ cat.label }}
+              </button>
+            </div>
+
+            <!-- Search Action Button -->
             <button 
-              type="button" 
-              @click="toggleFilterMenu"
-              class="w-full sm:w-auto px-6 py-3 bg-[#005506]/70 hover:bg-[#005506]/80 text-white text-sm font-bold rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 border border-white/20 active:scale-95"
+              type="submit"
+              class="w-full sm:w-auto px-6 py-3 bg-[#004d08] hover:bg-[#003805] text-white text-xs font-bold rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span>Filter</span>
+              <span>Search</span>
             </button>
 
-            <!-- Filter Options Dropdown Popover -->
-            <div 
-              v-if="showFilterMenu"
-              class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200/80 p-3 z-30 space-y-2 animate-card-slide-up"
-            >
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 pt-1">
-                Filter by Category
-              </p>
-              <button 
-                type="button" 
-                @click="setCategory('')" 
-                :class="selectedCategory === '' ? 'bg-emerald-50 text-[#005506] font-bold' : 'text-slate-600 hover:bg-slate-50'"
-                class="w-full text-left px-3 py-2 rounded-xl text-xs transition-colors"
-              >
-                All Subjects
-              </button>
-              <button 
-                type="button" 
-                @click="setCategory('CORE')" 
-                :class="selectedCategory === 'CORE' ? 'bg-emerald-50 text-[#005506] font-bold' : 'text-slate-600 hover:bg-slate-50'"
-                class="w-full text-left px-3 py-2 rounded-xl text-xs transition-colors"
-              >
-                Core Subjects
-              </button>
-              <button 
-                type="button" 
-                @click="setCategory('STEM')" 
-                :class="selectedCategory === 'STEM' ? 'bg-emerald-50 text-[#005506] font-bold' : 'text-slate-600 hover:bg-slate-50'"
-                class="w-full text-left px-3 py-2 rounded-xl text-xs transition-colors"
-              >
-                STEM Specialization
-              </button>
-            </div>
-          </div>
+          </form>
+        </div>
 
-          <!-- Primary Search Button -->
-          <button 
-            type="submit"
-            class="w-full sm:w-auto px-8 py-3 bg-[#005506] hover:bg-[#004204] text-white text-sm font-bold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 border border-emerald-400/20 active:scale-95"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span>Search</span>
-          </button>
-
-        </form>
-
-        <!-- SUBJECTS GRID CONTAINER WITH ISOLATED BACKGROUND -->
-        <div class="relative rounded-3xl p-6 sm:p-8 overflow-hidden space-y-6">
+        <!-- SUBJECTS GRID CONTAINER WITH ISOLATED BACKGROUND PATTERN -->
+        <div class="relative rounded-3xl p-2 overflow-hidden space-y-6">
           
-          <!-- Isolated Background Pattern (15% Opacity behind grid) -->
-          <div 
-            class="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0 opacity-15 rounded-3xl"
-            :style="{ backgroundImage: `url(${dashboardBg})` }"
-          ></div>
-
           <!-- Empty State -->
           <div 
             v-if="!filteredClasses.length" 
-            class="relative z-10 bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center border border-slate-200/60 shadow-sm space-y-3"
+            class="relative z-10 bg-white/80 backdrop-blur-sm rounded-3xl p-12 text-center border border-slate-200/60 shadow-sm space-y-3"
           >
             <div class="w-12 h-12 rounded-full bg-emerald-50 text-[#005506] mx-auto flex items-center justify-center">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +133,7 @@
             <p class="text-slate-400 text-xs">Try adjusting your search keywords or filter settings.</p>
           </div>
 
-          <!-- Subject Cards Grid -->
+          <!-- Subject Cards Grid (ORIGINAL CARD DESIGN PRESERVED) -->
           <div v-else class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             
             <Link
@@ -222,35 +218,29 @@ import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
 
-import dashboardBg from '@/../assets/img/dashboardbackground.png'
-
 const props = defineProps({
-  classes: {
-    type: Object,
-    default: () => ({ data: [] }),
-  },
-  filters: {
-    type: Object,
-    default: () => ({ search: '', category: '' }),
-  },
+  classes: Object,
+  filters: Object,
+  activeTerm: String,
 })
 
 const searchQuery = ref(props.filters?.search || '')
-const selectedCategory = ref(props.filters?.category || '')
-const showFilterMenu = ref(false)
+const selectedCategory = ref(props.filters?.category || 'ALL')
 
-// Default sample classes fallback if backend data is empty
+const categories = [
+  { id: 'ALL', label: 'All Subjects' },
+  { id: 'CORE', label: 'Core Subjects' },
+  { id: 'STEM', label: 'STEM Specialization' },
+  { id: 'APPLIED', label: 'Applied Courses' }
+]
+
 const defaultClasses = [
-  { id: 1, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 2, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 3, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 4, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 5, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 6, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 7, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 8, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 9, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
-  { id: 10, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
+  { id: 1, subject: 'Effective Communication / Mabisang Komunikasyon', subject_code: 'CORE-COMM', category: 'CORE', section: 'Grade 12 - ICT', teacher: 'Kaylin Leffler' },
+  { id: 2, subject: 'General Physics 2', subject_code: 'STEM-PHYS', category: 'STEM', section: 'Grade 12 - STEM', teacher: 'Engr. Ramon Bautista' },
+  { id: 3, subject: 'Basic Calculus', subject_code: 'STEM-CALC', category: 'STEM', section: 'Grade 12 - STEM', teacher: 'Mrs. Elena Mendoza' },
+  { id: 4, subject: 'Practical Research II', subject_code: 'APP-RES2', category: 'APPLIED', section: 'Grade 12 - ICT', teacher: 'Dr. Josefa Garcia' },
+  { id: 5, subject: 'Oral Communication', subject_code: 'CORE-ORAL', category: 'CORE', section: 'Grade 12 - ICT', teacher: 'Ms. Clara Cruz' },
+  { id: 6, subject: 'Empowerment Technologies', subject_code: 'APP-[#TECH]', category: 'APPLIED', section: 'Grade 12 - ICT', teacher: 'Mr. Gabriel Reyes' },
 ]
 
 const classList = computed(() => {
@@ -266,25 +256,15 @@ const filteredClasses = computed(() => {
       klass.teacher?.toLowerCase().includes(searchQuery.value.toLowerCase())
 
     const matchesCategory = 
-      !selectedCategory.value || 
-      klass.subject_code?.includes(selectedCategory.value)
+      selectedCategory.value === 'ALL' || 
+      klass.category === selectedCategory.value
 
     return matchesSearch && matchesCategory
   })
 })
 
-const toggleFilterMenu = () => {
-  showFilterMenu.value = !showFilterMenu.value
-}
-
-const setCategory = (cat) => {
-  selectedCategory.value = cat
-  showFilterMenu.value = false
-  executeSearch()
-}
-
-const handleQuickSearch = () => {
-  // Live local filtering already computed reactive
+const setCategory = (catId) => {
+  selectedCategory.value = catId
 }
 
 const executeSearch = () => {
@@ -297,54 +277,10 @@ const executeSearch = () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* REVERSE ANIMATED FILL-STROKE TEXT EFFECT FOR 'SUBJECTS' */
-.animated-reverse-stroke-text {
+.animated-stroke-text {
   color: transparent;
-  -webkit-text-stroke: 1.5px #005506;
-  background: linear-gradient(to right, transparent 50%, #005506 50%);
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: reverseFillStrokeAnim 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-}
-
-@keyframes reverseFillStrokeAnim {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-
-@keyframes lineExpand {
-  0% {
-    width: 0%;
-  }
-  100% {
-    width: 100%;
-  }
-}
-
-.animate-line-expand {
-  animation: lineExpand 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
-}
-
-@keyframes cardSlideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-card-slide-up {
-  animation: cardSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  -webkit-text-stroke: 1.5px #ffffff;
 }
 </style>
