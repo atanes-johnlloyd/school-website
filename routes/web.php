@@ -55,6 +55,11 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::get('/classes', [TeacherClassController::class, 'index'])->name('classes.index');
         Route::get('/classes/{classroom}', [TeacherClassController::class, 'show'])->name('classes.show');
 
+        // Quiz Hub & Exam Bank Route
+        Route::get('/quizzes', function () {
+            return Inertia::render('Teacher/QuizHub/Index');
+        })->name('quizzes.index');
+
         // Gradebook
         Route::get('/gradebook', function () {
             return Inertia::render('Teacher/Gradebook/Index');
@@ -72,13 +77,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
 
         // DepEd LR Resources
         Route::get('/resources', function () {
-            return Inertia::render('Teacher/Resources/Index');
+            return Inertia::render('Teacher/Lessons/Index');
         })->name('resources.index');
-
-        // Quiz Hub & Exam Bank
-        Route::get('/quizzes', function () {
-            return Inertia::render('Teacher/Quizzes/Index');
-        })->name('quizzes.index');
 
         // Assignments
         Route::get(
