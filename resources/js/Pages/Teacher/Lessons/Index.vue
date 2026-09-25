@@ -1,162 +1,379 @@
 <template>
-  <Head :title="`Materials - ${classroom.subject} - Salawag LMS`" />
 
-  <div class="min-h-screen flex bg-[#e8f5e9] font-['Inter'] relative">
-    <div class="sticky top-0 h-screen z-30 shrink-0">
-      <Sidebar />
+  <Head title="DepEd LR Resources & Lesson Log Hub - Salawag LMS" />
+
+  <div class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300">
+
+    <!-- Sticky Sidebar Navigation -->
+    <div class="sticky top-0 h-screen z-40 shrink-0 shadow-lg">
+      <Sidebart />
     </div>
 
-    <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between">
-      <div class="relative z-10 p-6 md:p-10 space-y-8 flex-1 pb-24">
-        
-        <!-- HEADER ROW -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="space-y-1 max-w-2xl">
-            <h1 class="font-['Anton'] text-2xl sm:text-3xl md:text-4xl tracking-wide uppercase text-[#005506]">
-              Class Materials
-            </h1>
-            <p class="text-xs sm:text-sm font-semibold text-slate-600">
-              Subject: <span class="text-slate-800 font-bold">{{ classroom.subject }}</span>
-              <span class="text-slate-300 mx-2">|</span> 
-              Section: <span class="text-slate-800 font-bold">{{ classroom.section }}</span>
+    <!-- Main Workspace Canvas -->
+    <main :class="['flex-1 relative overflow-y-auto min-h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
+
+      <!-- Reusable Top Navigation Component -->
+      <navbartop searchPlaceholder="Search lessons, DLL logs, PhET simulations, module decks..."
+        @font-size-changed="(size) => fontSizeMode = size" />
+
+      <!-- MAIN PAGE CONTENT -->
+      <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
+
+        <!-- CLEANED LESSONS HERO BANNER -->
+        <div v-observe
+          class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[240px] flex flex-col justify-center p-6 sm:p-8 md:p-10">
+          
+          <!-- Background Image properly aligned -->
+          <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000&auto=format&fit=crop"
+            alt="Lessons Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+
+          <!-- Animated Green Overlay -->
+          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 max-w-3xl space-y-3">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+              Instructional Resources & Daily Lesson Log Hub
+            </h2>
+            <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
+              Curated DepEd-aligned DLL/DLP repositories, Interactive PhET STEM simulations, and verified open learning packages for General Physics 2 & Senior High Faculty.
             </p>
           </div>
 
-          <div class="flex items-center gap-3 shrink-0">
-            <button 
-              @click="showCreateModal = true"
-              class="inline-flex items-center gap-2 bg-[#005506] hover:bg-[#003d04] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95"
-            >
-              + Add Material
-            </button>
-          </div>
         </div>
 
-        <!-- TABS -->
-        <div class="relative z-10 flex border-b border-slate-200/80 gap-2 sm:gap-6 overflow-x-auto">
-          <Link :href="route('teacher.classes.show', classroom.id)" class="pb-3 text-xs sm:text-sm font-semibold text-slate-500 hover:text-[#005506]">Overview</Link>
-          <Link :href="route('teacher.classes.assignments.index', classroom.id)" class="pb-3 text-xs sm:text-sm font-semibold text-slate-500 hover:text-[#005506]">Assignments</Link>
-          <Link :href="route('teacher.classes.materials.index', classroom.id)" class="pb-3 text-xs sm:text-sm font-bold border-b-2 border-[#005506] text-[#005506]">Materials</Link>
-        </div>
+        <!-- 4 METRICS OVERVIEW CARDS (MOVED OUTSIDE HERO BANNER) -->
+        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-        <!-- MATERIALS LIST -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-if="!materials.length" class="col-span-full bg-white/90 rounded-2xl p-12 text-center text-slate-500 border border-slate-200/60 shadow-sm">
-            No learning materials added yet.
-          </div>
-
-          <div 
-            v-for="material in materials" 
-            :key="material.id"
-            class="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/60 shadow-sm flex items-start justify-between gap-4"
-          >
-            <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <span class="p-2 rounded-lg bg-emerald-50 text-[#005506] font-bold text-xs">
-                  {{ material.type === 'link' ? '🔗 Link' : '📄 File' }}
+          <!-- 1. UPLOADED MODULES -->
+          <div v-observe style="animation-delay: 100ms;"
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
+                  Uploaded Modules
                 </span>
-                <h3 class="font-bold text-slate-800 text-sm sm:text-base">{{ material.title }}</h3>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
+                  📒
+                </div>
               </div>
-              <p class="text-xs text-slate-600 line-clamp-2">{{ material.description || 'No description provided.' }}</p>
+
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-slate-900 dark:text-white">48</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Modules & Decks</span>
+              </div>
+            </div>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
+              <span>📚</span>
+              <span>Available across 6 subjects</span>
+            </div>
+          </div>
+
+          <!-- 2. DEPED DO 42 AUDIT -->
+          <div v-observe style="animation-delay: 200ms;"
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
+                  DepEd DO 42
+                </span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
+                  ✔
+                </div>
+              </div>
+
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-[#005506] dark:text-[#86EFAC]">100%</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Q3 DLL Audit</span>
+              </div>
+            </div>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
+              <span>🛡️</span>
+              <span>Fully DepEd Compliant</span>
+            </div>
+          </div>
+
+          <!-- 3. PHET SIM LABS -->
+          <div v-observe style="animation-delay: 300ms;"
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
+                  PhET Interactive
+                </span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
+                  ⚙️
+                </div>
+              </div>
+
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-amber-800 dark:text-amber-400">12</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Active Sim Labs</span>
+              </div>
+            </div>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <span class="shrink-0">⚛️</span>
+              <span class="truncate">STEM & Physics Embeds</span>
+            </div>
+          </div>
+
+          <!-- 4. STUDENT DOWNLOADS -->
+          <div v-observe style="animation-delay: 400ms;"
+            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-start justify-between">
+                <span
+                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
+                  Student Downloads
+                </span>
+                <div
+                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
+                  📈
+                </div>
+              </div>
+
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-slate-900 dark:text-white">842</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Weekly Accesses</span>
+              </div>
+            </div>
+
+            <div
+              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
+              <span>📥</span>
+              <span>High Engagement Rate</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RESOURCE MATERIALS TABULATOR / LIST -->
+        <div v-observe style="animation-delay: 500ms;"
+          class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#3F4F43] pb-4">
+            <div>
+              <h3 class="text-lg font-black text-slate-900 dark:text-white">Instructional Modules & Materials</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Manage uploaded lesson logs, presentation slides, and lab guides.</p>
             </div>
 
             <div class="flex items-center gap-2">
-              <a 
-                :href="material.file_url || material.link_url" 
-                target="_blank" 
-                class="text-xs bg-[#005506] text-white px-3 py-1.5 rounded-lg font-bold hover:bg-[#003d04]"
-              >
-                Open
-              </a>
-              <button 
-                @click="deleteMaterial(material.id)"
-                class="text-xs text-rose-600 hover:text-rose-800 font-bold px-2 py-1.5"
-              >
-                Delete
-              </button>
+              <input type="text" placeholder="Filter materials..." class="bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] rounded-xl text-xs px-3.5 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#006907]" />
             </div>
           </div>
+
+          <!-- LIST TABLE STRUCTURE -->
+          <div class="space-y-3">
+            <div v-for="item in resourceList" :key="item.id"
+              class="bg-[#F9F7F1] dark:bg-[#232D26] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#006907] transition-all">
+              
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-md border border-emerald-200">
+                    {{ item.subject }}
+                  </span>
+                  <span class="text-xs font-bold text-slate-400">• {{ item.type }}</span>
+                </div>
+                <h4 class="text-sm font-black text-slate-900 dark:text-white">{{ item.title }}</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.description }}</p>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0">
+                <button class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#004105] transition-all">
+                  Open Material ➔
+                </button>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
       </div>
+
     </main>
 
-    <!-- CREATE MATERIAL MODAL -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-xl">
-        <h2 class="font-bold text-lg text-slate-800">Post Learning Material</h2>
-
-        <form @submit.prevent="submitMaterial" class="space-y-4">
-          <div>
-            <label class="text-xs font-bold text-slate-600 block mb-1">Title</label>
-            <input v-model="form.title" type="text" required class="w-full text-xs p-3 rounded-xl border border-slate-200" placeholder="e.g. Chapter 1 Slides" />
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-slate-600 block mb-1">Description</label>
-            <textarea v-model="form.description" class="w-full text-xs p-3 rounded-xl border border-slate-200" rows="3" placeholder="Brief notes for students..."></textarea>
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-slate-600 block mb-1">Material Type</label>
-            <select v-model="form.type" class="w-full text-xs p-3 rounded-xl border border-slate-200">
-              <option value="file">File Upload</option>
-              <option value="link">External URL Link</option>
-            </select>
-          </div>
-
-          <div v-if="form.type === 'file'">
-            <label class="text-xs font-bold text-slate-600 block mb-1">Upload File</label>
-            <input type="file" @change="e => form.file = e.target.files[0]" class="w-full text-xs text-slate-500" />
-          </div>
-
-          <div v-else>
-            <label class="text-xs font-bold text-slate-600 block mb-1">Resource URL</label>
-            <input v-model="form.link_url" type="url" class="w-full text-xs p-3 rounded-xl border border-slate-200" placeholder="https://..." />
-          </div>
-
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="showCreateModal = false" class="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
-            <button type="submit" :disabled="form.processing" class="px-5 py-2 text-xs font-bold bg-[#005506] text-white rounded-xl">Save & Publish</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
-import Sidebar from '@/Components/Sidebar.vue'
+import { Head } from '@inertiajs/vue3'
+import Sidebart from '@/Components/Sidebart.vue'
+import navbartop from '@/Components/navbartop.vue'
 
-const props = defineProps({
-  classroom: Object,
-  materials: Array,
-})
+// Font Scaling State Managed Locally via navbartop event
+const fontSizeMode = ref('base')
 
-const showCreateModal = ref(false)
+// Mock Resource List Data
+const resourceList = ref([
+  {
+    id: 1,
+    subject: 'STEM • Gen Physics 2',
+    type: 'Daily Lesson Log (DLL)',
+    title: 'Module 4: Electromagnetic Induction & Faraday\'s Law',
+    description: 'Complete DepEd DO 42 compliant lesson log with interactive PhET simulation embeds.'
+  },
+  {
+    id: 2,
+    subject: 'STEM • Gen Physics 2',
+    type: 'Presentation Deck',
+    title: 'DC Circuits & Kirchhoff\'s Rules Slide Set',
+    description: 'High-contrast slides covering multi-loop network derivation and resistor tolerance calculation.'
+  },
+  {
+    id: 3,
+    subject: 'TVL-ICT • Robotics',
+    type: 'Lab Assembly Guide',
+    title: 'Arduino Sensor Array Breadboard Schematic',
+    description: 'Hardware wiring diagrams and code template for ultrasonic rangefinder integration.'
+  }
+])
 
-const form = useForm({
-  title: '',
-  description: '',
-  type: 'file',
-  file: null,
-  link_url: '',
-})
-
-function submitMaterial() {
-  form.post(route('teacher.classes.materials.store', props.classroom.id), {
-    onSuccess: () => {
-      showCreateModal.value = false
-      form.reset()
-    },
-  })
-}
-
-function deleteMaterial(id) {
-  if (confirm('Are you sure you want to delete this material?')) {
-    router.delete(route('teacher.materials.destroy', id))
+// Custom Directive for Smooth Entrance Animations
+const vObserve = {
+  mounted(el) {
+    el.classList.add('not-visible')
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        el.classList.add('is-animated')
+      } else {
+        el.classList.remove('is-animated')
+      }
+    }, { threshold: 0.1 })
+    observer.observe(el)
   }
 }
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Breathing opacity animation for the green background layer */
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.88; }
+  50% { opacity: 0.65; }
+}
+
+.animate-overlay {
+  animation: pulse-opacity 6s infinite ease-in-out;
+}
+
+/* Replayable Entrance Animations */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.not-visible {
+  opacity: 0;
+}
+
+.is-animated.anim-fade-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.is-animated.anim-slide-up {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* TEXT SCALING OVERRIDES */
+.text-scale-sm :deep(.text-xs) {
+  font-size: 0.65rem !important;
+  line-height: 0.85rem !important;
+}
+
+.text-scale-sm :deep(.text-sm) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.text-scale-sm :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-sm :deep(.text-lg) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-sm :deep(.text-xl) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-sm :deep(.text-3xl) {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.text-scale-sm :deep(.sm\:text-4xl) {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.text-scale-lg :deep(.text-xs) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-sm) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-lg :deep(.text-base) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-lg :deep(.text-lg) {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-scale-lg :deep(.text-xl) {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.text-scale-lg :deep(.text-3xl) {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+.text-scale-lg :deep(.sm\:text-4xl) {
+  font-size: 2.75rem !important;
+  line-height: 1 !important;
+}
+</style>
