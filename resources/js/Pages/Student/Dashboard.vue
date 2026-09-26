@@ -2,7 +2,8 @@
   <Head title="Student Dashboard - Salawag LMS" />
 
   <div class="min-h-screen flex bg-[#e8f5e9] font-['Inter'] relative">
-    
+
+
     <!-- Sticky Desktop Sidebar Navigation -->
     <div class="sticky top-0 h-screen z-30 shrink-0">
       <Sidebar />
@@ -11,6 +12,9 @@
     <!-- Main Workspace Canvas -->
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between">
       
+      <navbartop searchPlaceholder="Search assignments, rubric-grade tasks, student turn-ins.."
+          @font-size-changed="(size) => fontSizeMode = size" />
+          
       <!-- Main Content Container -->
       <div class="relative z-10 p-6 md:p-8 space-y-6 flex-1 pb-16">
         
@@ -562,6 +566,7 @@
 import { ref, computed } from 'vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
+import navbartop from '@/Components/navbartop.vue'
 
 const props = defineProps({
   auth: Object,
