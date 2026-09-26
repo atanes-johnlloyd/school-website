@@ -184,7 +184,7 @@
 
         </div>
 
-        <!-- CLASSWORK PIPELINE & GRADING QUEUE WORKSPACE GRID -->
+        <!-- CLASSWORK PIPELINE & CREATE ASSIGNMENT WORKSPACE GRID -->
         <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           <!-- LEFT COLUMN: CLASSWORK PIPELINE (5 COLS) -->
@@ -249,10 +249,10 @@
 
             </div>
 
-            <!-- TABULATOR-STYLE CLASSWORK PIPELINE LIST -->
+            <!-- PIPELINE CARDS LIST -->
             <div class="space-y-4">
 
-              <!-- CARD 1: ACTIVE EVALUATING (Lab Activity 4) -->
+              <!-- CARD 1: PERFORMANCE TASK -->
               <div v-observe style="animation-delay: 150ms;"
                 class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-md border-2 border-[#006907] dark:border-[#86EFAC] space-y-4 relative overflow-hidden">
 
@@ -284,7 +284,6 @@
                   </p>
                 </div>
 
-                <!-- Progress Track Container -->
                 <div
                   class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#3F4F43] space-y-2">
                   <div class="flex items-center justify-between text-xs font-black">
@@ -311,7 +310,6 @@
                   </div>
                 </div>
 
-                <!-- Bottom Meta Actions -->
                 <div class="flex items-center justify-between pt-1">
                   <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                     <span
@@ -324,13 +322,13 @@
 
                   <button
                     class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-3.5 py-1.5 rounded-xl text-xs font-black shadow-sm flex items-center gap-1">
-                    Evaluating ➔
+                    Active in Class 👁️
                   </button>
                 </div>
 
               </div>
 
-              <!-- CARD 2: PROBLEM SET 3 -->
+              <!-- CARD 2: WRITTEN WORK -->
               <div v-observe style="animation-delay: 250ms;"
                 class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
 
@@ -381,7 +379,7 @@
 
               </div>
 
-              <!-- CARD 3: ROBOTICS MILESTONE -->
+              <!-- CARD 3: MILESTONE -->
               <div v-observe style="animation-delay: 350ms;"
                 class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
 
@@ -434,216 +432,435 @@
 
             </div>
 
-            <!-- DEPED ORDER NO. 8 SYNC NOTICE CARD -->
-            <div v-observe style="animation-delay: 450ms;"
-              class="anim-slide-up bg-[#FEF9E7] dark:bg-amber-950/30 rounded-3xl p-5 border border-amber-200 dark:border-amber-900/40 flex items-start gap-3">
-              <div
-                class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-200 dark:border-amber-800">
-                🎓
-              </div>
-              <div class="space-y-1 text-xs">
-                <h5 class="font-black text-amber-950 dark:text-amber-300">DEPED ORDER NO. 8, S. 2015 FORM 7 SYNCED</h5>
-                <p class="text-amber-900/80 dark:text-amber-300/80 font-medium leading-relaxed">
-                  All scored performance tasks and written works immediately sync with the SHS Electronic Class Record
-                  (E-Class Record) with automated transmuted final ratings.
-                </p>
-              </div>
-            </div>
-
           </div>
 
-          <!-- RIGHT COLUMN: GRADING QUEUE WORKSPACE (7 COLS) -->
+          <!-- RIGHT COLUMN: CREATE ASSIGNMENT FORM & RUBRIC BUILDER (7 COLS) -->
           <div class="lg:col-span-7 space-y-5">
 
-            <!-- Workspace Top Header Bar -->
+            <!-- Header Bar -->
             <div v-observe
-              class="anim-fade-down bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <span
-                    class="bg-[#005506] text-white dark:bg-[#86EFAC] dark:text-[#232D26] text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                    📝 GRADING QUEUE • ITEM {{ queuePosition?.current ?? 1 }} OF {{ queuePosition?.total ?? 13 }}
-                  </span>
-                </div>
-                <h2 class="text-xl font-black text-slate-900 dark:text-white">
-                  Lab Activity 4: Faraday's Law Evaluation
-                </h2>
-              </div>
-
-              <div class="flex items-center gap-2 shrink-0">
-                <button @click="prevItem"
-                  class="w-9 h-9 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#3F4F43] transition-colors">
-                  ‹
-                </button>
-                <span
-                  class="bg-[#EAF3EC] dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] border border-emerald-200/60 dark:border-emerald-900/40 px-3.5 py-1.5 rounded-xl text-xs font-bold">
-                  Section: STEM 12 – Jose Rizal
-                </span>
-                <button @click="nextItem"
-                  class="w-9 h-9 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#3F4F43] transition-colors">
-                  ›
-                </button>
-              </div>
-
-            </div>
-
-            <!-- STUDENT PROFILE SUBMISSION HERO -->
-            <div v-observe style="animation-delay: 150ms;"
-              class="anim-slide-up bg-[#FEF9E7] dark:bg-amber-950/30 rounded-3xl p-6 border border-amber-200/80 dark:border-amber-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-
-              <div class="flex items-center gap-4">
+              class="anim-fade-down bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
                 <div
-                  class="w-14 h-14 rounded-2xl bg-[#003803] text-white font-black text-xl flex items-center justify-center shrink-0 shadow-md">
-                  {{ currentStudent?.initials ?? 'JD' }}
+                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
+                  📝
                 </div>
                 <div>
-                  <h3 class="text-lg font-black text-slate-900 dark:text-white">{{ currentStudent?.name }}</h3>
+                  <h2 class="text-lg font-black text-slate-900 dark:text-white">Create Assignment or Online Activity
+                  </h2>
                   <div class="flex items-center gap-2 mt-0.5">
                     <span
-                      class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2 py-0.5 rounded-md border border-emerald-200">
-                      ✓ Turned In Early
+                      class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40">
+                      ✓ DepEd DO 8, s. 2015 Compliant
                     </span>
-                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      LRN: {{ currentStudent?.lrn }} • {{ currentStudent?.section }} • Seat #{{ currentStudent?.seat }}
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Author interactive tasks, attach standard rubrics, and publish directly to SHS classes.
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div
-                class="text-left sm:text-right shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-amber-200 dark:border-amber-900/40">
-                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">SUBMISSION
-                  TIME</span>
-                <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">{{
-                  currentStudent?.submissionTime }}</span>
-                <span class="text-[11px] font-black text-[#005506] dark:text-[#86EFAC]">{{ currentStudent?.timeStatus
-                }}</span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm">
+                  Active Editor
+                </button>
+                <button
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-[#3F4F43]">
+                  Drafts (1)
+                </button>
               </div>
-
             </div>
 
-            <!-- SUBMITTED EVIDENCE & ARTIFACTS PANEL -->
-            <div v-observe style="animation-delay: 250ms;"
-              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+            <!-- Main Assignment Form Container -->
+            <div v-observe style="animation-delay: 100ms;"
+              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-6">
 
-              <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-emerald-700 dark:text-emerald-400">📎</span>
-                  <h4 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">
-                    SUBMITTED EVIDENCE & ARTIFACTS ({{ submittedFiles?.length ?? 0 }} FILES)
-                  </h4>
+              <!-- 1. SELECT ASSESSMENT COMPONENT TYPE -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label
+                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-2">
+                    <span>1.</span> SELECT ASSESSMENT COMPONENT TYPE (DEPED WEIGHTING)
+                  </label>
+                  <span class="text-[10px] font-bold text-slate-400">DO 8, s. 2015 Transmutation Weights</span>
                 </div>
-                <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-                  🛡️ Virus Scanned • Verified DepEd Cloud
-                </span>
-              </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div v-for="file in submittedFiles" :key="file.id"
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', file.iconBg]">
-                      {{ file.icon }}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <!-- Written Work -->
+                  <button
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-base">📑</span>
+                      <span
+                        class="bg-slate-200/60 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-md">25%</span>
                     </div>
                     <div>
-                      <p class="text-xs font-extrabold text-slate-800 dark:text-white">{{ file.name }}</p>
-                      <p class="text-[10px] text-slate-400 font-medium">{{ file.size }} • {{ file.details }}</p>
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Written Work</h4>
+                      <p class="text-[10px] text-slate-400 font-medium">Quizzes & problem sets</p>
+                    </div>
+                  </button>
+
+                  <!-- Performance Task (Selected) -->
+                  <button
+                    class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-2xl border-2 border-[#005506] dark:border-[#86EFAC] text-left space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-base">🧪</span>
+                      <span
+                        class="bg-[#005506] text-white dark:bg-[#86EFAC] dark:text-[#232D26] text-[10px] font-black px-2 py-0.5 rounded-md">40-50%</span>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-black text-[#005506] dark:text-[#86EFAC]">Performance Task</h4>
+                      <p class="text-[10px] text-emerald-800/80 dark:text-emerald-300/80 font-medium">Labs &
+                        demonstrations</p>
+                    </div>
+                  </button>
+
+                  <!-- Quarterly Exam -->
+                  <button
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-base">📊</span>
+                      <span
+                        class="bg-slate-200/60 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-md">20%</span>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Quarterly Exam</h4>
+                      <p class="text-[10px] text-slate-400 font-medium">Periodical evaluation</p>
+                    </div>
+                  </button>
+
+                  <!-- Gamified Quest -->
+                  <button
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-base">🎮</span>
+                      <span
+                        class="bg-[#F9C20C] text-[#2C3E2D] text-[10px] font-black px-2 py-0.5 rounded-md">+Bonus</span>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Gamified Quest</h4>
+                      <p class="text-[10px] text-slate-400 font-medium">Hint quest & challenges</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. TARGET SECTION & 3. COMPETENCY CODE -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label
+                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <span>👥</span> 2. TARGET SECTION & TRACK
+                  </label>
+                  <select
+                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907]">
+                    <option>Grade 12 STEM - Jose Rizal (45 Learners)</option>
+                    <option>Grade 12 STEM - Archimedes (44 Learners)</option>
+                    <option>TechPro 11 - Turing (38 Learners)</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label
+                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <span>📖</span> SUBJECT / COMPETENCY CODE
+                  </label>
+                  <select
+                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907]">
+                    <option>General Physics 2 • STEM_GP12EM-IVa-1</option>
+                    <option>General Physics 2 • STEM_GP12EM-IVb-12</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 3. ACTIVITY TITLE -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label
+                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <span>📝</span> 3. ACTIVITY / ASSIGNMENT TITLE
+                  </label>
+                  <span class="text-[10px] font-bold text-slate-400">DISPLAY TITLE IN STUDENT PORTAL</span>
+                </div>
+                <input type="text" value="Lab Activity 5: Electromagnetic Wave Optics & Snell's Law Experiment"
+                  class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-4 py-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#006907]" />
+              </div>
+
+              <!-- 4. INSTRUCTIONS & PROMPT SPECIFICATION -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label
+                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <span>💻</span> 4. INSTRUCTIONS & PROMPT SPECIFICATION
+                  </label>
+                  <span class="text-[10px] font-semibold text-slate-400">Markdown & LaTeX Math Enabled</span>
+                </div>
+
+                <div
+                  class="bg-[#FEF9E7] dark:bg-[#232D26] rounded-2xl border border-amber-200 dark:border-[#3F4F43] overflow-hidden space-y-2 p-3">
+                  <!-- Editor Action Bar -->
+                  <div
+                    class="flex flex-wrap items-center gap-2 pb-2 border-b border-amber-200/60 dark:border-[#3F4F43] text-xs font-bold text-slate-600 dark:text-slate-300">
+                    <button
+                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] font-black">B</button>
+                    <button
+                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] italic">I</button>
+                    <button
+                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] underline">U</button>
+                    <span class="text-slate-300">|</span>
+                    <span
+                      class="bg-white dark:bg-[#2D3A31] px-2 py-1 rounded border border-slate-200 dark:border-[#3F4F43] font-mono text-[10px]">∑
+                      n₁sin(θ₁) = n₂sin(θ₂)</span>
+                    <button
+                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] font-mono text-[10px]">&lt;&gt;
+                      Code</button>
+
+                    <div class="ml-auto flex items-center gap-1.5">
+                      <button
+                        class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                        📎 Attach DOST Resource
+                      </button>
+                      <button
+                        class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200">
+                        👓 Embed PhET Sim
+                      </button>
                     </div>
                   </div>
 
-                  <div class="flex items-center gap-1 text-slate-400">
-                    <button class="p-1.5 hover:text-slate-700 dark:hover:text-white transition-colors">👁️</button>
-                    <button class="p-1.5 hover:text-slate-700 dark:hover:text-white transition-colors">📥</button>
-                  </div>
+                  <textarea rows="4"
+                    class="w-full bg-transparent text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none resize-none leading-relaxed p-1"
+                    placeholder="Type assignment instructions...">1. Access the PhET 'Bending Light' Interactive Simulation module via the provided DepEd portal token.
+2. Calculate the index of refraction (n) across 5 differing prism optical densities using Snell's Law equation: n₁ sin(θ₁) = n₂ sin(θ₂).
+3. Tabulate incident vs. refraction angles, record laser color wavelength...</textarea>
                 </div>
               </div>
 
-            </div>
+              <!-- 5. PERMITTED SUBMISSION MODE -->
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
+                  <span>📤</span> 5. PERMITTED SUBMISSION MODE
+                </label>
 
-            <!-- DEPED SHS SCIENCE PERFORMANCE RUBRIC BREAKDOWN -->
-            <div v-observe style="animation-delay: 350ms;"
-              class="anim-slide-up bg-[#FEF9E7]/60 dark:bg-[#2D3A31]/90 rounded-3xl p-6 shadow-sm border border-amber-200/80 dark:border-[#3F4F43] space-y-5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <!-- Digital File Upload (Selected) -->
+                  <label
+                    class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-2xl border-2 border-[#005506] dark:border-[#86EFAC] flex items-start gap-2 cursor-pointer">
+                    <input type="radio" name="submission_mode" checked
+                      class="mt-0.5 text-[#005506] focus:ring-[#005506]">
+                    <div>
+                      <h5 class="text-xs font-black text-slate-900 dark:text-white">Digital File Upload</h5>
+                      <p class="text-[10px] text-slate-500 font-medium">PDF, XLSX, DOCX, ZIP</p>
+                    </div>
+                  </label>
 
-              <!-- Header & Live Score Pill -->
-              <div
-                class="flex items-start justify-between gap-4 border-b border-amber-200/60 dark:border-[#3F4F43] pb-4">
-                <div class="space-y-1">
+                  <!-- PhET Sim Embed -->
+                  <label
+                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
+                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
+                    <div>
+                      <h5 class="text-xs font-black text-slate-900 dark:text-white">PhET Sim Embed</h5>
+                      <p class="text-[10px] text-slate-500 font-medium">Live sim state link</p>
+                    </div>
+                  </label>
+
+                  <!-- Online Rich Text -->
+                  <label
+                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
+                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
+                    <div>
+                      <h5 class="text-xs font-black text-slate-900 dark:text-white">Online Rich Text</h5>
+                      <p class="text-[10px] text-slate-500 font-medium">Direct browser entry</p>
+                    </div>
+                  </label>
+
+                  <!-- In-Class Demo -->
+                  <label
+                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
+                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
+                    <div>
+                      <h5 class="text-xs font-black text-slate-900 dark:text-white">In-Class Demo</h5>
+                      <p class="text-[10px] text-slate-500 font-medium">Hands-on lab rubric</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- DUE DATE & POINTS ROW -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                <div class="sm:col-span-4 space-y-1">
+                  <label
+                    class="text-[11px] font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>📅</span> Due Date & Cutoff
+                  </label>
+                  <input type="text" value="03/20/2026, 11:59 PM"
+                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3.5 py-2.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
+                </div>
+
+                <div class="sm:col-span-4 space-y-1">
+                  <label
+                    class="text-[11px] font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>📈</span> Max Score / Points
+                  </label>
                   <div class="flex items-center gap-2">
-                    <span class="text-emerald-800 dark:text-[#86EFAC]">📋</span>
-                    <h3 class="text-base font-black text-slate-900 dark:text-white">
-                      DepEd SHS Science Performance Rubric Breakdown
-                    </h3>
+                    <input type="number" value="40"
+                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3.5 py-2.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none text-center" />
+                    <span class="text-xs font-bold text-slate-400 shrink-0">Pts total</span>
                   </div>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    Adjust criterion sliders or enter exact numbers. Grade calculates automatically.
-                  </p>
                 </div>
 
-                <div class="text-right shrink-0">
-                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">TOTAL SCORE</span>
-                  <div class="flex items-baseline gap-1">
-                    <span class="text-3xl font-black text-[#005506] dark:text-[#86EFAC]">{{ calculatedTotalScore
-                      }}</span>
-                    <span class="text-xs font-bold text-slate-400">/ 40</span>
-                  </div>
-                  <span
-                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-200 inline-block mt-0.5">
-                    {{ calculatePercentage }}% • {{ scoreDescriptor }}
-                  </span>
+                <div class="sm:col-span-4 flex items-center gap-2 pt-5">
+                  <input type="checkbox" id="grace_period" checked
+                    class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
+                  <label for="grace_period" class="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    +24h Late Penalty Cap (10%)
+                  </label>
                 </div>
               </div>
 
-              <!-- Dynamic Rubric Criteria -->
-              <div v-for="(rubric, index) in rubrics" :key="rubric.id"
-                class="bg-white dark:bg-[#232D26] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 class="text-xs font-black text-slate-900 dark:text-white">{{ index + 1 }}. {{ rubric.title }}
-                      ({{ rubric.weight }})</h4>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                      {{ rubric.description }}
+              <!-- 7. DEPED HOLISTIC RUBRIC CRITERIA MATRIX -->
+              <div
+                class="bg-[#FEF9E7]/60 dark:bg-[#232D26] p-5 sm:p-6 rounded-3xl border border-amber-200/80 dark:border-[#3F4F43] space-y-5">
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 dark:border-[#3F4F43] pb-4">
+                  <div class="flex items-start gap-3">
+                    <span class="text-emerald-800 dark:text-[#86EFAC] text-xl">📋</span>
+                    <div>
+                      <h3 class="text-sm font-black text-slate-900 dark:text-white">
+                        7. DepEd Holistic Rubric Criteria Matrix
+                      </h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Preset standard DO 8 science matrices loaded. Customize weighting & criteria levels.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-400">Preset:</span>
+                    <select
+                      class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#3F4F43] focus:outline-none">
+                      <option>4-Criteria Science Inquiry Rubric (40 Pts)</option>
+                      <option>3-Criteria DepEd Lab Rubric (30 Pts)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- CRITERIA CARDS GRID -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- Criterion 1 -->
+                  <div
+                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 1</span>
+                      <span
+                        class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2 py-0.5 rounded-md">
+                        15 Pts (37.5%)
+                      </span>
+                    </div>
+
+                    <input type="text" value="Refraction Law"
+                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
+
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
+                      Verification of incident & refracted angle precision and Snell equation proof.
                     </p>
+
+                    <div
+                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
+                      <span>Exemplary: 15</span>
+                      <span>Proficient: 12</span>
+                      <span>Basic: 8</span>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-1 shrink-0">
-                    <input type="number" v-model.number="rubric.score" :max="rubric.maxScore" min="0"
-                      class="w-12 text-center py-1 bg-[#F9F7F1] dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] rounded-lg font-black text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#006907]" />
-                    <span class="text-xs font-bold text-slate-400">/ {{ rubric.maxScore }}</span>
+
+                  <!-- Criterion 2 -->
+                  <div
+                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 2</span>
+                      <span
+                        class="bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-black px-2 py-0.5 rounded-md">
+                        15 Pts (37.5%)
+                      </span>
+                    </div>
+
+                    <input type="text" value="Graphical Reg"
+                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
+
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
+                      Plotting index slopes with error bars, sign conventions, and medium absorption notes.
+                    </p>
+
+                    <div
+                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
+                      <span>Exemplary: 15</span>
+                      <span>Proficient: 12</span>
+                      <span>Basic: 8</span>
+                    </div>
+                  </div>
+
+                  <!-- Criterion 3 -->
+                  <div
+                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 3</span>
+                      <span
+                        class="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md">
+                        10 Pts (25.0%)
+                      </span>
+                    </div>
+
+                    <input type="text" value="Scientific Synt"
+                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
+
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
+                      Standard SHS laboratory template, scientific vocabulary, citations, and clarity.
+                    </p>
+
+                    <div
+                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
+                      <span>Exemplary: 10</span>
+                      <span>Proficient: 9</span>
+                      <span>Basic: 5</span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-[#3F4F43] overflow-hidden relative">
-                  <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full transition-all duration-300"
-                    :style="{ width: `${(rubric.score / rubric.maxScore) * 100}%` }"></div>
-                </div>
+                <!-- Rubric Controls Bar -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                  <button
+                    class="w-full sm:w-auto bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center gap-1">
+                    <span>➕</span> Add Custom Criterion
+                  </button>
 
-                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                  <span v-for="scale in rubric.scaleLabels" :key="scale.label"
-                    :class="{ 'text-[#005506] dark:text-[#86EFAC] font-black': scale.active }">
-                    {{ scale.label }}
+                  <span
+                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-xs font-black px-4 py-2 rounded-xl border border-emerald-200">
+                    Total Rubric Weight: 40 / 40 Points (100% Balanced)
                   </span>
                 </div>
               </div>
 
-            </div>
+              <!-- PUBLISH & ACTION CONTROLS FOOTER -->
+              <div
+                class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-[#3F4F43]">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    class="flex-1 sm:flex-none bg-[#EFECE6] dark:bg-[#232D26] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#3F4F43] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all">
+                    Save as Draft
+                  </button>
 
-            <!-- ACTION CONTROL BUTTONS BAR -->
-            <div v-observe style="animation-delay: 450ms;" class="anim-slide-up grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+                  <button
+                    class="flex-1 sm:flex-none bg-[#EFECE6] dark:bg-[#232D26] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#3F4F43] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5">
+                    <span>📅</span> Schedule Publish
+                  </button>
+                </div>
 
-              <button
-                class="sm:col-span-4 bg-white dark:bg-[#2D3A31] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] py-3 px-4 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
-                <span>🔄</span> Return for Resubmission
-              </button>
-
-              <button
-                class="sm:col-span-5 bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] hover:bg-[#004105] py-3 px-4 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 shadow-md">
-                <span>✓</span> Submit Score & Notify Learner
-              </button>
-
-              <button
-                class="sm:col-span-3 bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] py-3 px-4 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-1 shadow-md">
-                Next: Clarissa Santos ➔
-              </button>
+                <button
+                  class="w-full sm:w-auto bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] px-6 py-3 rounded-2xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2">
+                  <span>🚀</span> Publish to Selected Classes (Instant SMS to Parents)
+                </button>
+              </div>
 
             </div>
 
