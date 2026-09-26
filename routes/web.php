@@ -232,9 +232,9 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             return Inertia::render('Student/Grades/Index');
         })->name('grades.index');
 
-        Route::get('/calendar', function () {
-            return Inertia::render('Student/Calendar/Index');
-        })->name('calendar.index');
+        Route::get('/schedule', function () {
+            return Inertia::render('Student/Schedule/Index');
+        })->name('schedule.index');
 
         Route::get(
             '/classes/{classroom}/assignments',
