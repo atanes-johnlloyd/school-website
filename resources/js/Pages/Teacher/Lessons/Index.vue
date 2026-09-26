@@ -19,11 +19,11 @@
       <!-- MAIN PAGE CONTENT -->
       <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
 
-        <!-- CLEANED LESSONS HERO BANNER -->
+        <!-- UPDATED LESSONS HERO BANNER -->
         <div v-observe
-          class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[240px] flex flex-col justify-center p-6 sm:p-8 md:p-10">
-          
-          <!-- Background Image properly aligned -->
+          class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[260px] flex flex-col justify-center p-6 sm:p-8 md:p-10">
+
+          <!-- Background Image properly aligned and fitted -->
           <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000&auto=format&fit=crop"
             alt="Lessons Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
@@ -31,172 +31,549 @@
           <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
 
           <!-- Content Container -->
-          <div class="relative z-10 max-w-3xl space-y-3">
-            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              Instructional Resources & Daily Lesson Log Hub
-            </h2>
-            <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
-              Curated DepEd-aligned DLL/DLP repositories, Interactive PhET STEM simulations, and verified open learning packages for General Physics 2 & Senior High Faculty.
-            </p>
-          </div>
+          <div class="relative z-10 max-w-3xl space-y-4">
 
+            <!-- Top Badge Pills Container -->
+            <div class="flex flex-wrap items-center gap-2.5">
+              <div
+                class="inline-flex items-center gap-2 bg-[#F9C20C] text-[#2C3E2D] font-black text-xs px-4 py-1.5 rounded-full shadow-sm tracking-wide">
+                <span>📁</span> CLASSROOM MATERIALS & SECTION FILE MANAGER
+              </div>
+
+              <div
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
+                <span>📅</span> SY 2025–2026 • 2nd Semester
+              </div>
+            </div>
+
+            <!-- Title & Description -->
+            <div class="space-y-2">
+              <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">
+                Section Files & Learning Resource Hub
+              </h2>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium max-w-2xl">
+                Upload, organize, edit, and distribute handouts, slide decks, lab manuals, and supplementary links
+                directly to your enrolled sections.
+              </p>
+            </div>
+
+          </div>
         </div>
 
-        <!-- 4 METRICS OVERVIEW CARDS (MOVED OUTSIDE HERO BANNER) -->
-        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- CLASSROOM MATERIALS & SECTION FILE MANAGER WORKSPACE -->
+        <div v-observe style="animation-delay: 100ms;" class="anim-slide-up space-y-6">
 
-          <!-- 1. UPLOADED MODULES -->
-          <div v-observe style="animation-delay: 100ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
-                  Uploaded Modules
-                </span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
-                  📒
-                </div>
-              </div>
+          <!-- TOP FILTER BAR (SECTIONS & FILE TYPE TABS) -->
+          <div
+            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
 
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-slate-900 dark:text-white">48</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Modules & Decks</span>
-              </div>
-            </div>
-
+            <!-- Row 1: Section Selector Header -->
             <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
-              <span>📚</span>
-              <span>Available across 6 subjects</span>
-            </div>
-          </div>
-
-          <!-- 2. DEPED DO 42 AUDIT -->
-          <div v-observe style="animation-delay: 200ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
-                  DepEd DO 42
-                </span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
-                  ✔
-                </div>
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#3F4F43]">
+              <div class="flex items-center gap-2">
+                <span class="text-emerald-800 dark:text-[#86EFAC] text-base">🎓</span>
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">
+                  ASSIGNED ADVISORY & TEACHING SECTIONS
+                </h3>
               </div>
-
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-[#005506] dark:text-[#86EFAC]">100%</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Q3 DLL Audit</span>
-              </div>
+              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                4 Active Sections • 176 Learners Connected
+              </span>
             </div>
 
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
-              <span>🛡️</span>
-              <span>Fully DepEd Compliant</span>
-            </div>
-          </div>
+            <!-- Row 2: Section Pills Filter -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-1.5 rounded-full text-xs font-black shadow-sm">
+                田 All Sections
+              </button>
 
-          <!-- 3. PHET SIM LABS -->
-          <div v-observe style="animation-delay: 300ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
-                  PhET Interactive
-                </span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
-                  ⚙️
-                </div>
-              </div>
+              <button
+                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span> 12–STEM Rizal (General Physics 2)
+              </button>
 
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-amber-800 dark:text-amber-400">12</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Active Sim Labs</span>
-              </div>
+              <button
+                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
+                <span class="w-2 h-2 rounded-full bg-amber-600"></span> 12–STEM Archimedes (General Physics 2)
+              </button>
+
+              <button
+                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
+                <span class="w-2 h-2 rounded-full bg-orange-600"></span> 11–TechPro Turing
+              </button>
             </div>
 
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
-              <span class="shrink-0">⚛️</span>
-              <span class="truncate">STEM & Physics Embeds</span>
-            </div>
-          </div>
-
-          <!-- 4. STUDENT DOWNLOADS -->
-          <div v-observe style="animation-delay: 400ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">
-                  Student Downloads
-                </span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
-                  📈
-                </div>
-              </div>
-
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-slate-900 dark:text-white">842</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Weekly Accesses</span>
-              </div>
-            </div>
-
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
-              <span>📥</span>
-              <span>High Engagement Rate</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- RESOURCE MATERIALS TABULATOR / LIST -->
-        <div v-observe style="animation-delay: 500ms;"
-          class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
-          
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#3F4F43] pb-4">
-            <div>
-              <h3 class="text-lg font-black text-slate-900 dark:text-white">Instructional Modules & Materials</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Manage uploaded lesson logs, presentation slides, and lab guides.</p>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="text" placeholder="Filter materials..." class="bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] rounded-xl text-xs px-3.5 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#006907]" />
-            </div>
-          </div>
-
-          <!-- LIST TABLE STRUCTURE -->
-          <div class="space-y-3">
-            <div v-for="item in resourceList" :key="item.id"
-              class="bg-[#F9F7F1] dark:bg-[#232D26] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#006907] transition-all">
-              
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <span class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-md border border-emerald-200">
-                    {{ item.subject }}
-                  </span>
-                  <span class="text-xs font-bold text-slate-400">• {{ item.type }}</span>
-                </div>
-                <h4 class="text-sm font-black text-slate-900 dark:text-white">{{ item.title }}</h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.description }}</p>
-              </div>
-
-              <div class="flex items-center gap-3 shrink-0">
-                <button class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#004105] transition-all">
-                  Open Material ➔
+            <!-- Row 3: File Category Tabs & Search Bar -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button
+                  class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] px-3.5 py-1.5 rounded-xl text-xs font-black border border-emerald-200/80">
+                  All Files (38)
+                </button>
+                <button
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
+                  Daily Lesson Logs (7)
+                </button>
+                <button
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
+                  Lecture Slides (.pptx) (12)
+                </button>
+                <button
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
+                  Lab Manuals (9)
                 </button>
               </div>
 
+              <!-- Search Field -->
+              <div class="relative w-full md:w-80">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">🔍</span>
+                <input type="text" placeholder="Search by filename, topic, or file tag..."
+                  class="w-full bg-[#F9F7F1] dark:bg-[#232D26] pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#006907]" />
+              </div>
             </div>
+
+          </div>
+
+          <!-- MAIN DUAL GRID: LEFT FILE STREAM (8 COLS) vs RIGHT DISPATCH PANELS (4 COLS) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- LEFT COLUMN: FILE CARDS STREAM (8 COLS) -->
+            <div class="lg:col-span-8 space-y-4">
+
+              <!-- Breadcrumb & Sort Header Bar -->
+              <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 px-2">
+                <div class="flex items-center gap-1.5">
+                  <span>📂</span>
+                  <span>General Physics 2</span>
+                  <span>/</span>
+                  <span>Unit 3: Electromagnetism & Optics</span>
+                  <span>/</span>
+                  <span class="text-[#005506] dark:text-[#86EFAC] font-black">Week 7 Materials</span>
+                </div>
+
+                <div class="flex items-center gap-1">
+                  <span>Sort:</span>
+                  <button
+                    class="bg-white dark:bg-[#2D3A31] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#3F4F43] text-slate-800 dark:text-white font-black text-[11px]">
+                    Date Modified ↓
+                  </button>
+                </div>
+              </div>
+
+              <!-- ITEM 1: LAB MANUAL (ACTIVE IN 2 SECTIONS) -->
+              <div
+                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                      📄
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">Lab_Manual_04_Snell_Refraction.pdf
+                        </h4>
+                        <span
+                          class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Active in 2 Sections
+                        </span>
+                      </div>
+
+                      <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                        <span class="bg-slate-100 dark:bg-[#232D26] px-2 py-0.5 rounded">PDF • 3.4 MB</span>
+                        <span>Updated 2 hrs ago by Engr. R. Bautista</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📱</button>
+                    <button
+                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>▶</span> Send Link
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⚙️</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-bold">
+                  <div class="flex items-center gap-1 text-[#005506] dark:text-[#86EFAC]">
+                    <span>📥</span>
+                    <span>78 / 89 Downloads (87%)</span>
+                  </div>
+                  <span class="text-amber-800 dark:text-amber-400">Rizal & Archimedes</span>
+                </div>
+              </div>
+
+              <!-- ITEM 2: LECTURE SLIDES (12-STEM RIZAL ONLY) -->
+              <div
+                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100">
+                      ▶️
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">
+                          Lecture_Slides_Alternating_Current.pptx</h4>
+                        <span
+                          class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200">
+                          12–STEM Rizal Only
+                        </span>
+                      </div>
+
+                      <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                        <span class="bg-slate-100 dark:bg-[#232D26] px-2 py-0.5 rounded">PPTX • 18.2 MB</span>
+                        <span>Updated yesterday • Includes Embedded Simulation Links</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
+                    <button
+                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>▶</span> Send Link
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⚙️</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-rose-600">🗑️</button>
+                  </div>
+                </div>
+
+                <div
+                  class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                  <span>📥</span> 41 / 45 Downloads (91%)
+                </div>
+              </div>
+
+              <!-- ITEM 3: DOST STARBOOKS (PINNED) -->
+              <div
+                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100">
+                      🌐
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">DOST_STARBOOKS_Virtual_Lab_Portal
+                        </h4>
+                        <span
+                          class="bg-[#F9C20C] text-[#2C3E2D] text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
+                          📌 Pinned • All STEM Sections
+                        </span>
+                      </div>
+
+                      <span
+                        class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
+                        Cloud URL • STARBOOKS DepEd Node
+                      </span>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Free zero-rated data access
+                        through Smart/Globe School SIMs</p>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>↗</span> Open
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">✏️</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📌</button>
+                  </div>
+                </div>
+
+                <div
+                  class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-black text-[#005506] dark:text-[#86EFAC]">
+                  128 Student Clicks this week
+                </div>
+              </div>
+
+              <!-- ITEM 4: DLL (HIDDEN / TEACHER COPY) -->
+              <div
+                class="bg-[#F9F7F1]/80 dark:bg-[#232D26]/80 rounded-3xl p-5 border border-slate-200/80 dark:border-[#3F4F43] space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] flex items-center justify-center shrink-0 border border-emerald-100">
+                      📄
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">DLL_Week_7_Faraday_Induction.docx
+                        </h4>
+                        <span
+                          class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                          👁️‍🗨️ Hidden from Students (Teacher Copy)
+                        </span>
+                      </div>
+
+                      <span
+                        class="bg-slate-100 dark:bg-[#2D3A31] text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
+                        DOCX • 620 KB
+                      </span>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Aligned to DepEd DO 42, s. 2016 • Verified by Dept Head Mrs. Villanueva
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📥</button>
+                    <button
+                      class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>🔄</span> Replace
+                    </button>
+                    <button
+                      class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-200 text-xs font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>👁️</span> Make Public
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🗑️</button>
+                  </div>
+                </div>
+
+                <div
+                  class="pt-2 border-t border-slate-200/60 dark:border-[#3F4F43] text-xs font-black text-[#005506] dark:text-[#86EFAC]">
+                  Division Audit Ready
+                </div>
+              </div>
+
+              <!-- ITEM 5: PROBLEM SET 3 (SCHEDULED) -->
+              <div
+                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100">
+                      🕒
+                    </div>
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">Problem_Set_3_Circuits.pdf</h4>
+                        <span
+                          class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200">
+                          ⏰ Scheduled Release: Mar 21, 5:00 PM
+                        </span>
+                      </div>
+
+                      <span
+                        class="bg-slate-100 dark:bg-[#232D26] text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
+                        PDF • 1.1 MB
+                      </span>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Targets: 12–STEM Rizal & 12–STEM
+                        Archimedes</p>
+                      <p class="text-[11px] text-slate-400 font-semibold">Unlocks automatically after Quiz 3 submission
+                        deadline</p>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                      <span>📅</span> Edit Schedule
+                    </button>
+                    <button
+                      class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm">
+                      <span>🚀</span> Release Now
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🗑️</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: DISPATCH & UPLOAD CONTROL PANELS (4 COLS) -->
+            <div class="lg:col-span-4 space-y-5">
+
+              <!-- PANEL 1: QUICK LINK & SHARE DESK -->
+              <div
+                class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-black">
+                      🔗</div>
+                    <div>
+                      <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Quick Link
+                        & Share Desk</h3>
+                    </div>
+                  </div>
+                  <span
+                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
+                    1-Click Dispatch
+                  </span>
+                </div>
+
+                <!-- Selected File Selector -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">SELECTED FILE TO
+                    DISTRIBUTE</label>
+                  <select
+                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none">
+                    <option>Lab_Manual_04_Snell_Refraction.pdf</option>
+                    <option>Lecture_Slides_Alternating_Current.pptx</option>
+                  </select>
+                </div>
+
+                <!-- Direct Portal Link & Copy Button -->
+                <div class="space-y-1">
+                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Direct Student
+                    Portal Link</label>
+                  <div class="flex items-center gap-1">
+                    <div
+                      class="flex-1 bg-[#F9F7F1] dark:bg-[#232D26] px-3 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-[11px] font-mono text-slate-600 dark:text-slate-300 truncate">
+                      https://portal.salawagshs.edu.ph/r/phy2-snell-lab
+                    </div>
+                    <button
+                      class="bg-[#003803] text-white px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1 shrink-0">
+                      📋 Copy
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Classroom QR Mode Box -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200 dark:border-[#3F4F43] flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">📱</span>
+                    <div>
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Classroom QR Mode</h4>
+                      <p class="text-[10px] text-slate-400 font-medium">Display on TV for student phone scan</p>
+                    </div>
+                  </div>
+                  <button
+                    class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] px-3 py-1.5 rounded-xl text-xs font-black shrink-0">
+                    Enlarge QR
+                  </button>
+                </div>
+
+                <!-- Dispatch SMS / Notification Button -->
+                <div class="space-y-1 pt-1">
+                  <button
+                    class="w-full bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] py-3 px-4 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-all">
+                    <span>📲</span> Send Link to Student App & Parent SMS
+                  </button>
+                  <p class="text-[10px] text-slate-400 font-medium text-center">
+                    Sends an immediate alert to 89 students and registered emergency guardians.
+                  </p>
+                </div>
+
+              </div>
+
+              <!-- PANEL 2: UPLOAD & ASSIGN PANEL -->
+              <div
+                class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-emerald-800 dark:text-[#86EFAC] text-lg">☁️</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Upload &
+                      Assign</h3>
+                  </div>
+                  <span class="text-[10px] font-extrabold text-slate-400">Max 50MB</span>
+                </div>
+
+                <!-- Drag & Drop Upload Zone -->
+                <div
+                  class="border-2 border-dashed border-emerald-600/40 bg-[#FEF9E7]/60 dark:bg-[#232D26] rounded-2xl p-6 text-center space-y-2 cursor-pointer hover:border-[#005506] transition-all">
+                  <div
+                    class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] mx-auto flex items-center justify-center text-lg font-black">
+                    📤
+                  </div>
+                  <h4 class="text-xs font-black text-slate-900 dark:text-white">Drop files here or click to browse</h4>
+                  <p class="text-[10px] text-slate-400 font-medium">Supports PDF, DOCX, PPTX, MP4, ZIP</p>
+                </div>
+
+                <!-- Target Sections Checkboxes -->
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">TARGET SECTIONS TO
+                    RECEIVE FILE</label>
+
+                  <div
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200 dark:border-[#3F4F43] space-y-2.5">
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs font-black text-slate-800 dark:text-slate-200">
+                      <input type="checkbox" checked class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
+                      <span>12–STEM Rizal (45 Learners)</span>
+                    </label>
+
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs font-black text-slate-800 dark:text-slate-200">
+                      <input type="checkbox" checked class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
+                      <span>12–STEM Archimedes (44 Learners)</span>
+                    </label>
+
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <input type="checkbox" class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
+                      <span>11–TechPro Turing (42 Learners)</span>
+                    </label>
+
+                    <label
+                      class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <input type="checkbox" class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
+                      <span>12–STEM Newton (45 Learners)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Initial Visibility Pills -->
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">INITIAL
+                    VISIBILITY</label>
+
+                  <div class="grid grid-cols-3 gap-1.5">
+                    <button
+                      class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] py-2 rounded-xl text-[11px] font-black border border-emerald-200 text-center">
+                      Public Now
+                    </button>
+                    <button
+                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 py-2 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-[#3F4F43] text-center">
+                      Faculty Only
+                    </button>
+                    <button
+                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 py-2 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-[#3F4F43] text-center">
+                      Scheduled
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Submit Upload Button -->
+                <button
+                  class="w-full bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] py-3 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-all">
+                  <span>📤</span> Upload & Push to Sections
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
 
         </div>
@@ -263,8 +640,15 @@ const vObserve = {
 
 /* Breathing opacity animation for the green background layer */
 @keyframes pulse-opacity {
-  0%, 100% { opacity: 0.88; }
-  50% { opacity: 0.65; }
+
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
 }
 
 .animate-overlay {
@@ -277,6 +661,7 @@ const vObserve = {
     opacity: 0;
     transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -288,6 +673,7 @@ const vObserve = {
     opacity: 0;
     transform: translateY(-16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
