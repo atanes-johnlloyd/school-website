@@ -236,6 +236,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             return Inertia::render('Student/Schedule/Index');
         })->name('schedule.index');
 
+        Route::get('/quizhub', function () {
+            return Inertia::render('Student/QuizHub/Index');
+        })->name('quizhub.index');
+
+        Route::get('/studentrecords', function () {
+            return Inertia::render('Student/StudentRecords/Index');
+        })->name('studentrecords.index');
+
         Route::get(
             '/classes/{classroom}/assignments',
             [\App\Http\Controllers\Student\AssignmentController::class, 'index']
