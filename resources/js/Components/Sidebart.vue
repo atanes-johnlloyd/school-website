@@ -12,10 +12,25 @@
 
       <!-- Logo & School Name Section -->
       <div class="flex flex-col items-center mb-8 mt-2">
-        <div
-          class="w-24 h-24 rounded-full bg-white dark:bg-[#2D3A31] border-2 border-[#006907] dark:border-[#86EFAC] flex items-center justify-center p-1 shadow-sm mb-3 transition-colors duration-300">
-          <img :src="schoolLogo" alt="Salawag SHS Logo" class="w-full h-full object-contain rounded-full" />
+        
+        <!-- LOGO WITH WATER DROPLET RIPPLE ANIMATION -->
+        <div class="relative flex items-center justify-center mb-3">
+          <!-- Ripple Wave 1 -->
+          <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/40 dark:border-[#86EFAC]/50"></div>
+          
+          <!-- Ripple Wave 2 (Staggered Delay) -->
+          <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/30 dark:border-[#86EFAC]/40" style="animation-delay: 1s;"></div>
+
+          <!-- Subtle Center Ambient Glow -->
+          <div class="absolute inset-0 rounded-full bg-[#006907]/10 dark:bg-[#86EFAC]/15 blur-sm animate-pulse"></div>
+
+          <!-- Logo Container -->
+          <div
+            class="relative w-24 h-24 rounded-full bg-white dark:bg-[#2D3A31] border-2 border-[#006907] dark:border-[#86EFAC] flex items-center justify-center p-1 shadow-md transition-colors duration-300 z-10">
+            <img :src="schoolLogo" alt="Salawag SHS Logo" class="w-full h-full object-contain rounded-full" />
+          </div>
         </div>
+
         <h1
           class="text-center text-[#006907] dark:text-[#86EFAC] font-extrabold text-base leading-tight tracking-wide transition-colors duration-300">
           SALAWAG<br>SENIOR HIGH SCHOOL
@@ -118,5 +133,24 @@ const menuItems = [
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* WATER DROPLET RIPPLE ANIMATION */
+@keyframes waterDripRipple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.ripple-wave {
+  animation: waterDripRipple 2.5s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
 }
 </style>
