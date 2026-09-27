@@ -57,7 +57,7 @@
       <!-- Profile & Dropdown -->
       <div class="relative flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-300 dark:border-[#3F4F43]">
         <button @click="toggleProfile" class="flex items-center gap-3 focus:outline-none">
-          <img src="https://ui-avatars.com/api/?name=Maria+Santos&background=random" alt="Maria Santos" class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] object-cover cursor-pointer" />
+          <span aria-hidden="true" class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] bg-[#005506] text-white text-sm font-bold flex items-center justify-center cursor-pointer">MS</span>
           <div class="hidden sm:block text-left">
             <p class="text-sm font-bold text-gray-900 dark:text-slate-100 leading-none">Maria Santos, LPT</p>
             <p class="text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] mt-1 tracking-wide">SHS Faculty • STEM</p>

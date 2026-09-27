@@ -24,7 +24,7 @@
           class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[240px] flex flex-col justify-center p-6 sm:p-8 md:p-10">
           
           <!-- Background Image properly aligned -->
-          <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000&auto=format&fit=crop"
+          <img :src="heroImage"
             alt="Lessons Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
           <!-- Animated Green Overlay -->
@@ -210,6 +210,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import heroImage from '../../../../assets/img/local/lessons-hero.jpg'
 import { Head } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
 import navbartop from '@/Components/navbartop.vue'
@@ -259,7 +260,6 @@ const vObserve = {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* Breathing opacity animation for the green background layer */
 @keyframes pulse-opacity {
