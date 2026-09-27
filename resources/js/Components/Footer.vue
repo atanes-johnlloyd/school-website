@@ -89,7 +89,3 @@ import catImg from '@/../assets/img/cat_not_hug.png'
         </div>
     </footer>
 </template>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inria+Sans:wght@300;400;700&display=swap');
-</style>

@@ -24,7 +24,7 @@
                 <div v-observe
                     class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[260px] flex flex-col justify-center">
                     <!-- Background Image properly aligned and fitted -->
-                    <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2000&auto=format&fit=crop"
+                    <img :src="heroImage"
                         alt="Quiz Hub Background"
                         class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
@@ -552,6 +552,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import heroImage from '../../../../assets/img/local/quiz-hub-hero.jpg'
 import { Head } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
 import navbartop from '@/Components/navbartop.vue'
@@ -604,7 +605,6 @@ const vObserve = {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* Breathing Overlay Animation */
 @keyframes pulse-opacity {
