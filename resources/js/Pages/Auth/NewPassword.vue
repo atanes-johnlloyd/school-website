@@ -154,8 +154,8 @@
 import { ref } from 'vue'
 import { Head, useForm } from '@inertiajs/vue3'
 
-import bgImg from '@/../assets/img/login_background.png'
-import catImg from '@/../assets/img/cat-sneak.png'
+import bgImg from '../../../assets/img/login_background.png'
+import catImg from '../../../assets/img/cat-sneaking.png'
 
 const props = defineProps({
   email: {
@@ -208,7 +208,6 @@ const submit = () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @keyframes slideUpCard {
   0% {

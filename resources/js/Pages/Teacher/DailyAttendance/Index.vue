@@ -23,7 +23,7 @@
                 <!-- DAILY ATTENDANCE HERO BANNER -->
                 <div v-observe
                     class="relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[240px] flex flex-col justify-center anim-fade-down">
-                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000&auto=format&fit=crop"
+                    <img :src="heroImage"
                         alt="Daily Attendance Background"
                         class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
@@ -341,9 +341,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Juan+Carlos+Dela+Cruz&background=random"
-                                                alt="Juan Carlos"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">JDC</span>
                                             <div>
                                                 <div class="flex items-center gap-2">
                                                     <p class="font-bold text-slate-900 dark:text-white">Dela Cruz, Juan
@@ -390,9 +389,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Miguel+Lorenzo+Bautista&background=random"
-                                                alt="Miguel Lorenzo"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">MLB</span>
                                             <div>
                                                 <p class="font-bold text-slate-900 dark:text-white">Bautista, Miguel
                                                     Lorenzo R.</p>
@@ -434,9 +432,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Clarissa+Mae+Santos&background=random"
-                                                alt="Clarissa Mae"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">CMS</span>
                                             <div>
                                                 <p class="font-bold text-slate-900 dark:text-white">Santos, Clarissa Mae
                                                     V.</p>
@@ -478,9 +475,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Kenneth+Alcantara&background=random"
-                                                alt="Kenneth"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">KA</span>
                                             <div>
                                                 <div class="flex items-center gap-2">
                                                     <p class="font-bold text-slate-900 dark:text-white">Alcantara,
@@ -526,9 +522,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Bea+Alyssa+Reyes&background=random"
-                                                alt="Bea Alyssa"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">BAR</span>
                                             <div>
                                                 <p class="font-bold text-slate-900 dark:text-white">Reyes, Bea Alyssa T.
                                                 </p>
@@ -570,9 +565,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Joshua+Mendoza&background=random"
-                                                alt="Joshua"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">JM</span>
                                             <div>
                                                 <div class="flex items-center gap-2">
                                                     <p class="font-bold text-slate-900 dark:text-white">Mendoza, Joshua
@@ -619,9 +613,8 @@
                                 <tr class="hover:bg-slate-50/60 dark:hover:bg-[#232D26]/40 transition-colors">
                                     <td class="py-4 px-4">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=Hannah+Sofia+Villafuerte&background=random"
-                                                alt="Hannah Sofia"
-                                                class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-[#3F4F43]" />
+                                            <span aria-hidden="true"
+                                                class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200 dark:border-[#3F4F43]">HSV</span>
                                             <div>
                                                 <p class="font-bold text-slate-900 dark:text-white">Villafuerte, Hannah
                                                     Sofia C.</p>
@@ -892,6 +885,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import heroImage from '../../../../assets/img/desktop-home-banner.png'
 import { Head } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
 import navbartop from '@/Components/navbartop.vue'
@@ -916,7 +910,6 @@ const vObserve = {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* Breathing opacity animation for the green background layer */
 @keyframes pulse-opacity {

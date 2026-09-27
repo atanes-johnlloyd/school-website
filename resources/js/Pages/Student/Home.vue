@@ -1,6 +1,5 @@
 <style scoped>
-/* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap');
+
 
 /* Outlined Word Fill-to-Transparent Stroke Animation */
 .outline-transition-text {
@@ -284,6 +283,12 @@
 
 
 <script setup>
+import academicFairImage from '../../../assets/img/local/news-academic-fair.jpg'
+import enrollmentImage from '../../../assets/img/local/news-enrollment.jpg'
+import sportsClubImage from '../../../assets/img/local/news-sports-club.jpg'
+import stemLabImage from '../../../assets/img/local/news-stem-lab.jpg'
+import studentCouncilImage from '../../../assets/img/local/news-student-council.jpg'
+import workImmersionImage from '../../../assets/img/local/news-work-immersion.jpg'
 import Navbar from '@/Components/Navbar.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref, onMounted, onUnmounted } from 'vue'
@@ -365,37 +370,37 @@ const newsArticles = [
     id: 1,
     title: 'SENIOR HIGH ENROLLMENT OPEN',
     excerpt: 'Secure your future. Complete your application now for the upcoming academic year.',
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80',
+    image: enrollmentImage,
   },
   {
     id: 2,
     title: 'STRAND PATHWAYS & ACADEMIC FAIR',
     excerpt: 'Explore our specialized strands (STEM, ABM, HUMSS, TVL) and discover your academic pathway.',
-    image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
+    image: academicFairImage,
   },
   {
     id: 3,
     title: 'CAMPUS SPORTS FEST & CLUB DAY',
     excerpt: 'Get involved, showcase your talent, and celebrate school spirit with diverse sports and activities.',
-    image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=600&q=80',
+    image: sportsClubImage,
   },
   {
     id: 4,
     title: 'NEW ADVANCED STEM LAB INAUGURATED',
     excerpt: 'Experience hands-on learning with state-of-the-art technology and tools in our upgraded facilities.',
-    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80',
+    image: stemLabImage,
   },
   {
     id: 5,
     title: 'STUDENT COUNCIL ELECTIONS 2026-2027',
     excerpt: 'Vote for your representatives and shape the future of our student body. Learn about the candidates.',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+    image: studentCouncilImage,
   },
   {
     id: 6,
     title: 'WORK IMMERSION & INDUSTRY PARTNERSHIPS',
     excerpt: 'Prepare for the future. Our Grade 12 students gain real-world experience and build career skills.',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
+    image: workImmersionImage,
   },
 ]
 </script>
