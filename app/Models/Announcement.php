@@ -19,6 +19,7 @@ class Announcement extends Model
         'is_pinned',
         'published_at',
         'expires_at',
+        'image_path',
     ];
 
     protected $casts = [
@@ -69,4 +70,11 @@ class Announcement extends Model
     {
         return $q->orderByDesc('is_pinned')->orderByDesc('published_at');
     }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
+    protected $appends = ['image_url'];
 }

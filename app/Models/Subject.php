@@ -13,6 +13,7 @@ class Subject extends Model
         'code', 'name', 'description', 'strand_id',
         'grade_level', 'is_core', 'hours',
         'prerequisite_subject_id', 'is_active',
+        'image_path', 'icon', 'color',
     ];
 
     protected $casts = [
@@ -24,4 +25,11 @@ class Subject extends Model
     public function prerequisite() { return $this->belongsTo(Subject::class, 'prerequisite_subject_id'); }
     public function classroom()      { return $this->hasMany(ClassRoom::class, 'subject_id'); }
     public function questions()    { return $this->hasMany(Question::class); }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
+    protected $appends = ['image_url'];
 }

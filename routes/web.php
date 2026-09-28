@@ -111,6 +111,31 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::get('/audit-logs/{auditLog}',
             [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])
             ->name('audit-logs.show');
+
+        // ─── Curriculum Images ───
+        Route::post('/subjects/{subject}/image',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'update'])
+            ->name('subjects.image.update');
+        Route::delete('/subjects/{subject}/image',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'destroy'])
+            ->name('subjects.image.destroy');
+        Route::put('/subjects/{subject}/meta',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'setMeta'])
+            ->name('subjects.meta.update');
+
+        Route::post('/tracks/{track}/image',
+            [\App\Http\Controllers\Admin\TrackImageController::class, 'update'])
+            ->name('tracks.image.update');
+        Route::delete('/tracks/{track}/image',
+            [\App\Http\Controllers\Admin\TrackImageController::class, 'destroy'])
+            ->name('tracks.image.destroy');
+
+        Route::post('/strands/{strand}/image',
+            [\App\Http\Controllers\Admin\StrandImageController::class, 'update'])
+            ->name('strands.image.update');
+        Route::delete('/strands/{strand}/image',
+            [\App\Http\Controllers\Admin\StrandImageController::class, 'destroy'])
+            ->name('strands.image.destroy');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -532,6 +557,14 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::post('/messages/{conversation}',
         [\App\Http\Controllers\MessageController::class, 'reply'])
         ->name('messages.reply');
+});
+
+// ─── Avatar (all logged-in users) ───
+Route::middleware('auth')->group(function () {
+    Route::post('/profile/avatar', [\App\Http\Controllers\Profile\AvatarController::class, 'update'])
+        ->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [\App\Http\Controllers\Profile\AvatarController::class, 'destroy'])
+        ->name('profile.avatar.destroy');
 });
 
 require __DIR__ . '/auth.php';

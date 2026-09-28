@@ -20,6 +20,7 @@ use Spatie\Permission\Traits\HasRoles;
     'password',
     'must_change_password',
     'admin_position_id',
+    'avatar_path',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -71,4 +72,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Announcement::class, 'created_by');
     }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_path
+            ? asset('storage/' . $this->avatar_path)
+            : null;
+    }
+
+    protected $appends = ['avatar_url'];
 }
