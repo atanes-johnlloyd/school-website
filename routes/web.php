@@ -244,6 +244,20 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::get('/classes/{classroom}/gradebook',
             [\App\Http\Controllers\Teacher\GradebookController::class, 'show'])
             ->name('classes.gradebook.show');
+
+        // Attendance
+        Route::get('/classes/{classroom}/attendance',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'index'])
+            ->name('classes.attendance.index');
+        Route::get('/classes/{classroom}/attendance/{date}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'session'])
+            ->name('classes.attendance.session');
+        Route::post('/classes/{classroom}/attendance/{date}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'mark'])
+            ->name('classes.attendance.mark');
+        Route::get('/classes/{classroom}/attendance/student/{student}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'studentHistory'])
+            ->name('classes.attendance.student');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -345,7 +359,15 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
         Route::get('/classes/{classroom}/grades',
             [\App\Http\Controllers\Student\GradeController::class, 'show'])
             ->name('classes.grades.show');
-    });
+
+        // Attendance
+        Route::get('/attendance',
+            [\App\Http\Controllers\Student\AttendanceController::class, 'index'])
+            ->name('attendance.index');
+        Route::get('/classes/{classroom}/attendance',
+            [\App\Http\Controllers\Student\AttendanceController::class, 'show'])
+            ->name('classes.attendance.show');
+            });
 
 // ─────────────────────────────────────────────────────────────
 // User Profile & System Utilities
