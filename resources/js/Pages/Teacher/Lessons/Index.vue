@@ -2,30 +2,32 @@
 
   <Head title="DepEd LR Resources & Lesson Log Hub - Salawag LMS" />
 
-  <div class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300">
+  <div
+    class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300 overflow-hidden">
 
-    <!-- Sticky Sidebar Navigation -->
-    <div class="sticky top-0 h-screen z-40 shrink-0 shadow-lg">
+    <!-- Sticky Sidebar Navigation (Fully anchored and sticky) -->
+    <aside
+      class="sticky top-0 h-screen z-40 shrink-0 shadow-lg bg-white dark:bg-[#232D26] overflow-y-auto hidden md:block">
       <Sidebart />
-    </div>
+    </aside>
 
-    <!-- Main Workspace Canvas -->
-    <main :class="['flex-1 relative overflow-y-auto min-h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
+    <!-- Main Workspace Canvas with independent scroll to guarantee sidebar stickiness -->
+    <main :class="['flex-1 relative overflow-y-auto h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
 
       <!-- Reusable Top Navigation Component -->
       <navbartop searchPlaceholder="Search lessons, DLL logs, PhET simulations, module decks..."
         @font-size-changed="(size) => fontSizeMode = size" />
 
-      <!-- MAIN PAGE CONTENT -->
-      <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
+      <!-- MAIN PAGE CONTENT CONTAINER -->
+      <div class="relative z-10 px-4 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-4">
 
-        <!-- UPDATED LESSONS HERO BANNER -->
+        <!-- LESSONS HERO BANNER -->
         <div v-observe
           class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[240px] flex flex-col justify-center p-6 sm:p-8 md:p-10">
-          
+
           <!-- Background Image properly aligned -->
-          <img :src="heroImage"
-            alt="Lessons Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+          <img :src="heroImage" alt="Lessons Background"
+            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
           <!-- Animated Green Overlay -->
           <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
@@ -60,520 +62,516 @@
           </div>
         </div>
 
-        <!-- CLASSROOM MATERIALS & SECTION FILE MANAGER WORKSPACE -->
-        <div v-observe style="animation-delay: 100ms;" class="anim-slide-up space-y-6">
+        <!-- WORKSPACE CONTENT BELOW HERO BANNER -->
+        <div v-observe style="animation-delay: 100ms;" class="anim-slide-up space-y-4 sm:space-y-6">
 
-          <!-- TOP FILTER BAR (SECTIONS & FILE TYPE TABS) -->
+          <!-- TOP BAR: SUBJECT SELECTOR & ACTION BUTTONS -->
           <div
-            class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+            class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
 
-            <!-- Row 1: Section Selector Header -->
-            <div
-              class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#3F4F43]">
-              <div class="flex items-center gap-2">
-                <span class="text-emerald-800 dark:text-[#86EFAC] text-base">🎓</span>
-                <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">
-                  ASSIGNED ADVISORY & TEACHING SECTIONS
-                </h3>
-              </div>
-              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
-                4 Active Sections • 176 Learners Connected
-              </span>
-            </div>
-
-            <!-- Row 2: Section Pills Filter -->
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-4 py-1.5 rounded-full text-xs font-black shadow-sm">
-                田 All Sections
-              </button>
-
-              <button
-                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
-                <span class="w-2 h-2 rounded-full bg-emerald-600"></span> 12–STEM Rizal (General Physics 2)
-              </button>
-
-              <button
-                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
-                <span class="w-2 h-2 rounded-full bg-amber-600"></span> 12–STEM Archimedes (General Physics 2)
-              </button>
-
-              <button
-                class="bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-1.5 rounded-full text-xs font-extrabold border border-amber-200/80 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors">
-                <span class="w-2 h-2 rounded-full bg-orange-600"></span> 11–TechPro Turing
-              </button>
-            </div>
-
-            <!-- Row 3: File Category Tabs & Search Bar -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
-              <div class="flex flex-wrap items-center gap-1.5">
-                <button
-                  class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] px-3.5 py-1.5 rounded-xl text-xs font-black border border-emerald-200/80">
-                  All Files (38)
-                </button>
-                <button
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
-                  Daily Lesson Logs (7)
-                </button>
-                <button
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
-                  Lecture Slides (.pptx) (12)
-                </button>
-                <button
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-[#3F4F43]">
-                  Lab Manuals (9)
-                </button>
-              </div>
-
-              <!-- Search Field -->
-              <div class="relative w-full md:w-80">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">🔍</span>
-                <input type="text" placeholder="Search by filename, topic, or file tag..."
-                  class="w-full bg-[#F9F7F1] dark:bg-[#232D26] pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#006907]" />
+            <!-- Subject Dropdown Selector -->
+            <div class="relative w-full md:w-80">
+              <select
+                class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-900 dark:text-white text-xs sm:text-sm font-black px-4 py-3 rounded-xl sm:rounded-2xl border border-amber-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] appearance-none cursor-pointer">
+                <option>General Physics 1 (Grade 12 STEM)</option>
+                <option>General Physics 2 (Grade 12 STEM)</option>
+                <option>General Chemistry 1 (Grade 11 STEM)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-500">
+                ▼
               </div>
             </div>
 
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <button
+                class="bg-[#FEF9E7] dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-100 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-black border border-amber-200 shadow-sm flex items-center gap-1.5 sm:gap-2 transition-all">
+                <span>🔗</span> Add Google Drive Link
+              </button>
+              <button
+                class="bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-black shadow-sm flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95">
+                <span>☁️</span> Upload Learning Material
+              </button>
+            </div>
           </div>
 
-          <!-- MAIN DUAL GRID: LEFT FILE STREAM (8 COLS) vs RIGHT DISPATCH PANELS (4 COLS) -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- UNIT FILTER TABS BAR -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button
+              class="bg-white dark:bg-[#2D3A31] text-slate-700 dark:text-slate-300 hover:bg-slate-100 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-black border border-slate-200 dark:border-[#3F4F43] shrink-0 transition-colors">
+              All Units (6)
+            </button>
+            <button
+              class="bg-white dark:bg-[#2D3A31] text-slate-700 dark:text-slate-300 hover:bg-slate-100 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-black border border-slate-200 dark:border-[#3F4F43] shrink-0 transition-colors">
+              Unit 1: Kinematics
+            </button>
+            <button
+              class="bg-white dark:bg-[#2D3A31] text-slate-700 dark:text-slate-300 hover:bg-slate-100 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-black border border-slate-200 dark:border-[#3F4F43] shrink-0 transition-colors">
+              Unit 2: Dynamics & Energy
+            </button>
+            <button
+              class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-black shadow-sm shrink-0 flex items-center gap-1.5 sm:gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span> Unit 3: Rotational Motion (Active)
+            </button>
+            <button
+              class="bg-white dark:bg-[#2D3A31] text-slate-700 dark:text-slate-300 hover:bg-slate-100 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-black border border-slate-200 dark:border-[#3F4F43] shrink-0 transition-colors">
+              Unit 4: Fluids & Waves
+            </button>
+          </div>
 
-            <!-- LEFT COLUMN: FILE CARDS STREAM (8 COLS) -->
-            <div class="lg:col-span-8 space-y-4">
+          <!-- MAIN DUAL GRID: LEFT UNITS & RESOURCE STREAMS (8 COLS) vs RIGHT PANELS (4 COLS) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
-              <!-- Breadcrumb & Sort Header Bar -->
-              <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 px-2">
-                <div class="flex items-center gap-1.5">
-                  <span>📂</span>
-                  <span>General Physics 2</span>
-                  <span>/</span>
-                  <span>Unit 3: Electromagnetism & Optics</span>
-                  <span>/</span>
-                  <span class="text-[#005506] dark:text-[#86EFAC] font-black">Week 7 Materials</span>
-                </div>
+            <!-- LEFT COLUMN: UNITS & RESOURCES (8 COLS) -->
+            <div class="lg:col-span-8 space-y-5 sm:space-y-6 w-full min-w-0">
 
-                <div class="flex items-center gap-1">
-                  <span>Sort:</span>
-                  <button
-                    class="bg-white dark:bg-[#2D3A31] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#3F4F43] text-slate-800 dark:text-white font-black text-[11px]">
-                    Date Modified ↓
-                  </button>
-                </div>
-              </div>
-
-              <!-- ITEM 1: LAB MANUAL (ACTIVE IN 2 SECTIONS) -->
+              <!-- UNIT 3 CONTAINER CARD -->
               <div
-                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
-                      📄
-                    </div>
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-sm font-black text-slate-900 dark:text-white">Lab_Manual_04_Snell_Refraction.pdf
-                        </h4>
-                        <span
-                          class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          Active in 2 Sections
-                        </span>
-                      </div>
+                class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
 
-                      <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                        <span class="bg-slate-100 dark:bg-[#232D26] px-2 py-0.5 rounded">PDF • 3.4 MB</span>
-                        <span>Updated 2 hrs ago by Engr. R. Bautista</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📱</button>
-                    <button
-                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>▶</span> Send Link
-                    </button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⚙️</button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
-                  </div>
-                </div>
-
+                <!-- Unit Header -->
                 <div
-                  class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-bold">
-                  <div class="flex items-center gap-1 text-[#005506] dark:text-[#86EFAC]">
-                    <span>📥</span>
-                    <span>78 / 89 Downloads (87%)</span>
-                  </div>
-                  <span class="text-amber-800 dark:text-amber-400">Rizal & Archimedes</span>
-                </div>
-              </div>
-
-              <!-- ITEM 2: LECTURE SLIDES (12-STEM RIZAL ONLY) -->
-              <div
-                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-3">
+                  class="flex items-start justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-100 dark:border-[#3F4F43]">
+                  <div class="flex items-start gap-3 min-w-0">
                     <div
-                      class="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 flex items-center justify-center shrink-0 border border-orange-100">
-                      ▶️
+                      class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center font-black text-xs sm:text-sm shrink-0 border border-emerald-100">
+                      03
                     </div>
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-sm font-black text-slate-900 dark:text-white">
-                          Lecture_Slides_Alternating_Current.pptx</h4>
+                    <div class="space-y-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+                          Unit 3: Rotational Dynamics & Moment of Inertia
+                        </h3>
                         <span
-                          class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200">
-                          12–STEM Rizal Only
+                          class="bg-[#FEF9E7] dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200 shrink-0">
+                          CURRENT SYLLABUS UNIT
                         </span>
                       </div>
-
-                      <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                        <span class="bg-slate-100 dark:bg-[#232D26] px-2 py-0.5 rounded">PPTX • 18.2 MB</span>
-                        <span>Updated yesterday • Includes Embedded Simulation Links</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
-                    <button
-                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>▶</span> Send Link
-                    </button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⚙️</button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-rose-600">🗑️</button>
-                  </div>
-                </div>
-
-                <div
-                  class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                  <span>📥</span> 41 / 45 Downloads (91%)
-                </div>
-              </div>
-
-              <!-- ITEM 3: DOST STARBOOKS (PINNED) -->
-              <div
-                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100">
-                      🌐
-                    </div>
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-sm font-black text-slate-900 dark:text-white">DOST_STARBOOKS_Virtual_Lab_Portal
-                        </h4>
-                        <span
-                          class="bg-[#F9C20C] text-[#2C3E2D] text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
-                          📌 Pinned • All STEM Sections
-                        </span>
-                      </div>
-
-                      <span
-                        class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
-                        Cloud URL • STARBOOKS DepEd Node
-                      </span>
-                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Free zero-rated data access
-                        through Smart/Globe School SIMs</p>
-                    </div>
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <button
-                      class="bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>↗</span> Open
-                    </button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">✏️</button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📌</button>
-                  </div>
-                </div>
-
-                <div
-                  class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] text-xs font-black text-[#005506] dark:text-[#86EFAC]">
-                  128 Student Clicks this week
-                </div>
-              </div>
-
-              <!-- ITEM 4: DLL (HIDDEN / TEACHER COPY) -->
-              <div
-                class="bg-[#F9F7F1]/80 dark:bg-[#232D26]/80 rounded-3xl p-5 border border-slate-200/80 dark:border-[#3F4F43] space-y-4">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] flex items-center justify-center shrink-0 border border-emerald-100">
-                      📄
-                    </div>
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-sm font-black text-slate-900 dark:text-white">DLL_Week_7_Faraday_Induction.docx
-                        </h4>
-                        <span
-                          class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                          👁️‍🗨️ Hidden from Students (Teacher Copy)
-                        </span>
-                      </div>
-
-                      <span
-                        class="bg-slate-100 dark:bg-[#2D3A31] text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
-                        DOCX • 620 KB
-                      </span>
                       <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Aligned to DepEd DO 42, s. 2016 • Verified by Dept Head Mrs. Villanueva
+                        Competency: STEM_GP12RD-IIa-1 to STEM_GP12RED-IIa-6
                       </p>
                     </div>
                   </div>
 
-                  <!-- Actions -->
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500 shrink-0">
+                    <span>4 Resources Shared</span>
+                    <button class="p-1 hover:bg-slate-100 dark:hover:bg-[#232D26] rounded-lg">▲</button>
+                  </div>
+                </div>
+
+                <!-- RESOURCE ITEM 1 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 font-bold">
+                      ▶️
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Lesson Slide Deck 04: Torque & Rotational Equilib
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span class="text-emerald-700 dark:text-emerald-400 font-black">Published</span>
+                        <span>•</span>
+                        <span>🔗 Google Drive Link</span>
+                        <span>•</span>
+                        <span>14.2 MB</span>
+                        <span>•</span>
+                        <span>Shared to 4 Sections</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">👁️</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
+                </div>
+
+                <!-- RESOURCE ITEM 2 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-[#005506] flex items-center justify-center shrink-0 border border-emerald-100 font-bold">
+                      ⚖️
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Laboratory Manual 05: Total Internal Reflection & ...
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span class="text-[#005506] dark:text-[#86EFAC] font-black">PDF Download</span>
+                        <span>•</span>
+                        <span>3.8 MB</span>
+                        <span>•</span>
+                        <span class="text-emerald-700 dark:text-emerald-400 font-extrabold">✓ 38/38 Students
+                          Downloaded</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="flex items-center gap-1.5 shrink-0">
                     <button
                       class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">📥</button>
                     <button
-                      class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>🔄</span> Replace
-                    </button>
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🔗</button>
                     <button
-                      class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-200 text-xs font-extrabold px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>👁️</span> Make Public
-                    </button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🗑️</button>
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
                   </div>
                 </div>
 
+                <!-- RESOURCE ITEM 3 -->
                 <div
-                  class="pt-2 border-t border-slate-200/60 dark:border-[#3F4F43] text-xs font-black text-[#005506] dark:text-[#86EFAC]">
-                  Division Audit Ready
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100 font-bold">
+                      🔒
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Problem Set Solution Guide 03: Equilibrium
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span
+                          class="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded font-black">Restricted</span>
+                        <span class="text-amber-700 dark:text-amber-400 font-extrabold">Releases Friday 5:00 PM
+                          (Post-Lecture)</span>
+                        <span>•</span>
+                        <span>DOCX Document</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] text-xs font-bold px-3 py-2 rounded-xl">
+                      Modify Schedule
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
                 </div>
+
+                <!-- RESOURCE ITEM 4 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 font-bold">
+                      🌐
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Interactive PhET Simulation Link: Torque & ...
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span>External Link</span>
+                        <span class="bg-emerald-100 text-[#005506] px-1.5 py-0.5 rounded font-black text-[9px]">Iframe
+                          Preview Ready</span>
+                        <span>University of Colorado Boulder Interactive Suite</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      class="bg-white dark:bg-[#2D3A31] text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-sm">
+                      Open Sandbox ↗
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
+                </div>
+
               </div>
 
-              <!-- ITEM 5: PROBLEM SET 3 (SCHEDULED) -->
+              <!-- UNIT 2 CONTAINER CARD -->
               <div
-                class="bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex items-start gap-3">
+                class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+
+                <div
+                  class="flex items-start justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-100 dark:border-[#3F4F43]">
+                  <div class="flex items-start gap-3 min-w-0">
                     <div
-                      class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100">
-                      🕒
+                      class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-black text-xs sm:text-sm shrink-0 border border-slate-200">
+                      02
                     </div>
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2">
-                        <h4 class="text-sm font-black text-slate-900 dark:text-white">Problem_Set_3_Circuits.pdf</h4>
+                    <div class="space-y-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+                          Unit 2: Work, Energy, and Conservation Laws
+                        </h3>
                         <span
-                          class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200">
-                          ⏰ Scheduled Release: Mar 21, 5:00 PM
+                          class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-black px-2.5 py-0.5 rounded-full shrink-0">
+                          COMPLETED TOPIC
                         </span>
                       </div>
-
-                      <span
-                        class="bg-slate-100 dark:bg-[#232D26] text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 inline-block">
-                        PDF • 1.1 MB
-                      </span>
-                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Targets: 12–STEM Rizal & 12–STEM
-                        Archimedes</p>
-                      <p class="text-[11px] text-slate-400 font-semibold">Unlocks automatically after Quiz 3 submission
-                        deadline</p>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Competency: STEM_GP12WE-Ib-14 to STEM_GP12WE-Id-26
+                      </p>
                     </div>
                   </div>
 
-                  <!-- Actions -->
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <button
-                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
-                      <span>📅</span> Edit Schedule
-                    </button>
-                    <button
-                      class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm">
-                      <span>🚀</span> Release Now
-                    </button>
-                    <button
-                      class="w-8 h-8 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">🗑️</button>
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500 shrink-0">
+                    <span>2 Resources Shared</span>
+                    <button class="p-1 hover:bg-slate-100 dark:hover:bg-[#232D26] rounded-lg">▲</button>
                   </div>
                 </div>
+
+                <!-- RESOURCE ITEM 1 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-[#005506] flex items-center justify-center shrink-0 border border-emerald-100 font-bold">
+                      📄
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Complete Unit Summary & Practice Drills.pdf
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span>4.1 MB</span>
+                        <span>•</span>
+                        <span class="text-emerald-700 dark:text-emerald-400 font-bold">126 Student Downloads</span>
+                        <span>•</span>
+                        <span
+                          class="bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">Archived
+                          Unit</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">👁️</button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
+                </div>
+
+                <!-- RESOURCE ITEM 2 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="flex items-start gap-3 min-w-0">
+                    <div
+                      class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-100 font-bold">
+                      ▶️
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                      <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                        Video Lecture Link: Conservative vs Non-Conservative
+                      </h4>
+                      <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-500">
+                        <span>Google Drive Stream Link</span>
+                        <span>•</span>
+                        <span>1080p MP4 (Direct Play)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      class="bg-white dark:bg-[#2D3A31] text-[#005506] dark:text-[#86EFAC] border border-emerald-200 text-xs font-black px-3.5 py-2 rounded-xl shadow-sm">
+                      Stream ↗
+                    </button>
+                    <button
+                      class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300">⋮</button>
+                  </div>
+                </div>
+
               </div>
 
             </div>
 
-            <!-- RIGHT COLUMN: DISPATCH & UPLOAD CONTROL PANELS (4 COLS) -->
-            <div class="lg:col-span-4 space-y-5">
+            <!-- RIGHT COLUMN: PACING MATRIX & GOOGLE DRIVE FOLDERS (4 COLS) -->
+            <div class="lg:col-span-4 space-y-5 sm:space-y-6 w-full min-w-0">
 
-              <!-- PANEL 1: QUICK LINK & SHARE DESK -->
+              <!-- PANEL 1: SECTION PACING MATRIX -->
               <div
-                class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-5">
+                class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3">
                   <div class="flex items-center gap-2">
-                    <div
-                      class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-black">
-                      🔗</div>
-                    <div>
-                      <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Quick Link
-                        & Share Desk</h3>
-                    </div>
+                    <span class="text-emerald-800 dark:text-[#86EFAC] text-base">📊</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Section
+                      Pacing Matrix</h3>
                   </div>
                   <span
-                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
-                    1-Click Dispatch
+                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-200">
+                    Week 8
                   </span>
                 </div>
 
-                <!-- Selected File Selector -->
-                <div class="space-y-1">
-                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">SELECTED FILE TO
-                    DISTRIBUTE</label>
-                  <select
-                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none">
-                    <option>Lab_Manual_04_Snell_Refraction.pdf</option>
-                    <option>Lecture_Slides_Alternating_Current.pptx</option>
-                  </select>
-                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  Live syllabus progress adjusted for holiday suspensions and weather disruptions.
+                </p>
 
-                <!-- Direct Portal Link & Copy Button -->
-                <div class="space-y-1">
-                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Direct Student
-                    Portal Link</label>
-                  <div class="flex items-center gap-1">
-                    <div
-                      class="flex-1 bg-[#F9F7F1] dark:bg-[#232D26] px-3 py-2 rounded-xl border border-slate-200 dark:border-[#3F4F43] text-[11px] font-mono text-slate-600 dark:text-slate-300 truncate">
-                      https://portal.salawagshs.edu.ph/r/phy2-snell-lab
-                    </div>
-                    <button
-                      class="bg-[#003803] text-white px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1 shrink-0">
-                      📋 Copy
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Classroom QR Mode Box -->
+                <!-- Section Card 1 -->
                 <div
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200 dark:border-[#3F4F43] flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-2">
-                    <span class="text-2xl">📱</span>
-                    <div>
-                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Classroom QR Mode</h4>
-                      <p class="text-[10px] text-slate-400 font-medium">Display on TV for student phone scan</p>
-                    </div>
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                  <div class="flex items-center justify-between text-xs font-black text-slate-900 dark:text-white">
+                    <span>Grade 12 STEM–2 Curie</span>
+                    <span
+                      class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[9px] px-2 py-0.5 rounded-full">On-Track</span>
                   </div>
-                  <button
-                    class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] px-3 py-1.5 rounded-xl text-xs font-black shrink-0">
-                    Enlarge QR
-                  </button>
+                  <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                    <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full w-[85%]"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>Lesson 3.4 completed</span>
+                    <span class="text-[#005506] dark:text-[#86EFAC]">Next: Gyroscopic Precession</span>
+                  </div>
                 </div>
 
-                <!-- Dispatch SMS / Notification Button -->
-                <div class="space-y-1 pt-1">
-                  <button
-                    class="w-full bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] py-3 px-4 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-all">
-                    <span>📲</span> Send Link to Student App & Parent SMS
-                  </button>
-                  <p class="text-[10px] text-slate-400 font-medium text-center">
-                    Sends an immediate alert to 89 students and registered emergency guardians.
-                  </p>
+                <!-- Section Card 2 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                  <div class="flex items-center justify-between text-xs font-black text-slate-900 dark:text-white">
+                    <span>Grade 12 STEM–1 Newton</span>
+                    <span
+                      class="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[9px] px-2 py-0.5 rounded-full">Lagging
+                      -1 Day</span>
+                  </div>
+                  <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-500 rounded-full w-[65%]"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>Lesson 3.2 completed</span>
+                    <span class="text-amber-700 dark:text-amber-400 font-bold">Needs 1 catch-up session</span>
+                  </div>
                 </div>
 
+                <!-- Section Card 3 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                  <div class="flex items-center justify-between text-xs font-black text-slate-900 dark:text-white">
+                    <span>Grade 11 STEM–1 Faraday</span>
+                    <span
+                      class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[9px] px-2 py-0.5 rounded-full">On-Track</span>
+                  </div>
+                  <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                    <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full w-[90%]"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>Lesson 4.1 completed</span>
+                    <span>Pacing as scheduled</span>
+                  </div>
+                </div>
+
+                <!-- Section Card 4 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                  <div class="flex items-center justify-between text-xs font-black text-slate-900 dark:text-white">
+                    <span>Grade 12 STEM–3 Euler</span>
+                    <span
+                      class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[9px] px-2 py-0.5 rounded-full">Pacing
+                      Review</span>
+                  </div>
+                  <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                    <div class="h-full bg-slate-500 rounded-full w-[50%]"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>Lesson 3.1 completed</span>
+                    <span>Review scheduled on Thu</span>
+                  </div>
+                </div>
+
+                <button
+                  class="w-full bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 text-slate-800 dark:text-slate-200 font-bold text-xs py-3 rounded-2xl border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center gap-2 transition-colors">
+                  <span>🔄</span> Re-align Section Pacing Schedule
+                </button>
               </div>
 
-              <!-- PANEL 2: UPLOAD & ASSIGN PANEL -->
+              <!-- PANEL 2: LINKED GOOGLE DRIVE FOLDERS -->
               <div
-                class="bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-5">
+                class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3">
                   <div class="flex items-center gap-2">
-                    <span class="text-emerald-800 dark:text-[#86EFAC] text-lg">☁️</span>
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Upload &
-                      Assign</h3>
+                    <span class="text-amber-600 text-base">📁</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Linked Google
+                      Drive Folders</h3>
                   </div>
-                  <span class="text-[10px] font-extrabold text-slate-400">Max 50MB</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 </div>
 
-                <!-- Drag & Drop Upload Zone -->
+                <!-- Folder 1 -->
                 <div
-                  class="border-2 border-dashed border-emerald-600/40 bg-[#FEF9E7]/60 dark:bg-[#232D26] rounded-2xl p-6 text-center space-y-2 cursor-pointer hover:border-[#005506] transition-all">
-                  <div
-                    class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] mx-auto flex items-center justify-center text-lg font-black">
-                    📤
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="text-xl shrink-0">📂</span>
+                    <div class="min-w-0">
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white truncate">STEM 12 – General Physics 2
+                        Hub</h4>
+                      <p class="text-[10px] text-slate-400 font-medium truncate">SSHS Domain Authorized Student
+                        Repository</p>
+                    </div>
                   </div>
-                  <h4 class="text-xs font-black text-slate-900 dark:text-white">Drop files here or click to browse</h4>
-                  <p class="text-[10px] text-slate-400 font-medium">Supports PDF, DOCX, PPTX, MP4, ZIP</p>
+                  <button
+                    class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">↗</button>
                 </div>
 
-                <!-- Target Sections Checkboxes -->
-                <div class="space-y-2">
-                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">TARGET SECTIONS TO
-                    RECEIVE FILE</label>
-
-                  <div
-                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200 dark:border-[#3F4F43] space-y-2.5">
-                    <label
-                      class="flex items-center gap-2 cursor-pointer text-xs font-black text-slate-800 dark:text-slate-200">
-                      <input type="checkbox" checked class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
-                      <span>12–STEM Rizal (45 Learners)</span>
-                    </label>
-
-                    <label
-                      class="flex items-center gap-2 cursor-pointer text-xs font-black text-slate-800 dark:text-slate-200">
-                      <input type="checkbox" checked class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
-                      <span>12–STEM Archimedes (44 Learners)</span>
-                    </label>
-
-                    <label
-                      class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-500 dark:text-slate-400">
-                      <input type="checkbox" class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
-                      <span>11–TechPro Turing (42 Learners)</span>
-                    </label>
-
-                    <label
-                      class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-500 dark:text-slate-400">
-                      <input type="checkbox" class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
-                      <span>12–STEM Newton (45 Learners)</span>
-                    </label>
+                <!-- Folder 2 -->
+                <div
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="text-xl shrink-0">📂</span>
+                    <div class="min-w-0">
+                      <h4 class="text-xs font-black text-slate-900 dark:text-white truncate">DepEd LR Portal References
+                        Node</h4>
+                      <p class="text-[10px] text-slate-400 font-medium truncate">DepEd Official Self-Learning Modules
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">↗</button>
                 </div>
 
-                <!-- Initial Visibility Pills -->
-                <div class="space-y-2">
-                  <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">INITIAL
-                    VISIBILITY</label>
-
-                  <div class="grid grid-cols-3 gap-1.5">
-                    <button
-                      class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] py-2 rounded-xl text-[11px] font-black border border-emerald-200 text-center">
-                      Public Now
-                    </button>
-                    <button
-                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 py-2 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-[#3F4F43] text-center">
-                      Faculty Only
-                    </button>
-                    <button
-                      class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 py-2 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-[#3F4F43] text-center">
-                      Scheduled
-                    </button>
-                  </div>
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 pt-1">
+                  <span>Drive API Connected • Last Synced 15m ago</span>
+                  <span class="text-emerald-600 dark:text-emerald-400 font-black">Active</span>
                 </div>
-
-                <!-- Submit Upload Button -->
-                <button
-                  class="w-full bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] py-3 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-all">
-                  <span>📤</span> Upload & Push to Sections
-                </button>
-
               </div>
 
             </div>
 
+          </div>
+
+          <!-- BOTTOM STICKY ACTION BAR -->
+          <div
+            class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col sm:flex-row items-center justify-between gap-4">
+
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100">
+                📊
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">Batch Export File
+                  Links (.pdf / .csv) & Portal Utility</h4>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">Export all active unit
+                  resource records and download audit logs.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0">
+              <button
+                class="flex-1 sm:flex-none bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-black px-4 py-3 rounded-2xl border border-slate-200 dark:border-[#3F4F43] transition-colors">
+                📥 Batch Export File Links
+              </button>
+              <button
+                class="flex-1 sm:flex-none bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] text-xs font-black px-5 py-3 rounded-2xl shadow-sm transition-all active:scale-95">
+                🚀 Publish Selected Files to Student Portals
+              </button>
+            </div>
           </div>
 
         </div>
@@ -637,7 +635,6 @@ const vObserve = {
 </script>
 
 <style scoped>
-
 /* Breathing opacity animation for the green background layer */
 @keyframes pulse-opacity {
 
@@ -745,7 +742,7 @@ const vObserve = {
 
 .text-scale-lg :deep(.text-lg) {
   font-size: 1.25rem !important;
-  line-height: 1.75rem !important;
+  line-title: 1.75rem !important;
 }
 
 .text-scale-lg :deep(.text-xl) {
