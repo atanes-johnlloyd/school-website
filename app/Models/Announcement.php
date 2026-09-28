@@ -17,6 +17,7 @@ class Announcement extends Model
         'title',
         'body',
         'is_pinned',
+        'is_school_wide',
         'published_at',
         'expires_at',
         'image_path',
@@ -24,6 +25,7 @@ class Announcement extends Model
 
     protected $casts = [
         'is_pinned'    => 'boolean',
+        'is_school_wide'  => 'boolean',
         'published_at' => 'datetime',
         'expires_at'   => 'datetime',
     ];
@@ -77,4 +79,9 @@ class Announcement extends Model
     }
 
     protected $appends = ['image_url'];
+
+    public function scopeSchoolWide(Builder $q): Builder
+    {
+        return $q->where('is_school_wide', true);
+    }
 }

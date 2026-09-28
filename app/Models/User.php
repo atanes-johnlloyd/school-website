@@ -81,4 +81,9 @@ class User extends Authenticatable
     }
 
     protected $appends = ['avatar_url'];
+
+    public function reviewedApplicants()
+    {
+        return $this->hasMany(Applicant::class, 'reviewed_by');
+    }
 }
