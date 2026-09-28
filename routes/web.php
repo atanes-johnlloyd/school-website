@@ -240,6 +240,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
             [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
+
+        Route::get('/classes/{classroom}/gradebook',
+            [\App\Http\Controllers\Teacher\GradebookController::class, 'show'])
+            ->name('classes.gradebook.show');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -334,6 +338,13 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
+
+        Route::get('/grades',
+            [\App\Http\Controllers\Student\GradeController::class, 'index'])
+            ->name('grades.index');
+        Route::get('/classes/{classroom}/grades',
+            [\App\Http\Controllers\Student\GradeController::class, 'show'])
+            ->name('classes.grades.show');
     });
 
 // ─────────────────────────────────────────────────────────────

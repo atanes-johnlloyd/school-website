@@ -14,6 +14,7 @@ class Assignment extends Model
         'class_id',            // ← must be here
         'class_module_id',
         'title',
+        'category',
         'instructions',
         'due_at',
         'points',
@@ -26,6 +27,7 @@ class Assignment extends Model
         'points'       => 'decimal:2',
         'allow_late'   => 'boolean',
         'is_published' => 'boolean',
+        'category'     => 'string',
     ];
 
     public function classroom()       { return $this->belongsTo(ClassRoom::class, 'class_id'); }

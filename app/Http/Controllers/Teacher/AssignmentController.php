@@ -23,6 +23,7 @@ class AssignmentController extends Controller
             ->map(fn (Assignment $a) => [
                 'id'                => $a->id,
                 'title'             => $a->title,
+                'category'          => $a->category,
                 'due_at'            => $a->due_at?->toIso8601String(),
                 'points'            => $a->points,
                 'is_published'      => $a->is_published,
