@@ -383,4 +383,25 @@ Route::middleware('auth')->group(function () {
         ->name('password.change.update');
 });
 
+// ─────────────────────────────────────────────────────────────
+// Messaging (shared by all authenticated users)
+// ─────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'password.changed'])->group(function () {
+    Route::get('/messages',
+        [\App\Http\Controllers\MessageController::class, 'index'])
+        ->name('messages.index');
+    Route::get('/messages/create',
+        [\App\Http\Controllers\MessageController::class, 'create'])
+        ->name('messages.create');
+    Route::post('/messages',
+        [\App\Http\Controllers\MessageController::class, 'store'])
+        ->name('messages.store');
+    Route::get('/messages/{conversation}',
+        [\App\Http\Controllers\MessageController::class, 'show'])
+        ->name('messages.show');
+    Route::post('/messages/{conversation}',
+        [\App\Http\Controllers\MessageController::class, 'reply'])
+        ->name('messages.reply');
+});
+
 require __DIR__ . '/auth.php';
