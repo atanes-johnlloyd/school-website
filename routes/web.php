@@ -37,12 +37,45 @@ Route::get('/dashboard', function () {
 // Admin
 // ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
+    ->prefix('admin')->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        // ...User Management, Enrollment Management, etc.
-    });
+
+        // Reference data CRUD
+        Route::apiResource('school-years', \App\Http\Controllers\Admin\SchoolYearController::class);
+        Route::put('school-years/{school_year}/activate',
+            [\App\Http\Controllers\Admin\SchoolYearController::class, 'activate'])
+            ->name('school-years.activate');
+
+        Route::apiResource('terms', \App\Http\Controllers\Admin\TermController::class);
+        Route::apiResource('tracks', \App\Http\Controllers\Admin\TrackController::class);
+        Route::apiResource('strands', \App\Http\Controllers\Admin\StrandController::class);
+        Route::apiResource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
+        Route::apiResource('rooms', \App\Http\Controllers\Admin\RoomController::class);
+        Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
+        Route::apiResource('students', \App\Http\Controllers\Admin\StudentController::class);
+        Route::apiResource('sections', \App\Http\Controllers\Admin\SectionController::class);
+
+        Route::post('sections/{section}/enroll',
+            [\App\Http\Controllers\Admin\SectionController::class, 'enrollStudent'])
+            ->name('sections.enroll');
+        Route::delete('sections/{section}/students/{student}',
+            [\App\Http\Controllers\Admin\SectionController::class, 'removeStudent'])
+            ->name('sections.students.remove');
+
+        Route::post('students/{student}/reset-password',
+            [\App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])
+            ->name('students.reset-password');
+
+        Route::get('enrollments', [\App\Http\Controllers\Admin\EnrollmentController::class, 'index'])
+            ->name('enrollments.index');
+        Route::put('enrollments/{enrollment}/approve',
+            [\App\Http\Controllers\Admin\EnrollmentController::class, 'approve'])
+            ->name('enrollments.approve');
+        Route::put('enrollments/{enrollment}/reject',
+            [\App\Http\Controllers\Admin\EnrollmentController::class, 'reject'])
+            ->name('enrollments.reject');
+            });
 
 // ─────────────────────────────────────────────────────────────
 // Teacher
