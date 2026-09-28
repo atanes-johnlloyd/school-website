@@ -80,7 +80,7 @@ class QuizTakingTest extends TestCase
         [$quiz] = $this->makePublishedQuiz();
 
         $response = $this->actingAs($this->student())
-            ->getJson(route('student.classroom.quizzes.index', $this->classroom()->id));
+            ->getJson(route('student.classes.quizzes.index', $this->classroom()->id));
 
         $response->assertOk()
                  ->assertJsonStructure([
@@ -98,7 +98,7 @@ class QuizTakingTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->student())
-            ->getJson(route('student.classroom.quizzes.index', $this->classroom()->id));
+            ->getJson(route('student.classes.quizzes.index', $this->classroom()->id));
 
         $titles = collect($response->json('quizzes'))->pluck('title')->all();
         $this->assertContains('Published', $titles);

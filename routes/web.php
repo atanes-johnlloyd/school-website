@@ -20,6 +20,11 @@ Route::get('/', function () {
     return Inertia::render('Student/Home');
 });
 
+Route::post('/contact',
+    [\App\Http\Controllers\ContactController::class, 'store'])
+    ->middleware('throttle:5,1')   // 5 submissions per minute
+    ->name('contact.store');
+
 // ─────────────────────────────────────────────────────────────
 // Role-based Dashboard Redirect
 // ─────────────────────────────────────────────────────────────
@@ -75,7 +80,38 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::put('enrollments/{enrollment}/reject',
             [\App\Http\Controllers\Admin\EnrollmentController::class, 'reject'])
             ->name('enrollments.reject');
-            });
+
+        // Contact messages
+        Route::get('/contact-messages',
+            [\App\Http\Controllers\ContactController::class, 'index'])
+            ->name('contact-messages.index');
+        Route::get('/contact-messages/{contactMessage}',
+            [\App\Http\Controllers\ContactController::class, 'show'])
+            ->name('contact-messages.show');
+        Route::put('/contact-messages/{contactMessage}/read',
+            [\App\Http\Controllers\ContactController::class, 'toggleRead'])
+            ->name('contact-messages.toggle-read');
+        Route::delete('/contact-messages/{contactMessage}',
+            [\App\Http\Controllers\ContactController::class, 'destroy'])
+            ->name('contact-messages.destroy');
+
+        Route::get('/settings',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])
+            ->name('settings.index');
+        Route::put('/settings',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])
+            ->name('settings.update');
+        Route::post('/settings/reset',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])
+            ->name('settings.reset');
+
+        Route::get('/audit-logs',
+            [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
+            ->name('audit-logs.index');
+        Route::get('/audit-logs/{auditLog}',
+            [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])
+            ->name('audit-logs.show');
+    });
 
 // ─────────────────────────────────────────────────────────────
 // Teacher
@@ -434,9 +470,9 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             ->name('classes.attendance.show');
 
         // ─── Quizzes ───
-        Route::get('/classroom/{classroom}/quizzes',
+        Route::get('/classes/{classroom}/quizzes',
             [\App\Http\Controllers\Student\QuizController::class, 'index'])
-            ->name('classroom.quizzes.index');
+            ->name('classes.quizzes.index');
         Route::get('/quizzes/{quiz}',
             [\App\Http\Controllers\Student\QuizController::class, 'show'])
             ->name('quizzes.show');
