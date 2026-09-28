@@ -278,6 +278,51 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::delete('/questions/{question}',
             [\App\Http\Controllers\Teacher\QuestionBankController::class, 'destroy'])
             ->name('questions.destroy');
+
+        // ─── Quizzes ───
+        Route::get('/classes/{classroom}/quizzes',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'index'])
+            ->name('classes.quizzes.index');
+        Route::post('/classes/{classroom}/quizzes',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'store'])
+            ->name('classes.quizzes.store');
+
+        Route::get('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'show'])
+            ->name('quizzes.show');
+        Route::put('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'update'])
+            ->name('quizzes.update');
+        Route::delete('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'destroy'])
+            ->name('quizzes.destroy');
+        Route::put('/quizzes/{quiz}/publish',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'togglePublish'])
+            ->name('quizzes.toggle-publish');
+
+        Route::post('/quizzes/{quiz}/attach-questions',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'attachQuestions'])
+            ->name('quizzes.attach-questions');
+        Route::delete('/quizzes/{quiz}/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'detachQuestion'])
+            ->name('quizzes.detach-question');
+        Route::put('/quizzes/{quiz}/questions/reorder',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'reorderQuestions'])
+            ->name('quizzes.reorder-questions');
+
+        // Quiz submissions + grading
+        Route::get('/quizzes/{quiz}/submissions',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'index'])
+            ->name('quizzes.submissions.index');
+        Route::get('/quiz-attempts/{attempt}',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'show'])
+            ->name('quiz-attempts.show');
+        Route::put('/quiz-answers/{answer}/grade',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'gradeAnswer'])
+            ->name('quiz-answers.grade');
+        Route::put('/quizzes/{quiz}/bulk-grade',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'bulkGrade'])
+            ->name('quizzes.bulk-grade');
     });
 
 // ─────────────────────────────────────────────────────────────
