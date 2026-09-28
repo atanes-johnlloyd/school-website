@@ -258,6 +258,26 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::get('/classes/{classroom}/attendance/student/{student}',
             [\App\Http\Controllers\Teacher\AttendanceController::class, 'studentHistory'])
             ->name('classes.attendance.student');
+
+        // ─── Question Bank ───
+        Route::get('/questions',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'index'])
+            ->name('questions.index');
+        Route::post('/questions',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'store'])
+            ->name('questions.store');
+        Route::post('/questions/import-csv',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'importCsv'])
+            ->name('questions.import-csv');
+        Route::get('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'show'])
+            ->name('questions.show');
+        Route::put('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'update'])
+            ->name('questions.update');
+        Route::delete('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'destroy'])
+            ->name('questions.destroy');
     });
 
 // ─────────────────────────────────────────────────────────────
