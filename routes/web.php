@@ -432,7 +432,36 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
         Route::get('/classes/{classroom}/attendance',
             [\App\Http\Controllers\Student\AttendanceController::class, 'show'])
             ->name('classes.attendance.show');
-            });
+
+        // ─── Quizzes ───
+        Route::get('/classroom/{classroom}/quizzes',
+            [\App\Http\Controllers\Student\QuizController::class, 'index'])
+            ->name('classroom.quizzes.index');
+        Route::get('/quizzes/{quiz}',
+            [\App\Http\Controllers\Student\QuizController::class, 'show'])
+            ->name('quizzes.show');
+        Route::post('/quizzes/{quiz}/start',
+            [\App\Http\Controllers\Student\QuizController::class, 'start'])
+            ->middleware('throttle:10,1')
+            ->name('quizzes.start');
+
+        Route::get('/quiz-attempts/{attempt}',
+            [\App\Http\Controllers\Student\QuizController::class, 'active'])
+            ->name('quiz-attempts.active');
+        Route::post('/quiz-attempts/{attempt}/answer',
+            [\App\Http\Controllers\Student\QuizController::class, 'answer'])
+            ->middleware('throttle:120,1')   // 120 autosaves/min — reasonable for typing speed
+            ->name('quiz-attempts.answer');
+        Route::post('/quiz-attempts/{attempt}/warning',
+            [\App\Http\Controllers\Student\QuizController::class, 'warning'])
+            ->name('quiz-attempts.warning');
+        Route::post('/quiz-attempts/{attempt}/submit',
+            [\App\Http\Controllers\Student\QuizController::class, 'submit'])
+            ->name('quiz-attempts.submit');
+        Route::get('/quiz-attempts/{attempt}/result',
+            [\App\Http\Controllers\Student\QuizController::class, 'result'])
+            ->name('quiz-attempts.result');
+    });
 
 // ─────────────────────────────────────────────────────────────
 // User Profile & System Utilities
