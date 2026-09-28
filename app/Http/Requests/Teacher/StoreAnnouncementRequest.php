@@ -19,6 +19,7 @@ class StoreAnnouncementRequest extends FormRequest
             'is_pinned'    => ['boolean'],
             'is_published' => ['boolean'],
             'expires_at'   => ['nullable', 'date', 'after:now'],
+            'image' => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ];
     }
 }

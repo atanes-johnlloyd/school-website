@@ -20,6 +20,11 @@ Route::get('/', function () {
     return Inertia::render('Student/Home');
 });
 
+Route::post('/contact',
+    [\App\Http\Controllers\ContactController::class, 'store'])
+    ->middleware('throttle:5,1')   // 5 submissions per minute
+    ->name('contact.store');
+
 // ─────────────────────────────────────────────────────────────
 // Role-based Dashboard Redirect
 // ─────────────────────────────────────────────────────────────
@@ -37,11 +42,100 @@ Route::get('/dashboard', function () {
 // Admin
 // ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
+    ->prefix('admin')->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        // ...User Management, Enrollment Management, etc.
+
+        // Reference data CRUD
+        Route::apiResource('school-years', \App\Http\Controllers\Admin\SchoolYearController::class);
+        Route::put('school-years/{school_year}/activate',
+            [\App\Http\Controllers\Admin\SchoolYearController::class, 'activate'])
+            ->name('school-years.activate');
+
+        Route::apiResource('terms', \App\Http\Controllers\Admin\TermController::class);
+        Route::apiResource('tracks', \App\Http\Controllers\Admin\TrackController::class);
+        Route::apiResource('strands', \App\Http\Controllers\Admin\StrandController::class);
+        Route::apiResource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
+        Route::apiResource('rooms', \App\Http\Controllers\Admin\RoomController::class);
+        Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
+        Route::apiResource('students', \App\Http\Controllers\Admin\StudentController::class);
+        Route::apiResource('sections', \App\Http\Controllers\Admin\SectionController::class);
+
+        Route::post('sections/{section}/enroll',
+            [\App\Http\Controllers\Admin\SectionController::class, 'enrollStudent'])
+            ->name('sections.enroll');
+        Route::delete('sections/{section}/students/{student}',
+            [\App\Http\Controllers\Admin\SectionController::class, 'removeStudent'])
+            ->name('sections.students.remove');
+
+        Route::post('students/{student}/reset-password',
+            [\App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])
+            ->name('students.reset-password');
+
+        Route::get('enrollments', [\App\Http\Controllers\Admin\EnrollmentController::class, 'index'])
+            ->name('enrollments.index');
+        Route::put('enrollments/{enrollment}/approve',
+            [\App\Http\Controllers\Admin\EnrollmentController::class, 'approve'])
+            ->name('enrollments.approve');
+        Route::put('enrollments/{enrollment}/reject',
+            [\App\Http\Controllers\Admin\EnrollmentController::class, 'reject'])
+            ->name('enrollments.reject');
+
+        // Contact messages
+        Route::get('/contact-messages',
+            [\App\Http\Controllers\ContactController::class, 'index'])
+            ->name('contact-messages.index');
+        Route::get('/contact-messages/{contactMessage}',
+            [\App\Http\Controllers\ContactController::class, 'show'])
+            ->name('contact-messages.show');
+        Route::put('/contact-messages/{contactMessage}/read',
+            [\App\Http\Controllers\ContactController::class, 'toggleRead'])
+            ->name('contact-messages.toggle-read');
+        Route::delete('/contact-messages/{contactMessage}',
+            [\App\Http\Controllers\ContactController::class, 'destroy'])
+            ->name('contact-messages.destroy');
+
+        Route::get('/settings',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])
+            ->name('settings.index');
+        Route::put('/settings',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])
+            ->name('settings.update');
+        Route::post('/settings/reset',
+            [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])
+            ->name('settings.reset');
+
+        Route::get('/audit-logs',
+            [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
+            ->name('audit-logs.index');
+        Route::get('/audit-logs/{auditLog}',
+            [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])
+            ->name('audit-logs.show');
+
+        // ─── Curriculum Images ───
+        Route::post('/subjects/{subject}/image',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'update'])
+            ->name('subjects.image.update');
+        Route::delete('/subjects/{subject}/image',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'destroy'])
+            ->name('subjects.image.destroy');
+        Route::put('/subjects/{subject}/meta',
+            [\App\Http\Controllers\Admin\SubjectImageController::class, 'setMeta'])
+            ->name('subjects.meta.update');
+
+        Route::post('/tracks/{track}/image',
+            [\App\Http\Controllers\Admin\TrackImageController::class, 'update'])
+            ->name('tracks.image.update');
+        Route::delete('/tracks/{track}/image',
+            [\App\Http\Controllers\Admin\TrackImageController::class, 'destroy'])
+            ->name('tracks.image.destroy');
+
+        Route::post('/strands/{strand}/image',
+            [\App\Http\Controllers\Admin\StrandImageController::class, 'update'])
+            ->name('strands.image.update');
+        Route::delete('/strands/{strand}/image',
+            [\App\Http\Controllers\Admin\StrandImageController::class, 'destroy'])
+            ->name('strands.image.destroy');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -207,6 +301,89 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
             [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
+
+        Route::get('/classes/{classroom}/gradebook',
+            [\App\Http\Controllers\Teacher\GradebookController::class, 'show'])
+            ->name('classes.gradebook.show');
+
+        // Attendance
+        Route::get('/classes/{classroom}/attendance',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'index'])
+            ->name('classes.attendance.index');
+        Route::get('/classes/{classroom}/attendance/{date}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'session'])
+            ->name('classes.attendance.session');
+        Route::post('/classes/{classroom}/attendance/{date}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'mark'])
+            ->name('classes.attendance.mark');
+        Route::get('/classes/{classroom}/attendance/student/{student}',
+            [\App\Http\Controllers\Teacher\AttendanceController::class, 'studentHistory'])
+            ->name('classes.attendance.student');
+
+        // ─── Question Bank ───
+        Route::get('/questions',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'index'])
+            ->name('questions.index');
+        Route::post('/questions',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'store'])
+            ->name('questions.store');
+        Route::post('/questions/import-csv',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'importCsv'])
+            ->name('questions.import-csv');
+        Route::get('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'show'])
+            ->name('questions.show');
+        Route::put('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'update'])
+            ->name('questions.update');
+        Route::delete('/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuestionBankController::class, 'destroy'])
+            ->name('questions.destroy');
+
+        // ─── Quizzes ───
+        Route::get('/classes/{classroom}/quizzes',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'index'])
+            ->name('classes.quizzes.index');
+        Route::post('/classes/{classroom}/quizzes',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'store'])
+            ->name('classes.quizzes.store');
+
+        Route::get('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'show'])
+            ->name('quizzes.show');
+        Route::put('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'update'])
+            ->name('quizzes.update');
+        Route::delete('/quizzes/{quiz}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'destroy'])
+            ->name('quizzes.destroy');
+        Route::put('/quizzes/{quiz}/publish',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'togglePublish'])
+            ->name('quizzes.toggle-publish');
+
+        Route::post('/quizzes/{quiz}/attach-questions',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'attachQuestions'])
+            ->name('quizzes.attach-questions');
+        Route::delete('/quizzes/{quiz}/questions/{question}',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'detachQuestion'])
+            ->name('quizzes.detach-question');
+        Route::put('/quizzes/{quiz}/questions/reorder',
+            [\App\Http\Controllers\Teacher\QuizController::class, 'reorderQuestions'])
+            ->name('quizzes.reorder-questions');
+
+        // Quiz submissions + grading
+        Route::get('/quizzes/{quiz}/submissions',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'index'])
+            ->name('quizzes.submissions.index');
+        Route::get('/quiz-attempts/{attempt}',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'show'])
+            ->name('quiz-attempts.show');
+        Route::put('/quiz-answers/{answer}/grade',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'gradeAnswer'])
+            ->name('quiz-answers.grade');
+        Route::put('/quizzes/{quiz}/bulk-grade',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'bulkGrade'])
+            ->name('quizzes.bulk-grade');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -301,6 +478,50 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
+
+        Route::get('/grades',
+            [\App\Http\Controllers\Student\GradeController::class, 'index'])
+            ->name('grades.index');
+        Route::get('/classes/{classroom}/grades',
+            [\App\Http\Controllers\Student\GradeController::class, 'show'])
+            ->name('classes.grades.show');
+
+        // Attendance
+        Route::get('/attendance',
+            [\App\Http\Controllers\Student\AttendanceController::class, 'index'])
+            ->name('attendance.index');
+        Route::get('/classes/{classroom}/attendance',
+            [\App\Http\Controllers\Student\AttendanceController::class, 'show'])
+            ->name('classes.attendance.show');
+
+        // ─── Quizzes ───
+        Route::get('/classes/{classroom}/quizzes',
+            [\App\Http\Controllers\Student\QuizController::class, 'index'])
+            ->name('classes.quizzes.index');
+        Route::get('/quizzes/{quiz}',
+            [\App\Http\Controllers\Student\QuizController::class, 'show'])
+            ->name('quizzes.show');
+        Route::post('/quizzes/{quiz}/start',
+            [\App\Http\Controllers\Student\QuizController::class, 'start'])
+            ->middleware('throttle:10,1')
+            ->name('quizzes.start');
+
+        Route::get('/quiz-attempts/{attempt}',
+            [\App\Http\Controllers\Student\QuizController::class, 'active'])
+            ->name('quiz-attempts.active');
+        Route::post('/quiz-attempts/{attempt}/answer',
+            [\App\Http\Controllers\Student\QuizController::class, 'answer'])
+            ->middleware('throttle:120,1')   // 120 autosaves/min — reasonable for typing speed
+            ->name('quiz-attempts.answer');
+        Route::post('/quiz-attempts/{attempt}/warning',
+            [\App\Http\Controllers\Student\QuizController::class, 'warning'])
+            ->name('quiz-attempts.warning');
+        Route::post('/quiz-attempts/{attempt}/submit',
+            [\App\Http\Controllers\Student\QuizController::class, 'submit'])
+            ->name('quiz-attempts.submit');
+        Route::get('/quiz-attempts/{attempt}/result',
+            [\App\Http\Controllers\Student\QuizController::class, 'result'])
+            ->name('quiz-attempts.result');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -315,6 +536,35 @@ Route::middleware('auth')->group(function () {
         ->name('password.change');
     Route::put('/password/change', [PasswordChangeController::class, 'update'])
         ->name('password.change.update');
+});
+
+// ─────────────────────────────────────────────────────────────
+// Messaging (shared by all authenticated users)
+// ─────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'password.changed'])->group(function () {
+    Route::get('/messages',
+        [\App\Http\Controllers\MessageController::class, 'index'])
+        ->name('messages.index');
+    Route::get('/messages/create',
+        [\App\Http\Controllers\MessageController::class, 'create'])
+        ->name('messages.create');
+    Route::post('/messages',
+        [\App\Http\Controllers\MessageController::class, 'store'])
+        ->name('messages.store');
+    Route::get('/messages/{conversation}',
+        [\App\Http\Controllers\MessageController::class, 'show'])
+        ->name('messages.show');
+    Route::post('/messages/{conversation}',
+        [\App\Http\Controllers\MessageController::class, 'reply'])
+        ->name('messages.reply');
+});
+
+// ─── Avatar (all logged-in users) ───
+Route::middleware('auth')->group(function () {
+    Route::post('/profile/avatar', [\App\Http\Controllers\Profile\AvatarController::class, 'update'])
+        ->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [\App\Http\Controllers\Profile\AvatarController::class, 'destroy'])
+        ->name('profile.avatar.destroy');
 });
 
 require __DIR__ . '/auth.php';

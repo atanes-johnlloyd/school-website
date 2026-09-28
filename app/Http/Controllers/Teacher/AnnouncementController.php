@@ -28,6 +28,7 @@ class AnnouncementController extends Controller
                 'published_at' => $a->published_at?->toIso8601String(),
                 'expires_at'   => $a->expires_at?->toIso8601String(),
                 'created_at'   => $a->created_at?->toIso8601String(),
+                'image_url' => $a->image_url,
             ]);
 
         return response()->json([
@@ -44,12 +45,26 @@ class AnnouncementController extends Controller
     {
         abort_unless($classroom->isTaughtBy($request->user()), 403);
 
+        // Optional image
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => ['image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
+            ]);
+            $imagePath = app(\App\Services\ImageUploadService::class)->store(
+                $request->file('image'),
+                'announcements/' . $classroom->id,
+                1200
+            );
+        }
+
         $isPublished = $request->boolean('is_published', false);
 
         $announcement = $classroom->announcements()->create([
             'created_by'   => $request->user()->id,
             'title'        => $request->validated('title'),
             'body'         => $request->validated('body'),
+            'image_path'   => $imagePath,
             'is_pinned'    => $request->boolean('is_pinned', false),
             'published_at' => $isPublished ? now() : null,
             'expires_at'   => $request->validated('expires_at'),
@@ -80,6 +95,7 @@ class AnnouncementController extends Controller
                     'subject' => $announcement->classroom->subject?->name,
                     'section' => $announcement->classroom->section?->name,
                 ],
+                'image_url' => $announcement->image_url,
             ],
         ]);
     }

@@ -67,4 +67,9 @@ class ClassRoom extends Model
             ->where('students.user_id', $user->id)
             ->exists();
     }
+
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class, 'class_id');
+    }
 }

@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(AdminPositionSeeder::class);
+        $this->call(SystemSettingSeeder::class);
 
         // ------------------------------------------------------------
         // School Year & Terms

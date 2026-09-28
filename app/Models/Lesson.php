@@ -16,6 +16,7 @@ class Lesson extends Model
         'body',
         'position',
         'is_published',
+        'thumbnail_path',
     ];
 
     protected $casts = [
@@ -42,4 +43,11 @@ class Lesson extends Model
     {
         return $query->where('is_published', true);
     }
+
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        return $this->thumbnail_path ? asset('storage/' . $this->thumbnail_path) : null;
+    }
+
+    protected $appends = ['thumbnail_url'];
 }
