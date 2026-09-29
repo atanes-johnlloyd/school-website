@@ -33,13 +33,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Clear any old "intended" redirect URLs stored in session
+        $request->session()->forget('url.intended');
+
         $user = $request->user();
 
+        // Use direct route redirects instead of intended()
         return match (true) {
-            $user->hasRole('admin')   => redirect()->intended(route('admin.dashboard')),
-            $user->hasRole('teacher') => redirect()->intended(route('teacher.dashboard')),
-            $user->hasRole('student') => redirect()->intended(route('student.dashboard')),
-            default => redirect()->intended(route('dashboard')),
+            $user->hasRole('admin')   => redirect()->route('admin.dashboard'),
+            $user->hasRole('teacher') => redirect()->route('teacher.dashboard'),
+            $user->hasRole('student') => redirect()->route('student.dashboard'),
+            default                   => redirect()->route('dashboard'),
         };
     }
 
@@ -51,9 +55,8 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

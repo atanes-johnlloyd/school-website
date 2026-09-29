@@ -20,8 +20,6 @@ Route::get('/', function () {
     return Inertia::render('Student/Home');
 });
 
-Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
-
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
     ->middleware('throttle:5,1')   // 5 submissions per minute
