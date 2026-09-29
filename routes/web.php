@@ -22,7 +22,10 @@ Route::get('/', function () {
 
 Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
     ->middleware('throttle:5,1')   // 5 submissions per minute
@@ -184,7 +187,42 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::put('/applicant-documents/{document}/verify',
             [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
             ->name('applicant-documents.verify');
+<<<<<<< HEAD
 });
+=======
+
+        // ─── Entrance Exams ───
+        Route::get('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])->name('entrance-exams.index');
+        Route::post('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])->name('entrance-exams.store');
+        Route::get('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])->name('entrance-exams.show');
+        Route::put('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'update'])->name('entrance-exams.update');
+        Route::delete('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'destroy'])->name('entrance-exams.destroy');
+        Route::put('/entrance-exams/{exam}/cancel', [\App\Http\Controllers\Admin\EntranceExamController::class, 'cancel'])->name('entrance-exams.cancel');
+        Route::get('/entrance-exams/{exam}/eligible-applicants', [\App\Http\Controllers\Admin\EntranceExamController::class, 'eligibleApplicants'])->name('entrance-exams.eligible');
+        Route::post('/entrance-exams/{exam}/assign', [\App\Http\Controllers\Admin\EntranceExamController::class, 'assign'])->name('entrance-exams.assign');
+        Route::post('/entrance-exams/{exam}/remove-applicant', [\App\Http\Controllers\Admin\EntranceExamController::class, 'removeApplicant'])->name('entrance-exams.remove-applicant');
+
+        // ─── Exam Results ───
+        Route::put('/exam-results/{result}', [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])->name('exam-results.update');
+
+        // ─── Admin User Management ───
+        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+        // ─── Reports ───
+        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+
+        // ─── Exports ───
+        Route::get('/exports/enrollments', [\App\Http\Controllers\Admin\ExportController::class, 'enrollments'])->name('exports.enrollments');
+        Route::get('/exports/applicants', [\App\Http\Controllers\Admin\ExportController::class, 'applicants'])->name('exports.applicants');
+        Route::get('/exports/students', [\App\Http\Controllers\Admin\ExportController::class, 'students'])->name('exports.students');
+        Route::get('/exports/teachers', [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])->name('exports.teachers');
+    });
+>>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 
 // ─────────────────────────────────────────────────────────────
 // Teacher
@@ -634,4 +672,31 @@ Route::prefix('site')->name('site.')->group(function () {
         [\App\Http\Controllers\Site\ApplicationController::class, 'status'])
         ->name('admission.status');
 });
+<<<<<<< HEAD
+=======
+
+// ─── Teacher-owned exports (accessible by both roles) ───
+Route::middleware(['auth', 'password.changed'])
+    ->prefix('exports')
+    ->name('exports.')
+    ->group(function () {
+        Route::get('/class-list/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'classList'])
+            ->name('class-list');
+        Route::get('/gradebook/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'gradebook'])
+            ->name('gradebook');
+    });
+    // ─── Report Cards (admin + student, ownership checked in controller) ───
+    Route::middleware(['auth', 'password.changed'])
+        ->prefix('reports')
+        ->name('reports.')
+        ->group(function () {
+            Route::get('/students/{student}/report-card', [
+                \App\Http\Controllers\Admin\ExportController::class,
+                'reportCard',
+            ])->name('students.report-card');
+        });
+
+>>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 require __DIR__ . '/auth.php';

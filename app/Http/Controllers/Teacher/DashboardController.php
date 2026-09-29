@@ -30,8 +30,8 @@ class DashboardController extends Controller
 
         // ─── Counts ───
         $stats = [
-            'classes'  => $classroomIds->count(),
-            'students' => \App\Models\Student::whereHas('classes', function ($q) use ($classroomIds) {
+            'classes'         => $classroomIds->count(),   // keep the API key as "classes"
+            'students'        => \App\Models\Student::whereHas('classroom', function ($q) use ($classroomIds) {
                 $q->whereIn('classes.id', $classroomIds);
             })->count(),
             'pending_grading' => AssignmentSubmission::query()

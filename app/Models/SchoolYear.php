@@ -17,4 +17,8 @@ class SchoolYear extends Model
     public function terms()        { return $this->hasMany(Term::class); }
     public function sections()     { return $this->hasMany(Section::class); }
     public function enrollments()  { return $this->hasMany(Enrollment::class); }
+    public function entranceExams()
+    {
+        return $this->hasMany(EntranceExam::class);
+    }
 }

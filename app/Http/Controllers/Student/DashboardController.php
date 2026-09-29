@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $activeTerm = Term::where('is_active', true)->first();
 
         // ─── Query Student Enrolled Classes ───
-        $classesQuery = $student->classes()
+        $classesQuery = $student->classroom()
             ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
             ->with([
                 'subject:id,code,name',

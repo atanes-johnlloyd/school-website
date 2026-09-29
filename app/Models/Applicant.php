@@ -72,4 +72,14 @@ class Applicant extends Model
 
         return sprintf('%d-%04d', $year, $next);
     }
+
+    public function entranceExamResults()
+    {
+        return $this->hasMany(EntranceExamResult::class);
+    }
+
+    public function currentExamResult()
+    {
+        return $this->hasOne(EntranceExamResult::class)->latestOfMany();
+    }
 }

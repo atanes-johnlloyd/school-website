@@ -187,7 +187,15 @@ class QuizManagementTest extends TestCase
         $otherTeacherUser = User::factory()->create();
         $otherTeacherUser->assignRole('teacher');
         $otherTeacher = \App\Models\Teacher::factory()->create(['user_id' => $otherTeacherUser->id]);
-        $otherClass = \App\Models\ClassRoom::factory()->create(['teacher_id' => $otherTeacher->id]);
+
+        // Create a fresh section so we don't collide on (subject, section, term)
+        $freshSection = \App\Models\Section::factory()->create();
+
+        $otherClass = ClassRoom::factory()->create([
+            'teacher_id' => $otherTeacher->id,
+            'section_id' => $freshSection->id,
+        ]);
+
         $otherQuiz = $otherClass->quizzes()->create(['title' => 'Theirs']);
 
         $this->actingAs($this->teacher())
