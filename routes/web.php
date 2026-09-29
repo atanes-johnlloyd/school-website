@@ -18,9 +18,7 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 // ─────────────────────────────────────────────────────────────
 Route::get('/', function () {
     return Inertia::render('Student/Home');
-});
-
-Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
+})->name('home');;
 
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
@@ -462,6 +460,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::put('/quizzes/{quiz}/bulk-grade',
             [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'bulkGrade'])
             ->name('quizzes.bulk-grade');
+
+        Route::post('/quizzes/{quiz}/students/{student}/grant-retake',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'grantRetake'])
+            ->name('quizzes.grant-retake');
+
+        Route::delete('/quizzes/{quiz}/students/{student}/grant-retake',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'revokeRetake'])
+            ->name('quizzes.revoke-retake');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -553,7 +559,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             ->name('assignments.submission.download');
         Route::get(
             '/lesson-attachments/{attachment}/download',
-            [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
+            [\App\Http\Controllers\Student\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
 

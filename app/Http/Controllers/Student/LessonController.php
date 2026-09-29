@@ -69,9 +69,12 @@ class LessonController extends Controller
 
     public function downloadAttachment(Request $request, \App\Models\LessonAttachment $attachment)
     {
-        abort_unless($attachment->lesson->classroom->isTaughtBy($request->user()), 403);
-        abort_unless(Storage::exists($attachment->file_path), 404);
+        abort_unless($attachment->lesson->classroom->hasStudent($request->user()), 403);
 
-        return Storage::download($attachment->file_path, $attachment->file_name);
+        if (! Storage::disk('local')->exists($attachment->file_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('local')->download($attachment->file_path, $attachment->file_name);
     }
 }

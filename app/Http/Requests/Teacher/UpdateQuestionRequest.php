@@ -16,7 +16,7 @@ class UpdateQuestionRequest extends FormRequest
         return [
             'subject_id'            => ['sometimes', 'exists:subjects,id'],
             'category'              => ['nullable', 'string', 'max:100'],
-            'type'                  => ['sometimes', 'in:multiple_choice,true_false,essay'],
+            'type'                  => ['sometimes', 'in:multiple_choice,true_false,essay,short_answer'],
             'question_text'         => ['sometimes', 'string', 'max:5000'],
             'points'                => ['nullable', 'numeric', 'min:0.5', 'max:100'],
             'explanation'           => ['nullable', 'string', 'max:2000'],

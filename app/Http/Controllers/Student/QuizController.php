@@ -12,6 +12,8 @@ use App\Services\QuizAutoGrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\QuizRetakeGrant;
+use Illuminate\Database\QueryException;
 
 class QuizController extends Controller
 {
@@ -32,7 +34,10 @@ class QuizController extends Controller
             ->orderByDesc('created_at')
             ->get()
             ->map(function (Quiz $q) use ($student) {
-                $attempt = $q->attempts()->where('student_id', $student->id)->first();
+                $attempt = $q->attempts()
+                    ->where('student_id', $student->id)
+                    ->orderByDesc('attempt_number')
+                    ->first();
                 $now = now();
 
                 $available = true;
@@ -91,7 +96,10 @@ class QuizController extends Controller
         abort_unless($quiz->is_published, 404);
 
         $student = $request->user()->student;
-        $attempt = $quiz->attempts()->where('student_id', $student->id)->first();
+        $attempt = $quiz->attempts()
+            ->where('student_id', $student->id)
+            ->orderByDesc('attempt_number')
+            ->first();
 
         $payload = [
             'quiz' => [
@@ -131,52 +139,83 @@ class QuizController extends Controller
 
         $student = $request->user()->student;
 
-        // Already attempted? Return the resume view
-        $existing = $quiz->attempts()->where('student_id', $student->id)->first();
-        if ($existing) {
-            return $this->respondWithAttempt($request, $existing, 'You have already started this quiz.');
-        }
-
-        // Availability window
         $now = now();
         if ($quiz->available_from && $now->lt($quiz->available_from)) {
-            return response()->json(['message' => 'Quiz is not available yet.'], 422);
+            return response()->json(['message' => 'Quiz is not yet available.'], 422);
         }
         if ($quiz->available_until && $now->gt($quiz->available_until)) {
-            return response()->json(['message' => 'Quiz has closed.'], 422);
+            return response()->json(['message' => 'This quiz has closed.'], 422);
         }
 
-        // Must have questions
-        $questions = $quiz->questions()->get();
-        if ($questions->isEmpty()) {
-            return response()->json(['message' => 'Quiz has no questions.'], 422);
-        }
+        $attempt = DB::transaction(function () use ($quiz, $student) {
+            $attempts = QuizAttempt::where('quiz_id', $quiz->id)
+                ->where('student_id', $student->id)
+                ->orderByDesc('attempt_number')
+                ->lockForUpdate()
+                ->get();
 
-        $attempt = DB::transaction(function () use ($quiz, $student, $questions) {
+            // Resume if there's an in-progress attempt
+            $inProgress = $attempts->firstWhere('submitted_at', null);
+            if ($inProgress) {
+                return $inProgress;
+            }
+
+            $maxAttempts = $quiz->attempts_allowed ?? 1;
+            $attemptCount = $attempts->count();
+            $pendingGrant = null;
+
+            if ($attemptCount >= $maxAttempts) {
+                $pendingGrant = QuizRetakeGrant::query()
+                    ->where('quiz_id', $quiz->id)
+                    ->where('student_id', $student->id)
+                    ->whereNull('used_at')
+                    ->lockForUpdate()
+                    ->oldest()
+                    ->first();
+
+                if (! $pendingGrant) {
+                    return response()->json([
+                        'message' => 'You have already taken this quiz. Ask your teacher for a retake.',
+                        'code'    => 'NO_ATTEMPTS_REMAINING',
+                    ], 422);
+                }
+            }
+
+            $questions = $quiz->questions()->with('options')->get();
+            if ($questions->isEmpty()) {
+                return response()->json(['message' => 'Quiz has no questions.'], 422);
+            }
+
+            if ($pendingGrant) {
+                $pendingGrant->update(['used_at' => now()]);
+            }
+
             $expires = $quiz->time_limit_minutes
                 ? now()->addMinutes($quiz->time_limit_minutes)
                 : null;
 
-            $attempt = $quiz->attempts()->create([
-                'student_id'     => $student->id,
-                'attempt_number' => 1,
-                'started_at'     => now(),
-                'expires_at'     => $expires,
-                'status'         => 'in_progress',
-                'warning_count'  => 0,
-                'questions_order'=> $this->buildQuestionsOrder($quiz, $questions),
-                'options_order'  => $this->buildOptionsOrder($quiz, $questions),
+            $attempt = QuizAttempt::create([
+                'quiz_id'         => $quiz->id,
+                'student_id'      => $student->id,
+                'attempt_number'  => $attemptCount + 1,
+                'started_at'      => now(),
+                'expires_at'      => $expires,
+                'status'          => 'in_progress',
+                'warning_count'   => 0,
+                'questions_order' => $this->buildQuestionsOrder($quiz, $questions),
+                'options_order'   => $this->buildOptionsOrder($quiz, $questions),
             ]);
 
-            // Pre-create empty answer rows so autosave can just update
             foreach ($questions as $q) {
-                $attempt->answers()->create([
-                    'question_id' => $q->id,
-                ]);
+                $attempt->answers()->create(['question_id' => $q->id]);
             }
 
             return $attempt;
         });
+
+        if ($attempt instanceof \Illuminate\Http\JsonResponse) {
+            return $attempt;
+        }
 
         return $this->respondWithAttempt($request, $attempt);
     }
@@ -246,32 +285,31 @@ class QuizController extends Controller
     public function warning(Request $request, QuizAttempt $attempt)
     {
         $this->authorizeAttempt($request, $attempt);
+
+        $attempt->increment('warning_count');
         $attempt->refresh();
 
         if ($attempt->submitted_at) {
             return response()->json([
-                'message'      => 'Attempt already submitted.',
-                'warning_count'=> $attempt->warning_count,
-                'auto_submitted'=> true,
-            ]);
+                'message'        => 'Attempt already submitted.',
+                'warning_count'  => $attempt->warning_count,
+                'auto_submitted' => true,
+            ], 409);
         }
 
-        $count = $attempt->warning_count + 1;
-        $attempt->update(['warning_count' => $count]);
-
-        $autoSubmitted = false;
-        if ($count >= QuizAutoGrader::MAX_WARNINGS) {
+        $auto = false;
+        if ($attempt->warning_count >= QuizAutoGrader::MAX_WARNINGS) {
             $this->grader->submit($attempt, 'warnings');
-            $autoSubmitted = true;
+            $auto = true;
         }
 
         return response()->json([
-            'message'       => $autoSubmitted
+            'message'        => $auto
                 ? 'Maximum warnings reached. Your quiz was auto-submitted.'
-                : "Warning {$count} of " . QuizAutoGrader::MAX_WARNINGS . ".",
-            'warning_count' => $count,
-            'max_warnings'  => QuizAutoGrader::MAX_WARNINGS,
-            'auto_submitted'=> $autoSubmitted,
+                : "Warning {$attempt->warning_count} of " . QuizAutoGrader::MAX_WARNINGS . '.',
+            'warning_count'  => $attempt->warning_count,
+            'max_warnings'   => QuizAutoGrader::MAX_WARNINGS,
+            'auto_submitted' => $auto,
         ]);
     }
 

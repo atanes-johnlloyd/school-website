@@ -39,6 +39,22 @@ class QuizAutoGrader
                     $totalPoints += $awarded;
                     break;
 
+                case 'short_answer':
+                    // Expected answer lives on the single correct option
+                    $expected = trim((string) $question->options->firstWhere('is_correct', true)?->option_text);
+                    $given    = trim((string) $answer->answer_text);
+
+                    $isCorrect = $expected !== '' && strcasecmp($given, $expected) === 0;
+                    $awarded   = $isCorrect ? $questionPoints : 0;
+
+                    $answer->update([
+                        'is_correct'     => $isCorrect,
+                        'points_awarded' => $awarded,
+                    ]);
+
+                    $totalPoints += $awarded;
+                    break;
+
                 case 'essay':
                     // Left for manual grading; points_awarded stays null
                     break;
@@ -80,7 +96,8 @@ class QuizAutoGrader
         }
 
         $attempt->update([
-            'submitted_at' => now(),
+            'submitted_at'     => now(),
+            'submitted_reason' => $reason,
         ]);
 
         $this->grade($attempt);

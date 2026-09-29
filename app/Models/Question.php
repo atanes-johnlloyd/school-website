@@ -10,7 +10,7 @@ class Question extends Model
 {
     use HasFactory, SoftDeletes;
 
-    public const TYPES = ['multiple_choice', 'true_false', 'essay'];
+    public const TYPES = ['multiple_choice', 'true_false', 'short_answer', 'essay'];
 
     protected $fillable = [
         'teacher_id',

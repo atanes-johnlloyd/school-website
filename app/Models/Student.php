@@ -29,4 +29,9 @@ class Student extends Model
     {
         return $this->hasOne(Applicant::class, 'converted_student_id');
     }
+    
+    public function quizRetakeGrants()
+    {
+        return $this->hasMany(QuizRetakeGrant::class);
+    }
 }

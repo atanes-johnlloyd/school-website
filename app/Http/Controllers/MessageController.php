@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\ClassRoom;
 
 class MessageController extends Controller
 {
@@ -237,22 +238,27 @@ class MessageController extends Controller
 
             $ids = $studentUserIds->merge($otherTeacherIds)->merge($adminIds);
         } elseif ($user->hasRole('student') && $user->student) {
-            // Teachers of my classroom
+            // Teachers of my classes
             $teacherUserIds = Teacher::query()
-                ->whereHas('classroom', function ($q) use ($user) {
-                    $q->whereHas('students', fn ($sq) => $sq->where('students.id', $user->student->id));
+                ->whereHas('classroom.students', function ($q) use ($user) {
+                    $q->where('students.id', $user->student->id);
                 })
                 ->pluck('user_id');
 
-            // Classmates: students enrolled in any of my sections
-            $sectionIds = $user->student->classroom()->pluck('section_id')->unique();
+            // Classmates via shared sections
+            $classroomIds = $user->student->classroom()->pluck('classes.id');
+            $sectionIds = ClassRoom::whereIn('id', $classroomIds)
+                ->pluck('section_id')
+                ->unique();
 
             $classmateUserIds = Student::query()
-                ->whereHas('enrollments', fn ($q) => $q->whereIn('section_id', $sectionIds))
                 ->where('id', '!=', $user->student->id)
+                ->whereHas('enrollments', function ($q) use ($sectionIds) {
+                    $q->whereIn('section_id', $sectionIds)
+                    ->where('status', 'enrolled');
+                })
                 ->pluck('user_id');
 
-            // Admins
             $adminIds = User::role('admin')->pluck('id');
 
             $ids = $teacherUserIds->merge($classmateUserIds)->merge($adminIds);

@@ -155,7 +155,9 @@ class SectionController extends Controller
         DB::transaction(function () use ($section, $student) {
             Enrollment::where('student_id', $student->id)
                 ->where('section_id', $section->id)
-                ->delete();
+                ->get()
+                ->each
+                ->delete();   // soft delete via model
 
             ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
                 $class->students()->detach($student->id);

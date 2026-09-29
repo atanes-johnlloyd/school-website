@@ -23,9 +23,31 @@ trait Auditable
 
     protected function writeAudit(string $action): void
     {
-        // Skip if no authenticated user (e.g., seeders, queue jobs)
         if (! auth()->check()) {
             return;
+        }
+
+        $old = null;
+        $new = null;
+
+        if ($action === 'updated') {
+            $changes = $this->getChanges();
+            unset($changes['updated_at']);
+            if (empty($changes)) {
+                return;
+            }
+            $old = array_intersect_key($this->getOriginal(), $changes);
+            $new = $changes;
+        } elseif ($action === 'created') {
+            $new = $this->getAttributes();
+        } elseif ($action === 'deleted') {
+            $old = $this->getAttributes();
+        }
+
+        $sensitive = ['password', 'remember_token', 'reset_token', 'two_factor_secret'];
+        foreach ($sensitive as $field) {
+            if ($old && isset($old[$field])) $old[$field] = '[REDACTED]';
+            if ($new && isset($new[$field])) $new[$field] = '[REDACTED]';
         }
 
         AuditLog::create([
@@ -33,8 +55,8 @@ trait Auditable
             'action'         => $action,
             'auditable_type' => static::class,
             'auditable_id'   => $this->getKey(),
-            'old_values'     => $action === 'updated' ? $this->getOriginal() : null,
-            'new_values'     => $action === 'deleted' ? null : $this->getAttributes(),
+            'old_values'     => $old,
+            'new_values'     => $new,
             'ip_address'     => request()->ip(),
             'user_agent'     => request()->userAgent(),
         ]);

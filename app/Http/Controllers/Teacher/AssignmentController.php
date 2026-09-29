@@ -29,9 +29,6 @@ class AssignmentController extends Controller
                 'is_published'      => $a->is_published,
                 'allow_late'        => $a->allow_late,
                 'submissions_count' => $a->submissions_count,
-                'file_path' => $a->file_path,
-                'has_file'  => (bool) $a->file_path,
-                'download_url' => $a->file_path ? route('teacher.submissions.download', $a->id) : null,
             ]);
 
         $payload = [

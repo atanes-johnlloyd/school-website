@@ -74,7 +74,7 @@ class EntranceExamController extends Controller
             'track_id'       => $request->validated('track_id'),
             'exam_name'      => $request->validated('exam_name'),
             'exam_date'      => $request->validated('exam_date'),
-            'exam_time'      => $request->validated('exam_time') . ':00',
+            'exam_time'      => strlen($t = $request->validated('exam_time')) === 5 ? $t . ':00' : $t,
             'venue'          => $request->validated('venue'),
             'max_capacity'   => $request->validated('max_capacity') ?? 30,
             'grade_level'    => $request->validated('grade_level'),

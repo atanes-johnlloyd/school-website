@@ -72,7 +72,7 @@ class UserController extends Controller
      */
     public function store(StoreAdminUserRequest $request)
     {
-        $tempPassword = 'Admin@' . Str::random(8);
+        $tempPassword = 'Admin@' . Str::password(12);
         $resetToken   = bin2hex(random_bytes(32));
 
         $user = DB::transaction(function () use ($request, $tempPassword, $resetToken) {
@@ -93,7 +93,7 @@ class UserController extends Controller
         });
 
         // Send account-created email
-        $loginLink = url("/admin/login?token={$resetToken}");
+        $loginLink = url('/login');
 
         $this->notifications->send(
             $user->email,

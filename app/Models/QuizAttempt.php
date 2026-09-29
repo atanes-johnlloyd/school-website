@@ -13,6 +13,7 @@ class QuizAttempt extends Model
         'warning_count',
         'questions_order',
         'options_order',
+        'submitted_reason',
     ];
 
     protected $casts = [

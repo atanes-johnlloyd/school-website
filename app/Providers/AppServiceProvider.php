@@ -26,12 +26,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Password policy — applies everywhere Password::defaults() is used
         Password::defaults(function () {
-            return Password::min(12)
-                ->letters()
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
-                ->uncompromised();  // checks against HaveIBeenPwned API
+            $rule = Password::min(12)->letters()->mixedCase()->numbers()->symbols();
+
+            if ($this->app->isProduction()) {
+                $rule = $rule->uncompromised();
+            }
+
+            return $rule;
         });
     }
 }

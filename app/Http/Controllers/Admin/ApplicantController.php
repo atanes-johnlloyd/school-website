@@ -359,6 +359,7 @@ class ApplicantController extends Controller
 
     protected function sendResubmissionEmail(Applicant $applicant): void
     {
+        \Log::info('resubmission called', ['applicant_id' => $applicant->id]);
         $this->notifications->send(
             $applicant->email,
             'Document Resubmission Required - Salawag Senior High School',
@@ -367,7 +368,7 @@ class ApplicantController extends Controller
                 'student_name'   => $applicant->full_name,
                 'control_number' => $applicant->reference_number,
                 'strand'         => $applicant->strand?->name ?? 'N/A',
-                'resubmit_link'  => url("/site/admission/resubmit?ref={$applicant->reference_number}"),
+                'resubmit_link' => route('site.admission.status', ['reference' => $applicant->reference_number]),
             ]
         );
     }
