@@ -119,7 +119,7 @@ class AttendanceFlowTest extends TestCase
     {
         [$teacher, $classroom] = $this->teacherAndClass();
 
-        $otherStudent = \App\Models\Student::whereDoesntHave('classes', function ($q) use ($classroom) {
+        $otherStudent = \App\Models\Student::whereDoesntHave('classroom', function ($q) use ($classroom) {
             $q->where('classes.id', $classroom->id);
         })->first();
 
@@ -195,7 +195,7 @@ class AttendanceFlowTest extends TestCase
     public function test_student_can_view_class_attendance_detail(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $classroom = $student->student->classes()->first();
+        $classroom = $student->student->classroom()->first();
 
         // Add a few attendance records
         foreach (['2026-09-17', '2026-09-18'] as $date) {

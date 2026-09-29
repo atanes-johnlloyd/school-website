@@ -21,8 +21,13 @@ use Spatie\Permission\Traits\HasRoles;
     'must_change_password',
     'admin_position_id',
     'avatar_path',
+    'status',
+    'disabled_reason',
+    'reset_token',
+    'reset_expiry',
 ])]
 #[Hidden(['password', 'remember_token'])]
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
@@ -33,6 +38,7 @@ class User extends Authenticatable
             'email_verified_at'    => 'datetime',
             'password'             => 'hashed',
             'must_change_password' => 'boolean',
+            'reset_expiry'         => 'datetime',
         ];
     }
 
@@ -81,4 +87,14 @@ class User extends Authenticatable
     }
 
     protected $appends = ['avatar_url'];
+
+    public function reviewedApplicants()
+    {
+        return $this->hasMany(Applicant::class, 'reviewed_by');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
 }

@@ -177,7 +177,7 @@ class GradeFlowTest extends TestCase
     public function test_student_can_view_own_class_grades(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $classroom = $student->student->classes()->first();
+        $classroom = $student->student->classroom()->first();
 
         $response = $this->actingAs($student)
             ->getJson(route('student.classes.grades.show', $classroom->id));
@@ -191,7 +191,7 @@ class GradeFlowTest extends TestCase
     public function test_student_cannot_view_other_class_grades(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $studentClasses = $student->student->classes()->pluck('classes.id');
+        $studentClasses = $student->student->classroom()->pluck('classes.id');
         $otherClass = ClassRoom::whereNotIn('id', $studentClasses)->first();
 
         $this->actingAs($student)

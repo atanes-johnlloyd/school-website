@@ -23,7 +23,7 @@ class GradeController extends Controller
 
         $activeTerm = Term::where('is_active', true)->first();
 
-        $classrooms = $student->classes()
+        $classrooms = $student->classroom()
             ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
             ->with(['subject:id,code,name', 'section:id,name', 'teacher.user:id,name'])
             ->get();

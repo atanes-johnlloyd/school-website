@@ -187,7 +187,7 @@ class AnnouncementFlowTest extends TestCase
         $student = $studentUser->student;
 
         // Get all classes the student is in
-        $classroomIds = $student->classes()->pluck('classes.id');
+        $classroomIds = $student->classroom()->pluck('classes.id');
         $this->assertGreaterThan(0, $classroomIds->count());
 
         // Create one published announcement in each

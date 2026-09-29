@@ -20,6 +20,8 @@ Route::get('/', function () {
     return Inertia::render('Student/Home');
 });
 
+Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
+
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
     ->middleware('throttle:5,1')   // 5 submissions per minute
@@ -136,6 +138,82 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::delete('/strands/{strand}/image',
             [\App\Http\Controllers\Admin\StrandImageController::class, 'destroy'])
             ->name('strands.image.destroy');
+
+        // ─── School-wide Announcements ───
+        Route::get('/school-news',
+            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'index'])
+            ->name('school-news.index');
+        Route::post('/school-news',
+            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'store'])
+            ->name('school-news.store');
+        Route::get('/school-news/{announcement}',
+            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'show'])
+            ->name('school-news.show');
+        Route::put('/school-news/{announcement}',
+            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'update'])
+            ->name('school-news.update');
+        Route::delete('/school-news/{announcement}',
+            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'destroy'])
+            ->name('school-news.destroy');
+
+        // ─── Applicants ───
+        Route::get('/applicants',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'index'])
+            ->name('applicants.index');
+        Route::get('/applicants/{applicant}',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'show'])
+            ->name('applicants.show');
+        Route::put('/applicants/{applicant}/under-review',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'markUnderReview'])
+            ->name('applicants.under-review');
+        Route::put('/applicants/{applicant}/approve',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'approve'])
+            ->name('applicants.approve');
+        Route::put('/applicants/{applicant}/reject',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'reject'])
+            ->name('applicants.reject');
+        Route::put('/applicants/{applicant}/request-resubmission',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'requestResubmission'])
+            ->name('applicants.request-resubmission');
+
+        // Documents
+        Route::get('/applicant-documents/{document}/download',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'downloadDocument'])
+            ->name('applicant-documents.download');
+        Route::put('/applicant-documents/{document}/verify',
+            [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
+            ->name('applicant-documents.verify');
+
+        // ─── Entrance Exams ───
+        Route::get('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])->name('entrance-exams.index');
+        Route::post('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])->name('entrance-exams.store');
+        Route::get('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])->name('entrance-exams.show');
+        Route::put('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'update'])->name('entrance-exams.update');
+        Route::delete('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'destroy'])->name('entrance-exams.destroy');
+        Route::put('/entrance-exams/{exam}/cancel', [\App\Http\Controllers\Admin\EntranceExamController::class, 'cancel'])->name('entrance-exams.cancel');
+        Route::get('/entrance-exams/{exam}/eligible-applicants', [\App\Http\Controllers\Admin\EntranceExamController::class, 'eligibleApplicants'])->name('entrance-exams.eligible');
+        Route::post('/entrance-exams/{exam}/assign', [\App\Http\Controllers\Admin\EntranceExamController::class, 'assign'])->name('entrance-exams.assign');
+        Route::post('/entrance-exams/{exam}/remove-applicant', [\App\Http\Controllers\Admin\EntranceExamController::class, 'removeApplicant'])->name('entrance-exams.remove-applicant');
+
+        // ─── Exam Results ───
+        Route::put('/exam-results/{result}', [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])->name('exam-results.update');
+
+        // ─── Admin User Management ───
+        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+        // ─── Reports ───
+        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+
+        // ─── Exports ───
+        Route::get('/exports/enrollments', [\App\Http\Controllers\Admin\ExportController::class, 'enrollments'])->name('exports.enrollments');
+        Route::get('/exports/applicants', [\App\Http\Controllers\Admin\ExportController::class, 'applicants'])->name('exports.applicants');
+        Route::get('/exports/students', [\App\Http\Controllers\Admin\ExportController::class, 'students'])->name('exports.students');
+        Route::get('/exports/teachers', [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])->name('exports.teachers');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -566,5 +644,38 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/avatar', [\App\Http\Controllers\Profile\AvatarController::class, 'destroy'])
         ->name('profile.avatar.destroy');
 });
+
+// ─────────────────────────────────────────────────────────────
+// Public Website (no auth)
+// ─────────────────────────────────────────────────────────────
+Route::prefix('site')->name('site.')->group(function () {
+    Route::get('/home', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
+    Route::get('/about', [\App\Http\Controllers\Site\AboutController::class, 'index'])->name('about');
+    Route::get('/news', [\App\Http\Controllers\Site\NewsController::class, 'index'])->name('news.index');
+    Route::get('/news/{announcement}', [\App\Http\Controllers\Site\NewsController::class, 'show'])->name('news.show');
+    Route::get('/contact', [\App\Http\Controllers\Site\ContactController::class, 'index'])->name('contact');
+    Route::get('/admission', [\App\Http\Controllers\Site\AdmissionController::class, 'index'])->name('admission');
+    Route::post('/admission/apply',
+        [\App\Http\Controllers\Site\ApplicationController::class, 'store'])
+        ->middleware('throttle:3,1')
+        ->name('admission.apply');
+
+    Route::get('/admission/status/{reference}',
+        [\App\Http\Controllers\Site\ApplicationController::class, 'status'])
+        ->name('admission.status');
+});
+
+// ─── Teacher-owned exports (accessible by both roles) ───
+Route::middleware(['auth', 'password.changed'])
+    ->prefix('exports')
+    ->name('exports.')
+    ->group(function () {
+        Route::get('/class-list/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'classList'])
+            ->name('class-list');
+        Route::get('/gradebook/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'gradebook'])
+            ->name('gradebook');
+    });
 
 require __DIR__ . '/auth.php';

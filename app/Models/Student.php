@@ -24,4 +24,9 @@ class Student extends Model
     public function submissions()       { return $this->hasMany(AssignmentSubmission::class); }
     public function quizAttempts()      { return $this->hasMany(QuizAttempt::class); }
     public function grades()            { return $this->hasMany(Grade::class); }
+
+    public function convertedFromApplicant()
+    {
+        return $this->hasOne(Applicant::class, 'converted_student_id');
+    }
 }

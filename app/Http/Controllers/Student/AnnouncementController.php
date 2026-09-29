@@ -77,7 +77,7 @@ class AnnouncementController extends Controller
 
         $limit = min((int) $request->input('limit', 10), 50);
 
-        $classroomIds = $student->classes()->pluck('classes.id');
+        $classroomIds = $student->classroom()->pluck('classes.id');
 
         $announcements = Announcement::query()
             ->whereIn('class_id', $classroomIds)

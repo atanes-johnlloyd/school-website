@@ -56,6 +56,7 @@ class AssignmentController extends Controller
 
         $assignment = $classroom->assignments()->create([
             'title'           => $request->validated('title'),
+            'category'        => $request->validated('category') ?? 'written_work',
             'instructions'    => $request->validated('instructions'),
             'due_at'          => $request->validated('due_at'),
             'points'          => $request->validated('points'),
