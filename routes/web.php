@@ -197,6 +197,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
 
         // ─── Exam Results ───
         Route::put('/exam-results/{result}', [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])->name('exam-results.update');
+
+        // ─── Admin User Management ───
+        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
     });
 
 // ─────────────────────────────────────────────────────────────
