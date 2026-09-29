@@ -15,7 +15,7 @@ class StoreAssignmentRequest extends FormRequest
     {
         return [
             'title'         => ['required', 'string', 'max:255'],
-            'category'        => ['required', 'in:written_work,performance_task,quarterly_exam'],
+            'category' => ['nullable', 'in:written_work,performance_task,quarterly_exam'],
             'instructions'  => ['nullable', 'string'],
             'due_at'        => ['required', 'date', 'after:now'],
             'points'        => ['required', 'numeric', 'min:1', 'max:1000'],

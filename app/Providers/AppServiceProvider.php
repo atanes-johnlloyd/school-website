@@ -5,12 +5,16 @@ namespace App\Providers;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Services\Notification\MailNotificationService;
+use App\Services\Notification\NotificationService;
+
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bind(NotificationService::class, MailNotificationService::class);
+
     }
 
     public function boot(): void

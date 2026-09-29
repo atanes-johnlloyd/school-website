@@ -78,7 +78,7 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject)
     {
-        if ($subject->classes()->exists()) {
+        if ($subject->classroom()->exists()) {
             return response()->json([
                 'message' => 'Cannot delete: subject is used in classes.',
             ], 422);

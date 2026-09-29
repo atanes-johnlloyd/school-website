@@ -97,7 +97,7 @@ class DashboardWidgetsTest extends TestCase
     public function test_student_dashboard_shows_upcoming_deadlines(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $classroom = $student->student->classes()->first();
+        $classroom = $student->student->classroom()->first();
 
         Assignment::create([
             'class_id'     => $classroom->id,
@@ -129,7 +129,7 @@ class DashboardWidgetsTest extends TestCase
     public function test_student_dashboard_excludes_submitted_assignments_from_deadlines(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $classroom = $student->student->classes()->first();
+        $classroom = $student->student->classroom()->first();
 
         $assignment = Assignment::create([
             'class_id'     => $classroom->id,
@@ -156,7 +156,7 @@ class DashboardWidgetsTest extends TestCase
     public function test_student_dashboard_shows_recent_announcements(): void
     {
         $student = User::where('email', 'student@test.com')->first();
-        $classroom = $student->student->classes()->first();
+        $classroom = $student->student->classroom()->first();
 
         Announcement::create([
             'created_by'   => $classroom->teacher->user_id,

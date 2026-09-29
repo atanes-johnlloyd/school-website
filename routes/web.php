@@ -183,6 +183,20 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::put('/applicant-documents/{document}/verify',
             [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
             ->name('applicant-documents.verify');
+
+        // ─── Entrance Exams ───
+        Route::get('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])->name('entrance-exams.index');
+        Route::post('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])->name('entrance-exams.store');
+        Route::get('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])->name('entrance-exams.show');
+        Route::put('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'update'])->name('entrance-exams.update');
+        Route::delete('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'destroy'])->name('entrance-exams.destroy');
+        Route::put('/entrance-exams/{exam}/cancel', [\App\Http\Controllers\Admin\EntranceExamController::class, 'cancel'])->name('entrance-exams.cancel');
+        Route::get('/entrance-exams/{exam}/eligible-applicants', [\App\Http\Controllers\Admin\EntranceExamController::class, 'eligibleApplicants'])->name('entrance-exams.eligible');
+        Route::post('/entrance-exams/{exam}/assign', [\App\Http\Controllers\Admin\EntranceExamController::class, 'assign'])->name('entrance-exams.assign');
+        Route::post('/entrance-exams/{exam}/remove-applicant', [\App\Http\Controllers\Admin\EntranceExamController::class, 'removeApplicant'])->name('entrance-exams.remove-applicant');
+
+        // ─── Exam Results ───
+        Route::put('/exam-results/{result}', [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])->name('exam-results.update');
     });
 
 // ─────────────────────────────────────────────────────────────

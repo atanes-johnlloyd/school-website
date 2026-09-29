@@ -65,7 +65,7 @@ class TermController extends Controller
 
     public function destroy(Term $term)
     {
-        if ($term->classes()->exists()) {
+        if ($term->classroom()->exists()) {
             return response()->json([
                 'message' => 'Cannot delete: term has linked classes.',
             ], 422);

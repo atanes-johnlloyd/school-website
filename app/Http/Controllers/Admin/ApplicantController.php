@@ -14,9 +14,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\EntranceExam;
+use App\Models\SchoolYear;
+use App\Services\Notification\NotificationService;
 
 class ApplicantController extends Controller
 {
+    public function __construct(protected NotificationService $notifications) {}
     /**
      * List applications with filters.
      */
@@ -191,14 +195,39 @@ class ApplicantController extends Controller
             ], 422);
         }
 
-        $applicant->update([
-            'status'           => 'approved',
-            'rejection_reason' => null,
-            'reviewed_by'      => $request->user()->id,
-            'reviewed_at'      => now(),
-        ]);
+        // ─── Try to auto-assign to next upcoming exam ───
+        $exam = EntranceExam::query()
+            ->where('status', '!=', 'Cancelled')
+            ->whereDate('exam_date', '>=', now()->addDays(7))
+            ->forGrade($applicant->desired_grade_level)
+            ->forTrack($applicant->strand?->track_id)
+            ->orderBy('exam_date')
+            ->first();
 
-        return response()->json(['message' => 'Application approved.', 'applicant' => $applicant]);
+        DB::transaction(function () use ($request, $applicant, $exam) {
+            $applicant->update([
+                'status'           => 'approved',
+                'rejection_reason' => null,
+                'reviewed_by'      => $request->user()->id,
+                'reviewed_at'      => now(),
+            ]);
+
+            if ($exam) {
+                \App\Models\EntranceExamResult::firstOrCreate(
+                    ['entrance_exam_id' => $exam->id, 'applicant_id' => $applicant->id],
+                    ['result' => 'Pending']
+                );
+            }
+        });
+
+        // ─── Send email ───
+        $this->sendApprovalEmail($applicant->fresh(), $exam);
+
+        return response()->json([
+            'message'         => 'Application approved.' . ($exam ? ' Assigned to exam.' : ''),
+            'applicant'       => $applicant,
+            'assigned_exam'   => $exam?->only(['id', 'exam_name', 'exam_date', 'exam_time']),
+        ]);
     }
 
     /**
@@ -206,7 +235,7 @@ class ApplicantController extends Controller
      */
     public function reject(RejectApplicantRequest $request, Applicant $applicant)
     {
-        if (in_array($applicant->status, ['enrolled'], true)) {
+        if ($applicant->status === 'enrolled') {
             return response()->json(['message' => 'Cannot reject an enrolled applicant.'], 422);
         }
 
@@ -216,6 +245,8 @@ class ApplicantController extends Controller
             'reviewed_by'      => $request->user()->id,
             'reviewed_at'      => now(),
         ]);
+
+        $this->sendRejectionEmail($applicant->fresh());
 
         return response()->json(['message' => 'Application rejected.', 'applicant' => $applicant]);
     }
@@ -235,6 +266,8 @@ class ApplicantController extends Controller
             'reviewed_by'      => $request->user()->id,
             'reviewed_at'      => now(),
         ]);
+
+        $this->sendResubmissionEmail($applicant->fresh());
 
         return response()->json(['message' => 'Resubmission requested.', 'applicant' => $applicant]);
     }
@@ -271,5 +304,71 @@ class ApplicantController extends Controller
             'message'  => 'Document status updated.',
             'document' => $document->fresh(),
         ]);
+    }
+
+    protected function sendApprovalEmail(Applicant $applicant, ?EntranceExam $exam): void
+    {
+        $activeYear = SchoolYear::where('is_active', true)->first();
+
+        $basePlaceholders = [
+            'student_name'   => $applicant->full_name,
+            'control_number' => $applicant->reference_number,
+            'strand'         => $applicant->strand?->name ?? 'N/A',
+            'school_year'    => $activeYear?->label ?? '',
+        ];
+
+        if ($exam) {
+            $basePlaceholders += [
+                'schedule' => $exam->exam_date->format('F d, Y') . ' at ' . $exam->exam_time,
+                'room'     => $exam->venue ?: 'TBA',
+            ];
+
+            $this->notifications->send(
+                $applicant->email,
+                'Admission Accepted & Exam Scheduled - Salawag Senior High School',
+                'accepted_with_exam',
+                $basePlaceholders
+            );
+        } else {
+            $this->notifications->send(
+                $applicant->email,
+                'Admission Accepted - Salawag Senior High School',
+                'accepted_no_exam',
+                $basePlaceholders
+            );
+        }
+    }
+
+    protected function sendRejectionEmail(Applicant $applicant): void
+    {
+        $activeYear = SchoolYear::where('is_active', true)->first();
+
+        $this->notifications->send(
+            $applicant->email,
+            'Application Status - Salawag Senior High School',
+            'reject',
+            [
+                'student_name'   => $applicant->full_name,
+                'control_number' => $applicant->reference_number,
+                'strand'         => $applicant->strand?->name ?? 'N/A',
+                'school_year'    => $activeYear?->label ?? '',
+                'reason'         => $applicant->rejection_reason ?? 'Not specified',
+            ]
+        );
+    }
+
+    protected function sendResubmissionEmail(Applicant $applicant): void
+    {
+        $this->notifications->send(
+            $applicant->email,
+            'Document Resubmission Required - Salawag Senior High School',
+            'resubmission_request',
+            [
+                'student_name'   => $applicant->full_name,
+                'control_number' => $applicant->reference_number,
+                'strand'         => $applicant->strand?->name ?? 'N/A',
+                'resubmit_link'  => url("/site/admission/resubmit?ref={$applicant->reference_number}"),
+            ]
+        );
     }
 }
