@@ -205,6 +205,15 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
         Route::put('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+        // ─── Reports ───
+        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+
+        // ─── Exports ───
+        Route::get('/exports/enrollments', [\App\Http\Controllers\Admin\ExportController::class, 'enrollments'])->name('exports.enrollments');
+        Route::get('/exports/applicants', [\App\Http\Controllers\Admin\ExportController::class, 'applicants'])->name('exports.applicants');
+        Route::get('/exports/students', [\App\Http\Controllers\Admin\ExportController::class, 'students'])->name('exports.students');
+        Route::get('/exports/teachers', [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])->name('exports.teachers');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -655,5 +664,18 @@ Route::prefix('site')->name('site.')->group(function () {
         [\App\Http\Controllers\Site\ApplicationController::class, 'status'])
         ->name('admission.status');
 });
+
+// ─── Teacher-owned exports (accessible by both roles) ───
+Route::middleware(['auth', 'password.changed'])
+    ->prefix('exports')
+    ->name('exports.')
+    ->group(function () {
+        Route::get('/class-list/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'classList'])
+            ->name('class-list');
+        Route::get('/gradebook/{classroom}',
+            [\App\Http\Controllers\Admin\ExportController::class, 'gradebook'])
+            ->name('gradebook');
+    });
 
 require __DIR__ . '/auth.php';
