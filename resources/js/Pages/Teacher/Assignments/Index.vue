@@ -2,45 +2,56 @@
 
   <Head title="Assignment & Classwork Evaluation Manager - Salawag LMS" />
 
-  <div class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300">
+  <div
+    class="h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300 overflow-hidden">
 
-    <!-- Sticky Sidebar Navigation -->
-    <div class="sticky top-0 h-screen z-40 shrink-0 shadow-lg">
+    <!-- Sticky Sidebar Navigation (Hidden on Mobile) -->
+    <div
+      class="hidden md:block sticky top-0 h-screen z-40 shrink-0 shadow-lg overflow-y-auto bg-white dark:bg-[#2D3A31]">
       <Sidebart />
     </div>
 
     <!-- Main Workspace Canvas -->
-    <main :class="['flex-1 relative overflow-y-auto min-h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
+    <main
+      :class="['flex-1 relative overflow-y-auto h-screen flex flex-col w-full min-w-0', `text-scale-${fontSizeMode}`]">
 
       <!-- Reusable Top Navigation Component -->
       <navbartop searchPlaceholder="Search assignments, rubric-grade tasks, student turn-ins.."
         @font-size-changed="(size) => fontSizeMode = size" />
 
       <!-- MAIN PAGE CONTENT -->
-      <div class="relative z-10 px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2">
+      <div
+        class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2 w-full max-w-full">
 
         <!-- ASSIGNMENTS HERO BANNER WITH ANIMATED OVERLAY & FADE DOWN -->
         <div v-observe
-          class="anim-fade-down relative w-full rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[260px] flex flex-col justify-center">
-          <!-- Background Image properly aligned and fitted -->
-          <img :src="heroImage"
-            alt="Assignments Background" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+          class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center"
+          style="animation-delay: 50ms;">
+
+          <!-- Background Image bound to local import -->
+          <img :src="heroImage" alt="Assignments Background"
+            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
           <!-- Animated Green Overlay -->
-          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
+          </div>
 
           <!-- Content Container -->
-          <div class="relative z-10 p-6 sm:p-8 md:p-10 max-w-3xl space-y-4">
+          <div class="relative z-10 p-4 sm:p-8 md:p-10 max-w-3xl space-y-3 sm:space-y-4">
 
-            <!-- Quarter Badge -->
+            <!-- Quarter Badge with Inline SVG -->
             <div
-              class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white border border-white/20 text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm">
-              <span>📅</span> SY 2025–2026 • Quarter 2 Evaluation
+              class="inline-flex items-center gap-1.5 sm:gap-2 bg-white/20 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+              <svg class="w-3.5 h-3.5 fill-current text-amber-300 shrink-0" viewBox="0 0 24 24">
+                <path
+                  d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+              </svg>
+              <span>SY 2025–2026 • Quarter 2 Evaluation</span>
             </div>
 
             <!-- Main Title & Description -->
-            <div class="space-y-3">
-              <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+            <div class="space-y-2 sm:space-y-3">
+              <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
                 Assignments & Classwork Evaluation Manager
               </h2>
               <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
@@ -52,817 +63,567 @@
           </div>
         </div>
 
-        <!-- 4-CARD ASSIGNMENT METRICS GRID WITH STAGGERED ANIMATIONS -->
-        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- 4-CARD ASSIGNMENT METRICS GRID -->
+        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
 
-          <!-- 1. TOTAL ACTIVE TASKS -->
+          <!-- 1. ACTIVE TASKS -->
           <div v-observe style="animation-delay: 100ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Total
-                  Active Tasks</span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
-                    </path>
-                  </svg>
-                </div>
-              </div>
+            class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-3 sm:space-y-4">
 
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-slate-900 dark:text-white">6</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Published Tasks</span>
-              </div>
-            </div>
-
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
-              <span>📈</span>
-              <span>2 Sections completing today</span>
-            </div>
-          </div>
-
-          <!-- 2. AWAITING EVALUATION -->
-          <div v-observe style="animation-delay: 200ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Awaiting
-                  Evaluation</span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                    </path>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-orange-600 dark:text-orange-400">42</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Submissions</span>
-              </div>
-            </div>
-
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
-              <span class="shrink-0">👥</span>
-              <span class="truncate">STEM Rizal, Archimedes, TVL-Turing</span>
-            </div>
-          </div>
-
-          <!-- 3. GRADED THIS WEEK -->
-          <div v-observe style="animation-delay: 300ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Graded
-                  This Week</span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-[#005506] dark:text-[#86EFAC]">89</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Evaluated</span>
-              </div>
-            </div>
-
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center gap-2 text-xs font-bold text-[#005506] dark:text-[#86EFAC]">
-              <span>⏱️</span>
-              <span>Turnaround: 1.4d (Target ≤ 2.0d)</span>
-            </div>
-          </div>
-
-          <!-- 4. MISSING / OVERDUE -->
-          <div v-observe style="animation-delay: 400ms;"
-            class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div class="flex items-start justify-between">
-                <span
-                  class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[120px]">Missing
-                  / Overdue</span>
-                <div
-                  class="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/30">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                    </path>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="flex items-baseline gap-2">
-                <span class="text-4xl font-black text-rose-600 dark:text-rose-400">3</span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Learners</span>
-              </div>
-            </div>
-
-            <div
-              class="pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-xs font-bold">
-              <span class="text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                <span>✉️</span> Dispatched
+            <div class="flex items-start justify-between">
+              <span
+                class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                ACTIVE TASKS
               </span>
-              <a href="#" class="text-[#005506] dark:text-[#86EFAC] hover:underline">
-                View 3 LRNs
-              </a>
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-[#006907] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                <svg class="w-4 h-4 fill-current text-[#006907] dark:text-[#86EFAC]" viewBox="0 0 24 24">
+                  <path
+                    d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                </svg>
+              </div>
             </div>
+
+            <div class="space-y-1">
+              <div class="text-3xl sm:text-4xl font-black text-[#005506] dark:text-[#86EFAC]">6</div>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                Ongoing across 4 sections
+              </p>
+            </div>
+
+          </div>
+
+          <!-- 2. TO REVIEW -->
+          <div v-observe style="animation-delay: 150ms;"
+            class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-3 sm:space-y-4">
+
+            <div class="flex items-start justify-between">
+              <span
+                class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                TO REVIEW
+              </span>
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/40">
+                <svg class="w-4 h-4 fill-current text-amber-700 dark:text-amber-300" viewBox="0 0 24 24">
+                  <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="text-3xl sm:text-4xl font-black text-amber-700 dark:text-amber-400">14</div>
+              <p class="text-xs sm:text-sm text-amber-600 dark:text-amber-400 font-bold">
+                Submissions pending review
+              </p>
+            </div>
+
+          </div>
+
+          <!-- 3. TURN-IN RATE -->
+          <div v-observe style="animation-delay: 200ms;"
+            class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-3 sm:space-y-4">
+
+            <div class="flex items-start justify-between">
+              <span
+                class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                TURN-IN RATE
+              </span>
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-[#006907] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                <svg class="w-4 h-4 fill-current text-[#006907] dark:text-[#86EFAC]" viewBox="0 0 24 24">
+                  <path
+                    d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="text-3xl sm:text-4xl font-black text-[#005506] dark:text-[#86EFAC]">92.4%</div>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                +3.2% vs midterm average
+              </p>
+            </div>
+
+          </div>
+
+          <!-- 4. ON-TIME SUBMISSIONS -->
+          <div v-observe style="animation-delay: 250ms;"
+            class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-3 sm:space-y-4">
+
+            <div class="flex items-start justify-between">
+              <span
+                class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                ON-TIME SUBMISSIONS
+              </span>
+              <div
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-[#006907] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                <svg class="w-4 h-4 fill-current text-[#006907] dark:text-[#86EFAC]" viewBox="0 0 24 24">
+                  <path
+                    d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.7l-3.61.81.34 3.68L1 12l2.44 2.79-.34 3.7 3.61.82 1.89 3.2 3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="text-3xl sm:text-4xl font-black text-[#005506] dark:text-[#86EFAC]">88.6%</div>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                Prompt compliance across STEM
+              </p>
+            </div>
+
           </div>
 
         </div>
 
-        <!-- CLASSWORK PIPELINE & CREATE ASSIGNMENT WORKSPACE GRID -->
-        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- MAIN WORKSPACE CONTAINER -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start w-full">
 
-          <!-- LEFT COLUMN: CLASSWORK PIPELINE (5 COLS) -->
-          <div class="lg:col-span-5 space-y-5">
+          <!-- LEFT COLUMN: TASK LIST FEED & DEPLOY PANEL (7 COLS) -->
+          <div class="lg:col-span-7 space-y-4 sm:space-y-5 w-full min-w-0">
 
-            <!-- Pipeline Filter Header Panel -->
-            <div v-observe
-              class="anim-fade-down bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+            <!-- TOP FILTER & CLASS SELECTOR BAR -->
+            <div v-observe style="animation-delay: 300ms;"
+              class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <!-- Class Selector Dropdown -->
+              <div class="relative flex-1 min-w-0">
+                <select
+                  class="w-full bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-extrabold px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] appearance-none cursor-pointer pr-8 truncate">
+                  <option>Grade 12 STEM–2 Curie (Physics)</option>
+                  <option>Grade 11 STEM–1 Newton (Math)</option>
+                  <option>Grade 12 ICT–TechPro (Prog)</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M7 10l5 5 5-5z" />
+                  </svg>
+                </div>
+              </div>
 
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/30">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                      </path>
-                    </svg>
-                  </div>
-                  <h3 class="text-base font-black text-slate-800 dark:text-white">Classwork Pipeline</h3>
+              <!-- Filter Pill Buttons -->
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                <button
+                  class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-[11px] font-black px-3 py-1.5 sm:py-2 rounded-xl shadow-sm shrink-0">
+                  All (6)
+                </button>
+                <button
+                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-[11px] font-bold px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] shrink-0 transition-colors">
+                  Active (3)
+                </button>
+                <button
+                  class="bg-[#FEF9E7] dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 text-[11px] font-bold px-3 py-1.5 sm:py-2 rounded-xl border border-amber-200/80 dark:border-amber-900/40 shrink-0">
+                  Needs Review (2)
+                </button>
+              </div>
+            </div>
+
+            <!-- DEPLOY NEW ASSESSMENT TASK BANNER -->
+            <div v-observe style="animation-delay: 350ms;"
+              class="anim-slide-up bg-[#FEF9E7]/90 dark:bg-[#232D26] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-amber-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+              <div class="flex items-start gap-3 min-w-0">
+                <div
+                  class="w-10 h-10 rounded-2xl bg-[#005506] text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">Deploy New
+                    Assessment Task
+                  </h3>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">Rubric parameters, weighted
+                    components, and shared Drive files.</p>
+                </div>
+              </div>
+              <button
+                class="bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] text-xs font-black px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all shrink-0 active:scale-95">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+                + New Task
+              </button>
+            </div>
+
+            <!-- TASK CARD 1: LAB ACTIVITY 5 (ACTIVE PENDING) -->
+            <div v-observe style="animation-delay: 400ms;"
+              class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border-2 border-rose-500/80 dark:border-rose-500/60 space-y-3.5">
+
+              <!-- Tags Row -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span
+                    class="bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-md border border-emerald-200/60">
+                    Lab Activity
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    50 Points
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    12 STEM–2 Curie
+                  </span>
                 </div>
                 <span
-                  class="bg-[#EAF3EC] dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[11px] font-black px-3 py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40">
-                  SY 2025–26 • 2nd Sem
+                  class="bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-rose-200/80">
+                  • 14 Pending Grading
                 </span>
               </div>
 
-              <!-- Filter Pills -->
-              <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                <button v-for="filter in pipelineFilters" :key="filter.id" @click="activeFilter = filter.id" :class="[
-                  'px-3.5 py-1.5 rounded-xl text-xs transition-all border',
-                  activeFilter === filter.id
-                    ? 'bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] font-bold shadow-sm border-transparent'
-                    : 'bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 font-semibold border-slate-200/80 dark:border-[#3F4F43] hover:bg-slate-100 dark:hover:bg-[#3F4F43]'
-                ]">
-                  {{ filter.label }} ({{ filter.count }})
-                </button>
+              <!-- Title & Description -->
+              <div class="space-y-1">
+                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  Lab Activity 5: Total Internal Reflection & Snell's Law
+                </h4>
+                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                  Bench optic experiments with laser refraction indices through acrylic prisms.
+                </p>
               </div>
 
-              <!-- Dropdown & Sort Bar -->
-              <div class="flex items-center gap-2 pt-1">
-                <div class="relative flex-1">
-                  <select v-model="selectedSubject"
-                    class="w-full appearance-none bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3.5 pr-8 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907]">
-                    <option value="gen_physics">General Physics 2 (STEM 12)</option>
-                    <option value="gen_chem">General Chemistry 2 (STEM 12)</option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              <!-- Due Date & Progress Bar -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                  <span class="text-amber-800 dark:text-amber-400 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
                     </svg>
-                  </div>
+                    Due: Yesterday, 11:59 PM
+                  </span>
+                  <span class="text-slate-800 dark:text-white font-extrabold">35 of 38 Turn-ins (92%)</span>
                 </div>
-                <button
-                  class="w-9 h-9 rounded-xl bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 hover:bg-slate-100 dark:hover:bg-[#3F4F43] transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
-                  </svg>
-                </button>
+                <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full" style="width: 92%;"></div>
+                </div>
               </div>
 
-            </div>
-
-            <!-- PIPELINE CARDS LIST -->
-            <div class="space-y-4">
-
-              <!-- CARD 1: PERFORMANCE TASK -->
-              <div v-observe style="animation-delay: 150ms;"
-                class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-3xl p-5 shadow-md border-2 border-[#006907] dark:border-[#86EFAC] space-y-4 relative overflow-hidden">
-
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span
-                      class="bg-emerald-50 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-900/40">
-                      STEM • Gen Physics 2
-                    </span>
-                    <span
-                      class="bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40 flex items-center gap-1">
-                      <span>⚙️</span> Performance Task (40 Pts)
-                    </span>
-                  </div>
-
-                  <div
-                    class="bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-900/40 text-right shrink-0">
-                    Due Today, <br>11:59 PM
-                  </div>
+              <!-- Attachment & Action Button -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-0">
+                  <svg class="w-4 h-4 fill-current text-slate-400 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                  </svg>
+                  <span class="truncate">Lab_Guide_Optics_v2.pdf</span>
                 </div>
-
-                <div class="space-y-1">
-                  <h4 class="text-base font-black text-slate-900 dark:text-white leading-snug">
-                    Laboratory Activity 4: Electromagnetic Induction & Faraday's Law
-                  </h4>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2">
-                    Simulate magnetic field variations using PhET Interactive Faraday Sim. Derive induced electromotive
-                    force...
-                  </p>
-                </div>
-
-                <div
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#3F4F43] space-y-2">
-                  <div class="flex items-center justify-between text-xs font-black">
-                    <span class="text-slate-800 dark:text-slate-200">Grade 12 STEM - Rizal</span>
-                    <span class="text-[#005506] dark:text-[#86EFAC]">41 / 45 Submitted (91%)</span>
-                  </div>
-
-                  <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-[#3F4F43] overflow-hidden flex">
-                    <div class="h-full bg-[#005506] dark:bg-[#86EFAC]" style="width: 62%;"></div>
-                    <div class="h-full bg-[#F9C20C]" style="width: 29%;"></div>
-                    <div class="h-full bg-slate-300 dark:bg-slate-600" style="width: 9%;"></div>
-                  </div>
-
-                  <div class="flex items-center justify-between text-[10px] font-bold pt-0.5">
-                    <span class="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-[#005506] dark:bg-[#86EFAC]"></span> 28 Graded
-                    </span>
-                    <span class="text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-[#F9C20C]"></span> 13 Awaiting Review
-                    </span>
-                    <span class="text-slate-400 flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span> 4 Missing
-                    </span>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-1">
-                  <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                    <span
-                      class="bg-slate-100 dark:bg-[#232D26] px-2 py-1 rounded border border-slate-200 dark:border-[#3F4F43]">👓
-                      PhET Sim</span>
-                    <span
-                      class="bg-slate-100 dark:bg-[#232D26] px-2 py-1 rounded border border-slate-200 dark:border-[#3F4F43]">⚖️
-                      3 Rubrics</span>
-                  </div>
-
+                <div class="flex items-center gap-2 shrink-0">
                   <button
-                    class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] px-3.5 py-1.5 rounded-xl text-xs font-black shadow-sm flex items-center gap-1">
-                    Active in Class 👁️
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] transition-colors">
+                    Edit Task
+                  </button>
+                  <button
+                    class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-4 py-2 rounded-xl shadow-sm flex items-center gap-1.5 transition-all">
+                    <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                    Open Grading Desk
                   </button>
                 </div>
-
               </div>
+            </div>
 
-              <!-- CARD 2: WRITTEN WORK -->
-              <div v-observe style="animation-delay: 250ms;"
-                class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+            <!-- TASK CARD 2: PROBLEM SET 3 -->
+            <div v-observe style="animation-delay: 450ms;"
+              class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-3.5">
 
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span
-                      class="bg-emerald-50 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-900/40">
-                      STEM • Gen Physics 2
-                    </span>
-                    <span
-                      class="bg-slate-100 dark:bg-[#232D26] text-slate-700 dark:text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-200/80 dark:border-[#3F4F43]">
-                      Written Work (25 Pts)
-                    </span>
-                  </div>
-
+              <!-- Tags Row -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span
-                    class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-200/60 dark:border-amber-900/40 shrink-0">
-                    Due Mar 13
+                    class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-200/60">
+                    Written Work
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    30 Points
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    12 STEM–2 Curie
                   </span>
                 </div>
-
-                <div class="space-y-1">
-                  <h4 class="text-base font-black text-slate-900 dark:text-white leading-snug">
-                    Problem Set 3: Circuits & Kirchhoff's Rules
-                  </h4>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2">
-                    Multi-loop DC network nodal equations and current loop solutions with resistor tolerance variations.
-                  </p>
-                </div>
-
-                <div
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#3F4F43] space-y-2">
-                  <div class="flex items-center justify-between text-xs font-black">
-                    <span class="text-slate-800 dark:text-slate-200">Grade 12 STEM - Archimedes</span>
-                    <span class="text-[#005506] dark:text-[#86EFAC]">38 / 44 Submitted</span>
-                  </div>
-
-                  <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-[#3F4F43] overflow-hidden flex">
-                    <div class="h-full bg-[#005506] dark:bg-[#86EFAC]" style="width: 86%;"></div>
-                    <div class="h-full bg-rose-500" style="width: 14%;"></div>
-                  </div>
-
-                  <div class="flex items-center justify-between text-[10px] font-bold pt-0.5">
-                    <span class="text-emerald-700 dark:text-emerald-400">100% of turned-in evaluated (38/38)</span>
-                    <span class="text-rose-600 font-black">6 Overdue</span>
-                  </div>
-                </div>
-
+                <span
+                  class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-200/80">
+                  8 Ready Early
+                </span>
               </div>
 
-              <!-- CARD 3: MILESTONE -->
-              <div v-observe style="animation-delay: 350ms;"
-                class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4">
+              <!-- Title & Description -->
+              <div class="space-y-1">
+                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  Problem Set 3: Torque & Rotational Equilibrium
+                </h4>
+                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                  Calculations on static equilibrium, ladder problems, and center of gravity coordinates.
+                </p>
+              </div>
 
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span
-                      class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40">
-                      TVL-ICT • Robotics
-                    </span>
-                    <span
-                      class="bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40 flex items-center gap-1">
-                      <span>⚙️</span> Milestone (50 Pts)
-                    </span>
-                  </div>
+              <!-- Due Date & Progress Bar -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                  <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current text-slate-400 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+                    </svg>
+                    Due: In 2 days (Friday, 5:00 PM)
+                  </span>
+                  <span class="text-slate-800 dark:text-white font-extrabold">28 of 38 Turn-ins (73%)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full" style="width: 73%;"></div>
+                </div>
+              </div>
 
+              <!-- Attachment & Action Button -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-0">
+                  <svg class="w-4 h-4 fill-current text-slate-400 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                  </svg>
+                  <span class="truncate">PS3_Problem_Set.docx</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] transition-colors">
+                    Edit Task
+                  </button>
+                  <button
+                    class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-4 py-2 rounded-xl shadow-sm flex items-center gap-1.5 transition-all">
+                    <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                    Review Early
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TASK CARD 3: UNIT 2 CAPSTONE PROPOSAL -->
+            <div v-observe style="animation-delay: 500ms;"
+              class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-3.5">
+
+              <!-- Tags Row -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span
-                    class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-200/60 dark:border-amber-900/40 shrink-0">
-                    Due Mar 15
+                    class="bg-[#FEF9E7] dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-200/60">
+                    Performance Task
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    100 Points
+                  </span>
+                  <span
+                    class="bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    12 STEM–1 Newton
                   </span>
                 </div>
-
-                <div class="space-y-1">
-                  <h4 class="text-base font-black text-slate-900 dark:text-white leading-snug">
-                    Robotics Project Milestone 1: Sensor Array Breadboard
-                  </h4>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2">
-                    Hardware prototype assembly for ultrasonic range finder and IR line tracker interfaced with Arduino
-                    Uno...
-                  </p>
-                </div>
-
-                <div
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-3.5 border border-slate-200/60 dark:border-[#3F4F43] space-y-2">
-                  <div class="flex items-center justify-between text-xs font-black">
-                    <span class="text-slate-800 dark:text-slate-200">TechPro 11 - Turing</span>
-                    <span class="text-amber-700 dark:text-amber-400">12 / 38 Submitted</span>
-                  </div>
-
-                  <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-[#3F4F43] overflow-hidden flex">
-                    <div class="h-full bg-amber-500" style="width: 31%;"></div>
-                  </div>
-
-                  <div class="flex items-center justify-between text-[10px] font-bold pt-0.5">
-                    <span class="text-slate-500 dark:text-slate-400">Submissions in progress</span>
-                    <span class="text-slate-600 dark:text-slate-300">26 In Lab Assembly</span>
-                  </div>
-                </div>
-
+                <span
+                  class="bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                  All 38 In
+                </span>
               </div>
 
+              <!-- Title & Description -->
+              <div class="space-y-1">
+                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  Unit 2 Capstone Proposal: Hydroponics Sensor Rig
+                </h4>
+                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                  Automated pH, ambient illumination, and electrical conductivity telemetry schematics.
+                </p>
+              </div>
+
+              <!-- Due Date & Progress Bar -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                  <span class="text-slate-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                      <path
+                        d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+                    </svg>
+                    Due: Oct 18 • 3 Graded
+                  </span>
+                  <span class="text-[#005506] dark:text-[#86EFAC] font-black">38 of 38 Turn-ins (100%)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-200 dark:bg-[#3F4F43] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full w-full"></div>
+                </div>
+              </div>
+
+              <!-- Attachment & Action Button -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-0">
+                  <svg class="w-4 h-4 fill-current text-slate-400 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                  </svg>
+                  <span class="truncate">Group Project (8 Groups)</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button
+                    class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] transition-colors">
+                    Edit Task
+                  </button>
+                  <button
+                    class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-4 py-2 rounded-xl shadow-sm transition-all">
+                    Grade Projects
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>
 
-          <!-- RIGHT COLUMN: CREATE ASSIGNMENT FORM & RUBRIC BUILDER (7 COLS) -->
-          <div class="lg:col-span-7 space-y-5">
+          <!-- RIGHT COLUMN: GRADING DESK PREVIEW PANEL (5 COLS) -->
+          <div v-observe style="animation-delay: 300ms;"
+            class="anim-slide-up lg:col-span-5 bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4 sm:space-y-5 w-full min-w-0">
 
-            <!-- Header Bar -->
-            <div v-observe
-              class="anim-fade-down bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex items-center justify-between gap-4">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/30">
-                  📝
-                </div>
-                <div>
-                  <h2 class="text-lg font-black text-slate-900 dark:text-white">Create Assignment or Online Activity
-                  </h2>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span
-                      class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40">
-                      ✓ DepEd DO 8, s. 2015 Compliant
-                    </span>
-                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      Author interactive tasks, attach standard rubrics, and publish directly to SHS classes.
-                    </span>
-                  </div>
-                </div>
+            <!-- Panel Header with Pager -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-[#3F4F43] pb-3 gap-2">
+              <div class="min-w-0">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block truncate">GRADING DESK
+                  PREVIEW</span>
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Lab Activity 5
+                  Evaluation
+                </h3>
               </div>
-
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button
-                  class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm">
-                  Active Editor
-                </button>
-                <button
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] text-slate-600 dark:text-slate-300 text-xs font-bold px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-[#3F4F43]">
-                  Drafts (1)
-                </button>
+              <div
+                class="flex items-center gap-2 bg-[#F9F7F1] dark:bg-[#232D26] px-2.5 py-1 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                <button class="hover:text-black dark:hover:text-white">‹</button>
+                <span>1 of 14</span>
+                <button class="hover:text-black dark:hover:text-white">›</button>
               </div>
             </div>
 
-            <!-- Main Assignment Form Container -->
-            <div v-observe style="animation-delay: 100ms;"
-              class="anim-slide-up bg-white/90 dark:bg-[#2D3A31]/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-6">
-
-              <!-- 1. SELECT ASSESSMENT COMPONENT TYPE -->
-              <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <label
-                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-2">
-                    <span>1.</span> SELECT ASSESSMENT COMPONENT TYPE (DEPED WEIGHTING)
-                  </label>
-                  <span class="text-[10px] font-bold text-slate-400">DO 8, s. 2015 Transmutation Weights</span>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <!-- Written Work -->
-                  <button
-                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-base">📑</span>
-                      <span
-                        class="bg-slate-200/60 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-md">25%</span>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Written Work</h4>
-                      <p class="text-[10px] text-slate-400 font-medium">Quizzes & problem sets</p>
-                    </div>
-                  </button>
-
-                  <!-- Performance Task (Selected) -->
-                  <button
-                    class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-2xl border-2 border-[#005506] dark:border-[#86EFAC] text-left space-y-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-base">🧪</span>
-                      <span
-                        class="bg-[#005506] text-white dark:bg-[#86EFAC] dark:text-[#232D26] text-[10px] font-black px-2 py-0.5 rounded-md">40-50%</span>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-black text-[#005506] dark:text-[#86EFAC]">Performance Task</h4>
-                      <p class="text-[10px] text-emerald-800/80 dark:text-emerald-300/80 font-medium">Labs &
-                        demonstrations</p>
-                    </div>
-                  </button>
-
-                  <!-- Quarterly Exam -->
-                  <button
-                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-base">📊</span>
-                      <span
-                        class="bg-slate-200/60 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-md">20%</span>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Quarterly Exam</h4>
-                      <p class="text-[10px] text-slate-400 font-medium">Periodical evaluation</p>
-                    </div>
-                  </button>
-
-                  <!-- Gamified Quest -->
-                  <button
-                    class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] text-left hover:border-[#005506] transition-all space-y-2">
-                    <div class="flex items-center justify-between">
-                      <span class="text-base">🎮</span>
-                      <span
-                        class="bg-[#F9C20C] text-[#2C3E2D] text-[10px] font-black px-2 py-0.5 rounded-md">+Bonus</span>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-black text-slate-900 dark:text-white">Gamified Quest</h4>
-                      <p class="text-[10px] text-slate-400 font-medium">Hint quest & challenges</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- 2. TARGET SECTION & 3. COMPETENCY CODE -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                  <label
-                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
-                    <span>👥</span> 2. TARGET SECTION & TRACK
-                  </label>
-                  <select
-                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907]">
-                    <option>Grade 12 STEM - Jose Rizal (45 Learners)</option>
-                    <option>Grade 12 STEM - Archimedes (44 Learners)</option>
-                    <option>TechPro 11 - Turing (38 Learners)</option>
-                  </select>
-                </div>
-
-                <div class="space-y-1.5">
-                  <label
-                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
-                    <span>📖</span> SUBJECT / COMPETENCY CODE
-                  </label>
-                  <select
-                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907]">
-                    <option>General Physics 2 • STEM_GP12EM-IVa-1</option>
-                    <option>General Physics 2 • STEM_GP12EM-IVb-12</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- 3. ACTIVITY TITLE -->
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <label
-                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
-                    <span>📝</span> 3. ACTIVITY / ASSIGNMENT TITLE
-                  </label>
-                  <span class="text-[10px] font-bold text-slate-400">DISPLAY TITLE IN STUDENT PORTAL</span>
-                </div>
-                <input type="text" value="Lab Activity 5: Electromagnetic Wave Optics & Snell's Law Experiment"
-                  class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-4 py-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#006907]" />
-              </div>
-
-              <!-- 4. INSTRUCTIONS & PROMPT SPECIFICATION -->
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <label
-                    class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
-                    <span>💻</span> 4. INSTRUCTIONS & PROMPT SPECIFICATION
-                  </label>
-                  <span class="text-[10px] font-semibold text-slate-400">Markdown & LaTeX Math Enabled</span>
-                </div>
-
+            <!-- Student Card -->
+            <div
+              class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
                 <div
-                  class="bg-[#FEF9E7] dark:bg-[#232D26] rounded-2xl border border-amber-200 dark:border-[#3F4F43] overflow-hidden space-y-2 p-3">
-                  <!-- Editor Action Bar -->
-                  <div
-                    class="flex flex-wrap items-center gap-2 pb-2 border-b border-amber-200/60 dark:border-[#3F4F43] text-xs font-bold text-slate-600 dark:text-slate-300">
-                    <button
-                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] font-black">B</button>
-                    <button
-                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] italic">I</button>
-                    <button
-                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] underline">U</button>
-                    <span class="text-slate-300">|</span>
-                    <span
-                      class="bg-white dark:bg-[#2D3A31] px-2 py-1 rounded border border-slate-200 dark:border-[#3F4F43] font-mono text-[10px]">∑
-                      n₁sin(θ₁) = n₂sin(θ₂)</span>
-                    <button
-                      class="px-2 py-1 bg-white dark:bg-[#2D3A31] rounded border border-slate-200 dark:border-[#3F4F43] font-mono text-[10px]">&lt;&gt;
-                      Code</button>
-
-                    <div class="ml-auto flex items-center gap-1.5">
-                      <button
-                        class="bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                        📎 Attach DOST Resource
-                      </button>
-                      <button
-                        class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200">
-                        👓 Embed PhET Sim
-                      </button>
-                    </div>
-                  </div>
-
-                  <textarea rows="4"
-                    class="w-full bg-transparent text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none resize-none leading-relaxed p-1"
-                    placeholder="Type assignment instructions...">1. Access the PhET 'Bending Light' Interactive Simulation module via the provided DepEd portal token.
-2. Calculate the index of refraction (n) across 5 differing prism optical densities using Snell's Law equation: n₁ sin(θ₁) = n₂ sin(θ₂).
-3. Tabulate incident vs. refraction angles, record laser color wavelength...</textarea>
+                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                  MH
+                </div>
+                <div class="min-w-0">
+                  <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">Mack Howell</h4>
+                  <p class="text-[10px] font-semibold text-slate-500 truncate">LRN: 10928374019 • STEM–2 Curie</p>
                 </div>
               </div>
-
-              <!-- 5. PERMITTED SUBMISSION MODE -->
-              <div class="space-y-2">
-                <label
-                  class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <span>📤</span> 5. PERMITTED SUBMISSION MODE
-                </label>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <!-- Digital File Upload (Selected) -->
-                  <label
-                    class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-2xl border-2 border-[#005506] dark:border-[#86EFAC] flex items-start gap-2 cursor-pointer">
-                    <input type="radio" name="submission_mode" checked
-                      class="mt-0.5 text-[#005506] focus:ring-[#005506]">
-                    <div>
-                      <h5 class="text-xs font-black text-slate-900 dark:text-white">Digital File Upload</h5>
-                      <p class="text-[10px] text-slate-500 font-medium">PDF, XLSX, DOCX, ZIP</p>
-                    </div>
-                  </label>
-
-                  <!-- PhET Sim Embed -->
-                  <label
-                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
-                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
-                    <div>
-                      <h5 class="text-xs font-black text-slate-900 dark:text-white">PhET Sim Embed</h5>
-                      <p class="text-[10px] text-slate-500 font-medium">Live sim state link</p>
-                    </div>
-                  </label>
-
-                  <!-- Online Rich Text -->
-                  <label
-                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
-                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
-                    <div>
-                      <h5 class="text-xs font-black text-slate-900 dark:text-white">Online Rich Text</h5>
-                      <p class="text-[10px] text-slate-500 font-medium">Direct browser entry</p>
-                    </div>
-                  </label>
-
-                  <!-- In-Class Demo -->
-                  <label
-                    class="bg-[#FEF9E7] dark:bg-[#232D26] p-3 rounded-2xl border border-amber-200 dark:border-[#3F4F43] flex items-start gap-2 cursor-pointer">
-                    <input type="radio" name="submission_mode" class="mt-0.5 text-[#005506] focus:ring-[#005506]">
-                    <div>
-                      <h5 class="text-xs font-black text-slate-900 dark:text-white">In-Class Demo</h5>
-                      <p class="text-[10px] text-slate-500 font-medium">Hands-on lab rubric</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <!-- DUE DATE & POINTS ROW -->
-              <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                <div class="sm:col-span-4 space-y-1">
-                  <label
-                    class="text-[11px] font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                    <span>📅</span> Due Date & Cutoff
-                  </label>
-                  <input type="text" value="03/20/2026, 11:59 PM"
-                    class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3.5 py-2.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
-                </div>
-
-                <div class="sm:col-span-4 space-y-1">
-                  <label
-                    class="text-[11px] font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                    <span>📈</span> Max Score / Points
-                  </label>
-                  <div class="flex items-center gap-2">
-                    <input type="number" value="40"
-                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3.5 py-2.5 rounded-xl border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none text-center" />
-                    <span class="text-xs font-bold text-slate-400 shrink-0">Pts total</span>
-                  </div>
-                </div>
-
-                <div class="sm:col-span-4 flex items-center gap-2 pt-5">
-                  <input type="checkbox" id="grace_period" checked
-                    class="rounded text-[#005506] focus:ring-[#005506] w-4 h-4">
-                  <label for="grace_period" class="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                    +24h Late Penalty Cap (10%)
-                  </label>
-                </div>
-              </div>
-
-              <!-- 7. DEPED HOLISTIC RUBRIC CRITERIA MATRIX -->
-              <div
-                class="bg-[#FEF9E7]/60 dark:bg-[#232D26] p-5 sm:p-6 rounded-3xl border border-amber-200/80 dark:border-[#3F4F43] space-y-5">
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 dark:border-[#3F4F43] pb-4">
-                  <div class="flex items-start gap-3">
-                    <span class="text-emerald-800 dark:text-[#86EFAC] text-xl">📋</span>
-                    <div>
-                      <h3 class="text-sm font-black text-slate-900 dark:text-white">
-                        7. DepEd Holistic Rubric Criteria Matrix
-                      </h3>
-                      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Preset standard DO 8 science matrices loaded. Customize weighting & criteria levels.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-2 shrink-0">
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-400">Preset:</span>
-                    <select
-                      class="bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#3F4F43] focus:outline-none">
-                      <option>4-Criteria Science Inquiry Rubric (40 Pts)</option>
-                      <option>3-Criteria DepEd Lab Rubric (30 Pts)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- CRITERIA CARDS GRID -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <!-- Criterion 1 -->
-                  <div
-                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 1</span>
-                      <span
-                        class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2 py-0.5 rounded-md">
-                        15 Pts (37.5%)
-                      </span>
-                    </div>
-
-                    <input type="text" value="Refraction Law"
-                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
-
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
-                      Verification of incident & refracted angle precision and Snell equation proof.
-                    </p>
-
-                    <div
-                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
-                      <span>Exemplary: 15</span>
-                      <span>Proficient: 12</span>
-                      <span>Basic: 8</span>
-                    </div>
-                  </div>
-
-                  <!-- Criterion 2 -->
-                  <div
-                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 2</span>
-                      <span
-                        class="bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-black px-2 py-0.5 rounded-md">
-                        15 Pts (37.5%)
-                      </span>
-                    </div>
-
-                    <input type="text" value="Graphical Reg"
-                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
-
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
-                      Plotting index slopes with error bars, sign conventions, and medium absorption notes.
-                    </p>
-
-                    <div
-                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
-                      <span>Exemplary: 15</span>
-                      <span>Proficient: 12</span>
-                      <span>Basic: 8</span>
-                    </div>
-                  </div>
-
-                  <!-- Criterion 3 -->
-                  <div
-                    class="bg-white dark:bg-[#2D3A31] p-4 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-3">
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs font-black text-slate-800 dark:text-white">Criterion 3</span>
-                      <span
-                        class="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md">
-                        10 Pts (25.0%)
-                      </span>
-                    </div>
-
-                    <input type="text" value="Scientific Synt"
-                      class="w-full bg-[#FEF9E7] dark:bg-[#232D26] px-3 py-1.5 rounded-lg border border-amber-200 dark:border-[#3F4F43] text-xs font-black text-slate-900 dark:text-white focus:outline-none" />
-
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-3">
-                      Standard SHS laboratory template, scientific vocabulary, citations, and clarity.
-                    </p>
-
-                    <div
-                      class="pt-2 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[10px] font-bold text-slate-400">
-                      <span>Exemplary: 10</span>
-                      <span>Proficient: 9</span>
-                      <span>Basic: 5</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Rubric Controls Bar -->
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                  <button
-                    class="w-full sm:w-auto bg-white dark:bg-[#2D3A31] text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#3F4F43] px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center gap-1">
-                    <span>➕</span> Add Custom Criterion
-                  </button>
-
-                  <span
-                    class="bg-emerald-100 dark:bg-emerald-950 text-[#005506] dark:text-[#86EFAC] text-xs font-black px-4 py-2 rounded-xl border border-emerald-200">
-                    Total Rubric Weight: 40 / 40 Points (100% Balanced)
-                  </span>
-                </div>
-              </div>
-
-              <!-- PUBLISH & ACTION CONTROLS FOOTER -->
-              <div
-                class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-[#3F4F43]">
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    class="flex-1 sm:flex-none bg-[#EFECE6] dark:bg-[#232D26] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#3F4F43] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all">
-                    Save as Draft
-                  </button>
-
-                  <button
-                    class="flex-1 sm:flex-none bg-[#EFECE6] dark:bg-[#232D26] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#3F4F43] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5">
-                    <span>📅</span> Schedule Publish
-                  </button>
-                </div>
-
-                <button
-                  class="w-full sm:w-auto bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] px-6 py-3 rounded-2xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2">
-                  <span>🚀</span> Publish to Selected Classes (Instant SMS to Parents)
-                </button>
-              </div>
-
+              <span
+                class="bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-200/60 shrink-0 text-center">
+                Submitted On-Time
+              </span>
             </div>
+
+            <!-- Submitted File Attachment Pill -->
+            <div
+              class="bg-white dark:bg-[#2D3A31] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2 min-w-0">
+                <div
+                  class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 font-black text-[10px] flex items-center justify-center shrink-0">
+                  PDF
+                </div>
+                <div class="min-w-0">
+                  <span class="font-bold text-slate-800 dark:text-slate-200 block truncate">LabReport_05_Howell_</span>
+                  <span class="text-[10px] text-slate-400 font-medium truncate block">3.4 MB • Uploaded Yesterday, 8:42
+                    PM</span>
+                </div>
+              </div>
+              <button
+                class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#232D26] text-slate-500 transition-colors shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Document Preview Frame -->
+            <div
+              class="relative rounded-2xl overflow-hidden border border-slate-200/80 dark:border-[#3F4F43] bg-slate-900 group">
+              <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800&auto=format&fit=crop"
+                alt="Document Preview" class="w-full h-36 sm:h-44 object-cover opacity-80" />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 flex flex-col justify-end p-3 text-white">
+                <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400">DOCUMENT PREVIEW (PAGE 1
+                  OF 4)</span>
+                <h5 class="text-xs font-bold drop-shadow-sm truncate">Snell's Law Critical Angle Bench Validation</h5>
+              </div>
+            </div>
+
+            <!-- Analytical Rubric Form -->
+            <div class="space-y-3 pt-1">
+              <div class="flex items-center justify-between text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                <span class="uppercase text-slate-400 text-[10px]">ANALYTICAL RUBRIC</span>
+                <span>Total Computed: <strong class="text-[#005506] dark:text-[#86EFAC] text-sm">46</strong> / 50</span>
+              </div>
+
+              <!-- Rubric Criteria 1 -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-2 text-xs">
+                <div class="min-w-0">
+                  <h5 class="font-bold text-slate-800 dark:text-white truncate">Scientific Accuracy & Calculations</h5>
+                  <p class="text-[10px] text-slate-500 truncate">Snell's formula, index n1/n2 precision</p>
+                </div>
+                <span
+                  class="font-black text-slate-900 dark:text-white bg-white dark:bg-[#2D3A31] px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-[#3F4F43] shrink-0">
+                  19/20
+                </span>
+              </div>
+
+              <!-- Rubric Criteria 2 -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-2 text-xs">
+                <div class="min-w-0">
+                  <h5 class="font-bold text-slate-800 dark:text-white truncate">Data Presentation & Graphs</h5>
+                  <p class="text-[10px] text-slate-500 truncate">Linearized sin(i) vs sin(r) plotting</p>
+                </div>
+                <span
+                  class="font-black text-slate-900 dark:text-white bg-white dark:bg-[#2D3A31] px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-[#3F4F43] shrink-0">
+                  13/15
+                </span>
+              </div>
+
+              <!-- Rubric Criteria 3 -->
+              <div
+                class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-2 text-xs">
+                <div class="min-w-0">
+                  <h5 class="font-bold text-slate-800 dark:text-white truncate">Analysis & Deductive Conclusion</h5>
+                  <p class="text-[10px] text-slate-500 truncate">Error margin evaluation (&lt;5% target)</p>
+                </div>
+                <span
+                  class="font-black text-slate-900 dark:text-white bg-white dark:bg-[#2D3A31] px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-[#3F4F43] shrink-0">
+                  14/15
+                </span>
+              </div>
+            </div>
+
+            <!-- Evaluation Remarks Box -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+                <span>EVALUATION REMARKS</span>
+                <span class="text-emerald-600 dark:text-emerald-400">Saved locally</span>
+              </div>
+              <textarea rows="3"
+                class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl p-3 text-xs text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-[#005506]"
+                placeholder="Excellent work on resolving the critical angle equations. Clear and neat derivation layout."></textarea>
+            </div>
+
+            <!-- Primary Save Button -->
+            <button
+              class="w-full bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] font-black text-xs py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95">
+              <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+              Save & Return Grade
+            </button>
 
           </div>
 
@@ -877,7 +638,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import heroImage from '../../../../assets/img/desktop-home-banner.png'
+import heroImage from '../../../../assets/img/local/assignment.png'
 import { Head } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
 import navbartop from '@/Components/navbartop.vue'
@@ -1020,7 +781,6 @@ const vObserve = {
 </script>
 
 <style scoped>
-
 /* Breathing opacity animation for the green background layer */
 @keyframes pulse-opacity {
 
@@ -1063,7 +823,9 @@ const vObserve = {
   }
 }
 
-.not-visible {
+/* Base hidden state to prevent flash before observer triggers */
+.anim-fade-down,
+.anim-slide-up {
   opacity: 0;
 }
 
