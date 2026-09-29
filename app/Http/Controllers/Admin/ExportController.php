@@ -12,6 +12,8 @@ use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\Term;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExportController extends Controller
 {
@@ -265,5 +267,98 @@ class ExportController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Download a PDF report card for a single student.
+     * Access: admin any student, student only their own.
+     */
+    public function reportCard(Request $request, Student $student)
+    {
+        $this->authorizeReportCardAccess($request, $student);
+
+        $activeYear = SchoolYear::where('is_active', true)->first();
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $student->load(['user:id,name,email', 'enrollments.section.strand', 'enrollments.schoolYear']);
+
+        // Get all grades for this student in the active term
+        $grades = Grade::query()
+            ->with([
+                'classroom.subject:id,code,name',
+                'classroom.teacher.user:id,name',
+            ])
+            ->where('student_id', $student->id)
+            ->when($activeTerm, fn ($q) => $q->whereHas(
+                'classroom',
+                fn ($sq) => $sq->where('term_id', $activeTerm->id)
+            ))
+            ->get();
+
+        // Compute general average from finalized grades
+        $generalAverage = $grades->whereNotNull('final_grade')->avg('final_grade');
+        $generalAverage = $generalAverage !== null ? round($generalAverage, 2) : null;
+
+        // Determine remarks
+        $overallRemarks = null;
+        if ($generalAverage !== null) {
+            $overallRemarks = match (true) {
+                $generalAverage >= 90 => 'Outstanding',
+                $generalAverage >= 85 => 'Very Satisfactory',
+                $generalAverage >= 80 => 'Satisfactory',
+                $generalAverage >= 75 => 'Fairly Satisfactory',
+                default               => 'Did Not Meet Expectations',
+            };
+        }
+
+        $data = [
+            'student'        => $student,
+            'enrollment'     => $student->enrollments->first(),
+            'grades'         => $grades,
+            'schoolYear'     => $activeYear,
+            'term'           => $activeTerm,
+            'generalAverage' => $generalAverage,
+            'overallRemarks' => $overallRemarks,
+            'school'         => [
+                'name'    => \App\Models\SystemSetting::get('school_name', 'Salawag Senior High School'),
+                'address' => \App\Models\SystemSetting::get('school_address', 'Dasmariñas, Cavite'),
+                'email'   => \App\Models\SystemSetting::get('school_email', ''),
+                'phone'   => \App\Models\SystemSetting::get('school_phone', ''),
+                'principal_name' => \App\Models\SystemSetting::get('principal_name', ''),
+            ],
+            'generatedAt'    => now(),
+        ];
+
+        $pdf = Pdf::loadView('pdf.report-card', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'isRemoteEnabled' => false,
+                'isHtml5ParserEnabled' => true,
+                'defaultFont' => 'DejaVu Sans',
+            ]);
+
+        $filename = 'report-card-' . $student->lrn . '-' . now()->format('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Authorization: admin can access any student, student only their own.
+     */
+    protected function authorizeReportCardAccess(Request $request, Student $student): void
+    {
+        $user = $request->user();
+
+        // Admin: any student
+        if ($user->hasRole('admin')) {
+            return;
+        }
+
+        // Student: only themselves
+        if ($user->student && $user->student->id === $student->id) {
+            return;
+        }
+
+        abort(403);
     }
 }

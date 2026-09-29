@@ -677,5 +677,15 @@ Route::middleware(['auth', 'password.changed'])
             [\App\Http\Controllers\Admin\ExportController::class, 'gradebook'])
             ->name('gradebook');
     });
+    // ─── Report Cards (admin + student, ownership checked in controller) ───
+    Route::middleware(['auth', 'password.changed'])
+        ->prefix('reports')
+        ->name('reports.')
+        ->group(function () {
+            Route::get('/students/{student}/report-card', [
+                \App\Http\Controllers\Admin\ExportController::class,
+                'reportCard',
+            ])->name('students.report-card');
+        });
 
 require __DIR__ . '/auth.php';

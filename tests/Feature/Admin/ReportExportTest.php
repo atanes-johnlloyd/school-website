@@ -145,4 +145,49 @@ class ReportExportTest extends TestCase
         $response->assertOk();
         $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
     }
+
+    public function test_admin_can_download_student_report_card(): void
+    {
+        $student = \App\Models\Student::first();
+
+        $response = $this->actingAs($this->admin())
+            ->get(route('reports.students.report-card', $student->id));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_student_can_download_own_report_card(): void
+    {
+        $studentUser = User::where('email', 'student@test.com')->first();
+        $student     = $studentUser->student;
+
+        $response = $this->actingAs($studentUser)
+            ->get(route('reports.students.report-card', $student->id));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_student_cannot_download_other_students_report_card(): void
+    {
+        $studentUser = User::where('email', 'student@test.com')->first();
+
+        // Find a student who is NOT this user
+        $otherStudent = \App\Models\Student::where('id', '!=', $studentUser->student->id)->first();
+
+        $this->actingAs($studentUser)
+            ->get(route('reports.students.report-card', $otherStudent->id))
+            ->assertForbidden();
+    }
+
+    public function test_teacher_cannot_download_report_card(): void
+    {
+        $teacher = User::where('email', 'teacher@test.com')->first();
+        $student = \App\Models\Student::first();
+
+        $this->actingAs($teacher)
+            ->get(route('reports.students.report-card', $student->id))
+            ->assertForbidden();
+    }
 }
