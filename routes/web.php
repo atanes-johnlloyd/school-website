@@ -22,10 +22,6 @@ Route::get('/', function () {
 
 Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
     ->middleware('throttle:5,1')   // 5 submissions per minute
@@ -187,9 +183,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::put('/applicant-documents/{document}/verify',
             [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
             ->name('applicant-documents.verify');
-<<<<<<< HEAD
-});
-=======
 
         // ─── Entrance Exams ───
         Route::get('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])->name('entrance-exams.index');
@@ -222,7 +215,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::get('/exports/students', [\App\Http\Controllers\Admin\ExportController::class, 'students'])->name('exports.students');
         Route::get('/exports/teachers', [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])->name('exports.teachers');
     });
->>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 
 // ─────────────────────────────────────────────────────────────
 // Teacher
@@ -672,8 +664,6 @@ Route::prefix('site')->name('site.')->group(function () {
         [\App\Http\Controllers\Site\ApplicationController::class, 'status'])
         ->name('admission.status');
 });
-<<<<<<< HEAD
-=======
 
 // ─── Teacher-owned exports (accessible by both roles) ───
 Route::middleware(['auth', 'password.changed'])
@@ -698,5 +688,4 @@ Route::middleware(['auth', 'password.changed'])
             ])->name('students.report-card');
         });
 
->>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 require __DIR__ . '/auth.php';

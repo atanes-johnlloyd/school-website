@@ -92,12 +92,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Applicant::class, 'reviewed_by');
     }
-<<<<<<< HEAD
-=======
 
     public function isActive(): bool
     {
         return $this->status === 'active';
     }
->>>>>>> ca3c4df6fccefa275d6497f7fda9b6267245b85c
 }
