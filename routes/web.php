@@ -13,12 +13,14 @@ use App\Http\Controllers\Teacher\ClassController as TeacherClassController;
 use App\Http\Controllers\Student\ClassController as StudentClassController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 
+use App\Http\Controllers\Admin\SchoolYearController;
+
 // ─────────────────────────────────────────────────────────────
 // Public / Landing Page
 // ─────────────────────────────────────────────────────────────
 Route::get('/', function () {
     return Inertia::render('Student/Home');
-});
+})->name('home');;
 
 Route::post('/contact',
     [\App\Http\Controllers\ContactController::class, 'store'])
@@ -44,174 +46,421 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
     ->prefix('admin')->name('admin.')
     ->group(function () {
+
+        // ─── Dashboard (any admin) ───
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Reference data CRUD
-        Route::apiResource('school-years', \App\Http\Controllers\Admin\SchoolYearController::class);
-        Route::put('school-years/{school_year}/activate',
-            [\App\Http\Controllers\Admin\SchoolYearController::class, 'activate'])
-            ->name('school-years.activate');
+        // ─── School Years & Terms ───
+        Route::middleware('permission:manage-school-years')->group(function () {
+            // Specific route FIRST — must be above apiResource wildcards
+            Route::get('/school-years/list',
+                [SchoolYearController::class, 'list'])
+                ->name('school-years.list');
 
-        Route::apiResource('terms', \App\Http\Controllers\Admin\TermController::class);
-        Route::apiResource('tracks', \App\Http\Controllers\Admin\TrackController::class);
-        Route::apiResource('strands', \App\Http\Controllers\Admin\StrandController::class);
-        Route::apiResource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
-        Route::apiResource('rooms', \App\Http\Controllers\Admin\RoomController::class);
-        Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
-        Route::apiResource('students', \App\Http\Controllers\Admin\StudentController::class);
+            Route::apiResource('school-years', SchoolYearController::class);
+
+            Route::put('school-years/{school_year}/activate',
+                [SchoolYearController::class, 'activate'])
+                ->name('school-years.activate');
+
+            Route::apiResource('terms', \App\Http\Controllers\Admin\TermController::class);
+        });
+
+        // ─── Tracks ───
+        Route::middleware('permission:manage-tracks')->group(function () {
+            Route::apiResource('tracks', \App\Http\Controllers\Admin\TrackController::class);
+            Route::post('/tracks/{track}/image',
+                [\App\Http\Controllers\Admin\TrackImageController::class, 'update'])
+                ->name('tracks.image.update');
+            Route::delete('/tracks/{track}/image',
+                [\App\Http\Controllers\Admin\TrackImageController::class, 'destroy'])
+                ->name('tracks.image.destroy');
+        });
+
+        // ─── Strands ───
+        Route::middleware('permission:manage-strands')->group(function () {
+            Route::apiResource('strands', \App\Http\Controllers\Admin\StrandController::class);
+            Route::post('/strands/{strand}/image',
+                [\App\Http\Controllers\Admin\StrandImageController::class, 'update'])
+                ->name('strands.image.update');
+            Route::delete('/strands/{strand}/image',
+                [\App\Http\Controllers\Admin\StrandImageController::class, 'destroy'])
+                ->name('strands.image.destroy');
+        });
+
+        // ─── Subjects ───
+        Route::middleware('permission:manage-subjects')->group(function () {
+            Route::apiResource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
+            Route::post('/subjects/{subject}/image',
+                [\App\Http\Controllers\Admin\SubjectImageController::class, 'update'])
+                ->name('subjects.image.update');
+            Route::delete('/subjects/{subject}/image',
+                [\App\Http\Controllers\Admin\SubjectImageController::class, 'destroy'])
+                ->name('subjects.image.destroy');
+            Route::put('/subjects/{subject}/meta',
+                [\App\Http\Controllers\Admin\SubjectImageController::class, 'setMeta'])
+                ->name('subjects.meta.update');
+        });
+
+        // ─── Curriculum Container ───
+        Route::middleware('permission:manage-tracks|manage-strands|manage-subjects')->group(function () {
+            Route::get('/curriculum',
+                [\App\Http\Controllers\Admin\CurriculumController::class, 'index'])
+                ->name('curriculum.index');
+        });
+
+        // ─── Rooms ───
+        Route::middleware('permission:manage-rooms')->group(function () {
+            // Specific route FIRST — must be above apiResource wildcards
+            Route::get('/rooms/list',
+                [\App\Http\Controllers\Admin\RoomController::class, 'list'])
+                ->name('rooms.list');
+
+            Route::apiResource('rooms', \App\Http\Controllers\Admin\RoomController::class);
+        });
+
+        // ─── Teachers ───
+        Route::middleware('permission:manage-teachers')->group(function () {
+            Route::get('/teachers/list',
+                [\App\Http\Controllers\Admin\TeacherController::class, 'list'])
+                ->name('teachers.list');
+
+            Route::get('/teachers/export',
+                [\App\Http\Controllers\Admin\TeacherController::class, 'export'])
+                ->name('teachers.export');
+
+            Route::post('/teachers/import',
+                [\App\Http\Controllers\Admin\TeacherController::class, 'import'])
+                ->name('teachers.import');
+
+            Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
+
+            Route::post('teachers/{teacher}/reset-password',
+                [\App\Http\Controllers\Admin\TeacherController::class, 'resetPassword'])
+                ->name('teachers.reset-password');
+        });
+
+        // ─── Students ───
+        Route::middleware('permission:manage-students')->group(function () {
+            // Specific routes FIRST — must be above apiResource, otherwise
+            // /students/list, /students/export, /students/import get captured
+            // by /students/{student}.
+            Route::get('/students/list',
+                [\App\Http\Controllers\Admin\StudentController::class, 'list'])
+                ->name('students.list');
+
+            Route::get('/students/export',
+                [\App\Http\Controllers\Admin\StudentController::class, 'export'])
+                ->name('students.export');
+
+            Route::post('/students/import',
+                [\App\Http\Controllers\Admin\StudentController::class, 'import'])
+                ->name('students.import');
+
+            Route::apiResource('students', \App\Http\Controllers\Admin\StudentController::class);
+
+            Route::post('students/{student}/reset-password',
+                [\App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])
+                ->name('students.reset-password');
+        });
+
+        // ─── Sections ───
+        Route::middleware('permission:manage-sections')->group(function () {
+        // Specific routes FIRST
+        Route::get('/sections/list',
+            [\App\Http\Controllers\Admin\SectionController::class, 'list'])
+            ->name('sections.list');
+
+        Route::get('/sections/{section}/eligible-students',
+            [\App\Http\Controllers\Admin\SectionController::class, 'eligibleStudents'])
+            ->name('sections.eligible-students');
+
         Route::apiResource('sections', \App\Http\Controllers\Admin\SectionController::class);
 
         Route::post('sections/{section}/enroll',
             [\App\Http\Controllers\Admin\SectionController::class, 'enrollStudent'])
             ->name('sections.enroll');
+
         Route::delete('sections/{section}/students/{student}',
             [\App\Http\Controllers\Admin\SectionController::class, 'removeStudent'])
             ->name('sections.students.remove');
+    });
 
-        Route::post('students/{student}/reset-password',
-            [\App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])
-            ->name('students.reset-password');
+        // ─── Enrollments ───
+        Route::middleware('permission:manage-enrollment')->group(function () {
+            Route::get('/enrollments',
+                [\App\Http\Controllers\Admin\EnrollmentController::class, 'index'])
+                ->name('enrollments.index');
 
-        Route::get('enrollments', [\App\Http\Controllers\Admin\EnrollmentController::class, 'index'])
-            ->name('enrollments.index');
-        Route::put('enrollments/{enrollment}/approve',
-            [\App\Http\Controllers\Admin\EnrollmentController::class, 'approve'])
-            ->name('enrollments.approve');
-        Route::put('enrollments/{enrollment}/reject',
-            [\App\Http\Controllers\Admin\EnrollmentController::class, 'reject'])
-            ->name('enrollments.reject');
+            Route::get('/enrollments/list',
+                [\App\Http\Controllers\Admin\EnrollmentController::class, 'list'])
+                ->name('enrollments.list');
 
-        // Contact messages
+            Route::put('enrollments/{enrollment}/approve',
+                [\App\Http\Controllers\Admin\EnrollmentController::class, 'approve'])
+                ->name('enrollments.approve');
+
+            Route::put('enrollments/{enrollment}/reject',
+                [\App\Http\Controllers\Admin\EnrollmentController::class, 'reject'])
+                ->name('enrollments.reject');
+
+            Route::put('enrollments/{enrollment}/assign-section',
+                [\App\Http\Controllers\Admin\EnrollmentController::class, 'assignSection'])
+                ->name('enrollments.assign-section');
+        });
+
+        // ─── Applicants ───
+        Route::middleware('permission:manage-enrollment')->group(function () {
+            Route::get('/applicants',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'index'])
+                ->name('applicants.index');
+
+            Route::get('/applicants/list',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'list'])
+                ->name('applicants.list');
+
+            Route::get('/applicants/export',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'export'])
+                ->name('applicants.export');
+
+            Route::post('/applicants/import',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'import'])
+                ->name('applicants.import');
+
+            Route::put('/applicants/{applicant}/release',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'release'])
+                ->name('applicants.release');
+
+            Route::get('/applicants/{applicant}',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'show'])
+                ->name('applicants.show');
+
+            Route::put('/applicants/{applicant}/under-review',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'markUnderReview'])
+                ->name('applicants.under-review');
+
+            Route::put('/applicants/{applicant}/approve',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'approve'])
+                ->name('applicants.approve');
+
+            Route::put('/applicants/{applicant}/reject',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'reject'])
+                ->name('applicants.reject');
+
+            Route::put('/applicants/{applicant}/request-resubmission',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'requestResubmission'])
+                ->name('applicants.request-resubmission');
+
+            Route::get('/applicant-documents/{document}/download',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'downloadDocument'])
+                ->name('applicant-documents.download');
+
+            Route::put('/applicant-documents/{document}/verify',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
+                ->name('applicant-documents.verify');
+
+            Route::post('/applicants',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'store'])
+                ->name('applicants.store');
+
+            Route::put('/applicants/{applicant}',
+                [\App\Http\Controllers\Admin\ApplicantController::class, 'update'])
+                ->name('applicants.update');
+        });
+
+        // ─── Entrance Exams ───
+        Route::middleware('permission:manage-enrollment')->group(function () {
+            Route::get('/entrance-exams',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])
+                ->name('entrance-exams.index');
+            Route::post('/entrance-exams',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])
+                ->name('entrance-exams.store');
+            Route::get('/entrance-exams/list',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'list'])
+                ->name('entrance-exams.list');
+
+            Route::post('/entrance-exams',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])
+                ->name('entrance-exams.store');
+
+            Route::get('/entrance-exams/{exam}',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])
+                ->name('entrance-exams.show');
+            Route::get('/entrance-exams/{exam}',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])
+                ->name('entrance-exams.show');
+            Route::put('/entrance-exams/{exam}',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'update'])
+                ->name('entrance-exams.update');
+            Route::delete('/entrance-exams/{exam}',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'destroy'])
+                ->name('entrance-exams.destroy');
+            Route::put('/entrance-exams/{exam}/cancel',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'cancel'])
+                ->name('entrance-exams.cancel');
+            Route::get('/entrance-exams/{exam}/eligible-applicants',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'eligibleApplicants'])
+                ->name('entrance-exams.eligible');
+            Route::post('/entrance-exams/{exam}/assign',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'assign'])
+                ->name('entrance-exams.assign');
+            Route::post('/entrance-exams/{exam}/remove-applicant',
+                [\App\Http\Controllers\Admin\EntranceExamController::class, 'removeApplicant'])
+                ->name('entrance-exams.remove-applicant');
+            Route::put('/exam-results/{result}',
+                [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])
+                ->name('exam-results.update');
+        });
+
+        // ─── Exam Records ───
+        Route::middleware('permission:manage-enrollment')->group(function () {
+            Route::get('/exam-records',
+                [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'index'])
+                ->name('exam-records.index');
+
+            Route::get('/exam-records/list',
+                [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'list'])
+                ->name('exam-records.list');
+        });
+
+        // ─── Contact Messages (any admin) ───
+        Route::get('/contact-messages/list',
+            [\App\Http\Controllers\ContactController::class, 'list'])
+            ->name('contact-messages.list');
+
         Route::get('/contact-messages',
             [\App\Http\Controllers\ContactController::class, 'index'])
             ->name('contact-messages.index');
+
         Route::get('/contact-messages/{contactMessage}',
             [\App\Http\Controllers\ContactController::class, 'show'])
             ->name('contact-messages.show');
+
         Route::put('/contact-messages/{contactMessage}/read',
             [\App\Http\Controllers\ContactController::class, 'toggleRead'])
             ->name('contact-messages.toggle-read');
+
         Route::delete('/contact-messages/{contactMessage}',
             [\App\Http\Controllers\ContactController::class, 'destroy'])
             ->name('contact-messages.destroy');
 
-        Route::get('/settings',
-            [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])
-            ->name('settings.index');
-        Route::put('/settings',
-            [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])
-            ->name('settings.update');
-        Route::post('/settings/reset',
-            [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])
-            ->name('settings.reset');
-
-        Route::get('/audit-logs',
-            [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
-            ->name('audit-logs.index');
-        Route::get('/audit-logs/{auditLog}',
-            [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])
-            ->name('audit-logs.show');
-
-        // ─── Curriculum Images ───
-        Route::post('/subjects/{subject}/image',
-            [\App\Http\Controllers\Admin\SubjectImageController::class, 'update'])
-            ->name('subjects.image.update');
-        Route::delete('/subjects/{subject}/image',
-            [\App\Http\Controllers\Admin\SubjectImageController::class, 'destroy'])
-            ->name('subjects.image.destroy');
-        Route::put('/subjects/{subject}/meta',
-            [\App\Http\Controllers\Admin\SubjectImageController::class, 'setMeta'])
-            ->name('subjects.meta.update');
-
-        Route::post('/tracks/{track}/image',
-            [\App\Http\Controllers\Admin\TrackImageController::class, 'update'])
-            ->name('tracks.image.update');
-        Route::delete('/tracks/{track}/image',
-            [\App\Http\Controllers\Admin\TrackImageController::class, 'destroy'])
-            ->name('tracks.image.destroy');
-
-        Route::post('/strands/{strand}/image',
-            [\App\Http\Controllers\Admin\StrandImageController::class, 'update'])
-            ->name('strands.image.update');
-        Route::delete('/strands/{strand}/image',
-            [\App\Http\Controllers\Admin\StrandImageController::class, 'destroy'])
-            ->name('strands.image.destroy');
-
         // ─── School-wide Announcements ───
-        Route::get('/school-news',
-            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'index'])
-            ->name('school-news.index');
-        Route::post('/school-news',
-            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'store'])
-            ->name('school-news.store');
-        Route::get('/school-news/{announcement}',
-            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'show'])
-            ->name('school-news.show');
-        Route::put('/school-news/{announcement}',
-            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'update'])
-            ->name('school-news.update');
-        Route::delete('/school-news/{announcement}',
-            [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'destroy'])
-            ->name('school-news.destroy');
+        Route::middleware('permission:manage-announcements')->group(function () {
+            // Specific routes FIRST — must be above the {announcement} wildcard
+            Route::get('/school-news/list',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'list'])
+                ->name('school-news.list');
 
-        // ─── Applicants ───
-        Route::get('/applicants',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'index'])
-            ->name('applicants.index');
-        Route::get('/applicants/{applicant}',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'show'])
-            ->name('applicants.show');
-        Route::put('/applicants/{applicant}/under-review',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'markUnderReview'])
-            ->name('applicants.under-review');
-        Route::put('/applicants/{applicant}/approve',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'approve'])
-            ->name('applicants.approve');
-        Route::put('/applicants/{applicant}/reject',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'reject'])
-            ->name('applicants.reject');
-        Route::put('/applicants/{applicant}/request-resubmission',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'requestResubmission'])
-            ->name('applicants.request-resubmission');
+            Route::get('/school-news/create',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'create'])
+                ->name('school-news.create');
 
-        // Documents
-        Route::get('/applicant-documents/{document}/download',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'downloadDocument'])
-            ->name('applicant-documents.download');
-        Route::put('/applicant-documents/{document}/verify',
-            [\App\Http\Controllers\Admin\ApplicantController::class, 'verifyDocument'])
-            ->name('applicant-documents.verify');
+            Route::get('/school-news',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'index'])
+                ->name('school-news.index');
 
-        // ─── Entrance Exams ───
-        Route::get('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'index'])->name('entrance-exams.index');
-        Route::post('/entrance-exams', [\App\Http\Controllers\Admin\EntranceExamController::class, 'store'])->name('entrance-exams.store');
-        Route::get('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'show'])->name('entrance-exams.show');
-        Route::put('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'update'])->name('entrance-exams.update');
-        Route::delete('/entrance-exams/{exam}', [\App\Http\Controllers\Admin\EntranceExamController::class, 'destroy'])->name('entrance-exams.destroy');
-        Route::put('/entrance-exams/{exam}/cancel', [\App\Http\Controllers\Admin\EntranceExamController::class, 'cancel'])->name('entrance-exams.cancel');
-        Route::get('/entrance-exams/{exam}/eligible-applicants', [\App\Http\Controllers\Admin\EntranceExamController::class, 'eligibleApplicants'])->name('entrance-exams.eligible');
-        Route::post('/entrance-exams/{exam}/assign', [\App\Http\Controllers\Admin\EntranceExamController::class, 'assign'])->name('entrance-exams.assign');
-        Route::post('/entrance-exams/{exam}/remove-applicant', [\App\Http\Controllers\Admin\EntranceExamController::class, 'removeApplicant'])->name('entrance-exams.remove-applicant');
+            Route::post('/school-news',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'store'])
+                ->name('school-news.store');
 
-        // ─── Exam Results ───
-        Route::put('/exam-results/{result}', [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update'])->name('exam-results.update');
+            Route::get('/school-news/{announcement}/edit',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'edit'])
+                ->name('school-news.edit');
 
-        // ─── Admin User Management ───
-        Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
-        Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
-        Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
-        Route::put('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+            Route::put('/school-news/{announcement}/publish',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'togglePublish'])
+                ->name('school-news.toggle-publish');
+
+            Route::put('/school-news/{announcement}/pin',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'togglePin'])
+                ->name('school-news.toggle-pin');
+
+            Route::get('/school-news/{announcement}',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'show'])
+                ->name('school-news.show');
+
+            Route::put('/school-news/{announcement}',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'update'])
+                ->name('school-news.update');
+
+            Route::delete('/school-news/{announcement}',
+                [\App\Http\Controllers\Admin\SchoolWideAnnouncementController::class, 'destroy'])
+                ->name('school-news.destroy');
+        });
+
+        // ─── Admin Users ───
+        Route::middleware('permission:manage-users')->group(function () {
+            Route::get('/users/list',
+                [\App\Http\Controllers\Admin\UserController::class, 'list'])
+                ->name('users.list');
+
+            Route::get('/users',
+                [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+            Route::post('/users',
+                [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
+            Route::get('/users/{user}',
+                [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');
+            Route::put('/users/{user}',
+                [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
+            Route::put('/users/{user}/toggle-status',
+                [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+            Route::post('/users/{user}/reset-password',
+                [\App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+            Route::delete('/users/{user}',
+                [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+        });
+
+        Route::middleware('permission:manage-settings')->group(function () {
+            Route::get('/settings',
+                [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])
+                ->name('settings.index');
+            Route::put('/settings',
+                [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])
+                ->name('settings.update');
+            Route::post('/settings/reset',
+                [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])
+                ->name('settings.reset');
+        });
+
+        // ─── Audit Logs ───
+        Route::middleware('permission:view-audit-log')->group(function () {
+            Route::get('/audit-logs/list',
+                [\App\Http\Controllers\Admin\AuditLogController::class, 'list'])
+                ->name('audit-logs.list');
+
+            Route::get('/audit-logs',
+                [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
+                ->name('audit-logs.index');
+
+            Route::get('/audit-logs/{auditLog}',
+                [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])
+                ->name('audit-logs.show');
+        });
 
         // ─── Reports ───
-        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::middleware('permission:view-reports')->group(function () {
+            Route::get('/reports',
+                [\App\Http\Controllers\Admin\ReportController::class, 'index'])
+                ->name('reports.index');
 
-        // ─── Exports ───
-        Route::get('/exports/enrollments', [\App\Http\Controllers\Admin\ExportController::class, 'enrollments'])->name('exports.enrollments');
-        Route::get('/exports/applicants', [\App\Http\Controllers\Admin\ExportController::class, 'applicants'])->name('exports.applicants');
-        Route::get('/exports/students', [\App\Http\Controllers\Admin\ExportController::class, 'students'])->name('exports.students');
-        Route::get('/exports/teachers', [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])->name('exports.teachers');
+            Route::get('/reports/data',
+                [\App\Http\Controllers\Admin\ReportController::class, 'data'])
+                ->name('reports.data');
+
+            Route::get('/exports/enrollments',
+                [\App\Http\Controllers\Admin\ExportController::class, 'enrollments'])
+                ->name('exports.enrollments');
+            Route::get('/exports/applicants',
+                [\App\Http\Controllers\Admin\ExportController::class, 'applicants'])
+                ->name('exports.applicants');
+            Route::get('/exports/students',
+                [\App\Http\Controllers\Admin\ExportController::class, 'students'])
+                ->name('exports.students');
+            Route::get('/exports/teachers',
+                [\App\Http\Controllers\Admin\ExportController::class, 'teachers'])
+                ->name('exports.teachers');
+        });
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -460,6 +709,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::put('/quizzes/{quiz}/bulk-grade',
             [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'bulkGrade'])
             ->name('quizzes.bulk-grade');
+
+        Route::post('/quizzes/{quiz}/students/{student}/grant-retake',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'grantRetake'])
+            ->name('quizzes.grant-retake');
+
+        Route::delete('/quizzes/{quiz}/students/{student}/grant-retake',
+            [\App\Http\Controllers\Teacher\QuizSubmissionController::class, 'revokeRetake'])
+            ->name('quizzes.revoke-retake');
     });
 
 // ─────────────────────────────────────────────────────────────
@@ -551,7 +808,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             ->name('assignments.submission.download');
         Route::get(
             '/lesson-attachments/{attachment}/download',
-            [\App\Http\Controllers\Teacher\LessonController::class, 'downloadAttachment']
+            [\App\Http\Controllers\Student\LessonController::class, 'downloadAttachment']
         )
             ->name('lesson-attachments.download');
 
@@ -684,6 +941,14 @@ Route::middleware(['auth', 'password.changed'])
                 \App\Http\Controllers\Admin\ExportController::class,
                 'reportCard',
             ])->name('students.report-card');
+        });
+
+        Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+            Route::get('/school-years', [SchoolYearController::class, 'index'])->name('school-years.index');
+            Route::post('/school-years', [SchoolYearController::class, 'store'])->name('school-years.store');
+            Route::put('/school-years/{schoolYear}', [SchoolYearController::class, 'update'])->name('school-years.update');
+            Route::delete('/school-years/{schoolYear}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
+            Route::post('/school-years/{schoolYear}/set-active', [SchoolYearController::class, 'setActive'])->name('school-years.set-active');
         });
 
 require __DIR__ . '/auth.php';

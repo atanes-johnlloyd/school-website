@@ -9,6 +9,7 @@ use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\QuizRetakeGrant;
 
 class QuizSubmissionController extends Controller
 {
@@ -21,25 +22,31 @@ class QuizSubmissionController extends Controller
 
         $totalPoints = $quiz->questions()->sum('points');
 
+        $pendingRetakeStudentIds = QuizRetakeGrant::where('quiz_id', $quiz->id)
+            ->whereNull('used_at')
+            ->pluck('student_id')
+            ->flip();
+        
         $attempts = $quiz->attempts()
             ->with('student.user:id,name')
             ->orderByDesc('submitted_at')
             ->get()
-            ->map(fn (QuizAttempt $a) => [
-                'id'                => $a->id,
-                'student_id'        => $a->student_id,
-                'student_name'      => $a->student?->user?->name,
-                'attempt_number'    => $a->attempt_number,
-                'started_at'        => $a->started_at?->toIso8601String(),
-                'submitted_at'      => $a->submitted_at?->toIso8601String(),
-                'score'             => $a->score,
+            ->map(fn (QuizAttempt $attempt) => [
+                'id'                => $attempt->id,
+                'student_id'        => $attempt->student_id,
+                'student_name'      => $attempt->student?->user?->name,
+                'attempt_number'    => $attempt->attempt_number,
+                'started_at'        => $attempt->started_at?->toIso8601String(),
+                'submitted_at'      => $attempt->submitted_at?->toIso8601String(),
+                'score'             => $attempt->score,
                 'total_points'      => $totalPoints,
-                'status'            => $a->status,
-                'warning_count'     => $a->warning_count,
-                'has_pending_essay' => $a->answers()
+                'status'            => $attempt->status,
+                'warning_count'     => $attempt->warning_count,
+                'has_pending_essay'  => $attempt->answers()
                     ->whereHas('question', fn ($q) => $q->where('type', 'essay'))
                     ->whereNull('points_awarded')
                     ->exists(),
+                'has_pending_retake' => isset($pendingRetakeStudentIds[$attempt->student_id]),
             ]);
 
         $payload = [
@@ -77,26 +84,30 @@ class QuizSubmissionController extends Controller
 
         $attempt->load(['student.user:id,name', 'quiz']);
 
-        $answers = $attempt->answers()
-            ->with(['question.options', 'option'])
-            ->get()
-            ->map(fn (QuizAnswer $a) => [
-                'id'                    => $a->id,
-                'question_id'           => $a->question_id,
-                'question_text'         => $a->question?->question_text,
-                'question_type'         => $a->question?->type,
-                'question_points'       => $a->question?->points,
-                'points_override'       => $a->question?->pivot?->points_override,
-                'explanation'           => $a->question?->explanation,
-                'answer_text'           => $a->answer_text,
-                'chosen_option_id'      => $a->question_option_id,
-                'chosen_option_text'    => $a->option?->option_text,
-                'correct_option_id'     => $a->question?->options->where('is_correct', true)->first()?->id,
-                'correct_option_text'   => $a->question?->options->where('is_correct', true)->first()?->option_text,
-                'is_correct'            => $a->is_correct,
-                'points_awarded'        => $a->points_awarded,
-                'needs_grading'         => $a->question?->type === 'essay' && $a->points_awarded === null,
-            ]);
+        $overrides = $attempt->quiz->questions->keyBy('id')->map(
+            fn ($q) => $q->pivot->points_override
+        );
+
+    $answers = $attempt->answers()
+        ->with(['question.options', 'option'])
+        ->get()
+        ->map(fn (QuizAnswer $a) => [
+            'id'                    => $a->id,
+            'question_id'           => $a->question_id,
+            'question_text'         => $a->question?->question_text,
+            'question_type'         => $a->question?->type,
+            'question_points'       => $a->question?->points,
+            'points_override'       => $overrides[$a->question_id] ?? null,
+            'explanation'           => $a->question?->explanation,
+            'answer_text'           => $a->answer_text,
+            'chosen_option_id'      => $a->question_option_id,
+            'chosen_option_text'    => $a->option?->option_text,
+            'correct_option_id'     => $a->question?->options->where('is_correct', true)->first()?->id,
+            'correct_option_text'   => $a->question?->options->where('is_correct', true)->first()?->option_text,
+            'is_correct'            => $a->is_correct,
+            'points_awarded'        => $a->points_awarded,
+            'needs_grading'         => $a->question?->type === 'essay' && $a->points_awarded === null,
+        ]);
 
         $payload = [
             'attempt' => [
@@ -125,27 +136,28 @@ class QuizSubmissionController extends Controller
     {
         abort_unless($answer->attempt->quiz->classroom->isTaughtBy($request->user()), 403);
 
-        $max = $answer->question?->pivot?->points_override
-            ?? $answer->question?->points
-            ?? 10;
+        $attempt  = $answer->attempt;
+        $question = $answer->question;
+
+        $override = $attempt->quiz->questions()
+            ->where('questions.id', $question->id)
+            ->first()?->pivot->points_override;
+
+        $max = (float) ($override ?? $question->points ?? 10);
 
         $validated = $request->validate([
             'points_awarded' => ['required', 'numeric', 'min:0', 'max:' . $max],
         ]);
 
-        DB::transaction(function () use ($answer, $validated) {
+        DB::transaction(function () use ($answer, $validated, $max) {
             $answer->update([
                 'points_awarded' => $validated['points_awarded'],
-                'is_correct'     => $validated['points_awarded'] >= ($answer->question->points / 2),
+                'is_correct'     => $validated['points_awarded'] >= ($max / 2),
             ]);
 
             $attempt = $answer->attempt;
+            $attempt->update(['score' => $attempt->answers()->sum('points_awarded')]);
 
-            // Sum all awarded points
-            $total = $attempt->answers()->sum('points_awarded');
-            $attempt->update(['score' => $total]);
-
-            // If no pending essays remain, flip status
             $pending = $attempt->answers()
                 ->whereHas('question', fn ($q) => $q->where('type', 'essay'))
                 ->whereNull('points_awarded')
@@ -157,9 +169,9 @@ class QuizSubmissionController extends Controller
         });
 
         return response()->json([
-            'message'  => 'Answer graded.',
-            'answer'   => $answer->fresh(),
-            'attempt'  => $answer->attempt->fresh(),
+            'message' => 'Answer graded.',
+            'answer'  => $answer->fresh(),
+            'attempt' => $answer->attempt->fresh(),
         ]);
     }
 
@@ -216,5 +228,51 @@ class QuizSubmissionController extends Controller
         });
 
         return response()->json(['message' => 'Grades saved.']);
+    }
+
+    public function grantRetake(Request $request, Quiz $quiz, Student $student)
+    {
+        abort_unless($quiz->classroom->isTaughtBy($request->user()), 403);
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $existing = QuizRetakeGrant::where('quiz_id', $quiz->id)
+            ->where('student_id', $student->id)
+            ->whereNull('used_at')
+            ->exists();
+
+        if ($existing) {
+            return response()->json(['message' => 'Student already has a pending retake.'], 422);
+        }
+
+        $grant = QuizRetakeGrant::create([
+            'quiz_id'    => $quiz->id,
+            'student_id' => $student->id,
+            'granted_by' => $request->user()->id,
+            'reason'     => $validated['reason'] ?? null,
+            'granted_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Retake granted.',
+            'grant'   => $grant->load('student.user:id,name'),
+        ], 201);
+    }
+
+    public function revokeRetake(Request $request, Quiz $quiz, Student $student)
+    {
+        abort_unless($quiz->classroom->isTaughtBy($request->user()), 403);
+
+        $deleted = QuizRetakeGrant::where('quiz_id', $quiz->id)
+            ->where('student_id', $student->id)
+            ->whereNull('used_at')
+            ->delete();
+
+        return response()->json([
+            'success' => (bool) $deleted,
+            'message' => $deleted ? 'Retake revoked.' : 'No pending retake found.',
+        ]);
     }
 }

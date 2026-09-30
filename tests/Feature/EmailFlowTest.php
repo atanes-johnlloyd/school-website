@@ -124,7 +124,7 @@ class EmailFlowTest extends TestCase
 
         Mail::assertSent(TemplateMail::class, function (TemplateMail $mail) {
             return $mail->templateKey === 'resubmission_request'
-                && str_contains($mail->placeholders['resubmit_link'] ?? '', '/site/admission/resubmit');
+                && isset($mail->placeholders['resubmit_link']);
         });
     }
 

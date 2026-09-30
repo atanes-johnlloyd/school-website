@@ -81,15 +81,15 @@ class SystemSettingController extends Controller
             'group' => ['required', 'in:school,academic,system'],
         ]);
 
+        $keys = SystemSetting::where('group', $validated['group'])->pluck('key');
+
         SystemSetting::where('group', $validated['group'])->delete();
 
-        // Clear cached values
-        SystemSetting::query()
-            ->where('group', $validated['group'])
-            ->get()
-            ->each(fn ($s) => SystemSetting::forget($s->key));
+        $keys->each(fn ($k) => SystemSetting::forget($k));
 
-        return response()->json(['message' => "Settings for '{$validated['group']}' reset to defaults."]);
+        return response()->json([
+            'message' => "Settings for '{$validated['group']}' reset to defaults.",
+        ]);
     }
 
     protected function isKnownSetting(string $key): bool

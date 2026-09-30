@@ -35,4 +35,14 @@ class Quiz extends Model
     public function module()    { return $this->belongsTo(ClassModule::class, 'class_module_id'); }
     public function questions() { return $this->belongsToMany(Question::class, 'quiz_questions')->withPivot('position', 'points_override')->withTimestamps(); }
     public function attempts()  { return $this->hasMany(QuizAttempt::class); }
+
+    public function retakeGrants()
+    {
+        return $this->hasMany(QuizRetakeGrant::class);
+    }
+
+    public function retakeGrantsFor(int $studentId)
+    {
+        return $this->retakeGrants()->where('student_id', $studentId)->unused();
+    }
 }

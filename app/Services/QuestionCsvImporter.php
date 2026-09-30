@@ -53,7 +53,9 @@ class QuestionCsvImporter
                 // Skip blank rows
                 if (count(array_filter($row)) === 0) continue;
 
-                $data = array_combine($header, array_pad($row, count($header), null));
+                $row  = array_slice($row, 0, count($header));
+                $row  = array_pad($row, count($header), null);
+                $data = array_combine($header, $row);
 
                 try {
                     $this->createQuestionFromRow($data, $teacher, $subjectId, $category);
@@ -121,16 +123,16 @@ class QuestionCsvImporter
             ];
         }
 
-        if (count($options) < 2) {
-            throw new \InvalidArgumentException('MC/TF requires at least 2 options.');
-        }
-
         // TF — auto-fill if missing
         if ($type === 'true_false' && count($options) < 2) {
             $options = [
                 ['option_text' => 'True',  'is_correct' => $correctLetter === 'A'],
                 ['option_text' => 'False', 'is_correct' => $correctLetter === 'B'],
             ];
+        }
+
+        if (count($options) < 2) {
+            throw new \InvalidArgumentException('MC/TF requires at least 2 options.');
         }
 
         foreach ($options as $i => $opt) {

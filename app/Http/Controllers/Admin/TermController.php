@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SchoolYear;
 use App\Models\Term;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TermController extends Controller
 {
@@ -29,6 +30,30 @@ class TermController extends Controller
             'end_date'       => ['required', 'date', 'after:start_date'],
             'is_active'      => ['boolean'],
         ]);
+
+        $schoolYear = SchoolYear::findOrFail($validated['school_year_id']);
+
+        // Term must be inside the parent school year's date range
+        if ($validated['start_date'] < $schoolYear->start_date->toDateString()) {
+            return response()->json([
+                'message' => "Term start date cannot be earlier than the school year start ({$schoolYear->start_date->format('M d, Y')}).",
+                'errors'  => ['start_date' => ["Must be on or after {$schoolYear->start_date->format('M d, Y')}."]],
+            ], 422);
+        }
+        if ($validated['end_date'] > $schoolYear->end_date->toDateString()) {
+            return response()->json([
+                'message' => "Term end date cannot be later than the school year end ({$schoolYear->end_date->format('M d, Y')}).",
+                'errors'  => ['end_date' => ["Must be on or before {$schoolYear->end_date->format('M d, Y')}."]],
+            ], 422);
+        }
+
+        // Prevent overlap with any existing term in the same school year
+        if ($this->overlapsExisting($schoolYear->id, $validated['start_date'], $validated['end_date'])) {
+            return response()->json([
+                'message' => 'This term overlaps an existing term for the same school year.',
+                'errors'  => ['start_date' => ['Dates overlap with an existing term.']],
+            ], 422);
+        }
 
         if (! empty($validated['is_active'])) {
             Term::query()->update(['is_active' => false]);
@@ -54,6 +79,32 @@ class TermController extends Controller
             'is_active'      => ['boolean'],
         ]);
 
+        $syId      = $validated['school_year_id'] ?? $term->school_year_id;
+        $schoolYear = SchoolYear::findOrFail($syId);
+
+        $start = $validated['start_date'] ?? $term->start_date->toDateString();
+        $end   = $validated['end_date']   ?? $term->end_date->toDateString();
+
+        if ($start < $schoolYear->start_date->toDateString()) {
+            return response()->json([
+                'message' => "Term start date cannot be earlier than the school year start ({$schoolYear->start_date->format('M d, Y')}).",
+                'errors'  => ['start_date' => ["Must be on or after {$schoolYear->start_date->format('M d, Y')}."]],
+            ], 422);
+        }
+        if ($end > $schoolYear->end_date->toDateString()) {
+            return response()->json([
+                'message' => "Term end date cannot be later than the school year end ({$schoolYear->end_date->format('M d, Y')}).",
+                'errors'  => ['end_date' => ["Must be on or before {$schoolYear->end_date->format('M d, Y')}."]],
+            ], 422);
+        }
+
+        if ($this->overlapsExisting($schoolYear->id, $start, $end, $term->id)) {
+            return response()->json([
+                'message' => 'This term overlaps another term for the same school year.',
+                'errors'  => ['start_date' => ['Dates overlap with another term.']],
+            ], 422);
+        }
+
         if (! empty($validated['is_active'])) {
             Term::where('id', '!=', $term->id)->update(['is_active' => false]);
         }
@@ -74,5 +125,42 @@ class TermController extends Controller
         $term->delete();
 
         return response()->json(['message' => 'Term deleted.']);
+    }
+
+    public function activate(Term $term)
+    {
+        Term::query()->update(['is_active' => false]);
+        $term->update(['is_active' => true]);
+
+        return response()->json([
+            'message' => 'Term activated.',
+            'term' => $term,
+        ]);
+    }
+
+    /**
+     * True if [start, end] overlaps any other term in the same school year.
+     */
+    protected function overlapsExisting(int $schoolYearId, string $start, string $end, ?int $ignoreTermId = null): bool
+    {
+        return Term::query()
+            ->where('school_year_id', $schoolYearId)
+            ->when($ignoreTermId, fn ($q) => $q->where('id', '!=', $ignoreTermId))
+            ->where(function ($q) use ($start, $end) {
+                $q->where(function ($q1) use ($start, $end) {
+                    // Existing starts inside the new range
+                    $q1->whereBetween('start_date', [$start, $end]);
+                })
+                ->orWhere(function ($q2) use ($start, $end) {
+                    // Existing ends inside the new range
+                    $q2->whereBetween('end_date', [$start, $end]);
+                })
+                ->orWhere(function ($q3) use ($start, $end) {
+                    // Existing fully wraps the new range
+                    $q3->where('start_date', '<=', $start)
+                       ->where('end_date', '>=', $end);
+                });
+            })
+            ->exists();
     }
 }

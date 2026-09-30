@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreContactMessageRequest;
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ContactController extends Controller
 {
-    /**
-     * Public — submit a contact message. No auth.
-     */
+    /* ═══════════════ PUBLIC — store submission (KEEP YOUR EXISTING) ═══════════════ */
     public function store(StoreContactMessageRequest $request)
     {
         $message = ContactMessage::create([
@@ -32,84 +30,118 @@ class ContactController extends Controller
         return back()->with('success', 'Thank you. We\'ll get back to you soon.');
     }
 
-    /**
-     * Admin — inbox list.
-     */
-    public function index(Request $request)
+    /* ═══════════════ ADMIN — page shell ═══════════════ */
+    public function index(): Response
+    {
+        return Inertia::render('Admin/ContactMessages/Index');
+    }
+
+    /* ═══════════════ ADMIN — JSON list ═══════════════ */
+    public function list(Request $request)
     {
         $validated = $request->validate([
-            'filter'   => ['nullable', 'in:all,unread,read'],
-            'search'   => ['nullable', 'string', 'max:200'],
-            'per_page' => ['nullable', 'integer', 'min:5', 'max:100'],
+            'status'   => ['nullable', 'in:read,unread'],
+            'when'     => ['nullable', 'in:today,week,month'],
+            'search'   => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by'  => ['nullable', 'in:created_at,name,subject'],
+            'sort_dir' => ['nullable', 'in:asc,desc'],
         ]);
 
-        $query = ContactMessage::query()->latest();
+        $status  = $validated['status']   ?? null;
+        $when    = $validated['when']     ?? null;
+        $search  = $validated['search']   ?? null;
+        $perPage = $validated['per_page'] ?? 15;
+        $sortBy  = $validated['sort_by']  ?? 'created_at';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
 
-        $filter = $validated['filter'] ?? 'all';
-        if ($filter === 'unread') {
+        $query = ContactMessage::query();
+
+        if ($status === 'unread') {
             $query->where('is_read', false);
-        } elseif ($filter === 'read') {
+        } elseif ($status === 'read') {
             $query->where('is_read', true);
         }
 
-        if (! empty($validated['search'])) {
-            $s = $validated['search'];
-            $query->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('email', 'like', "%{$s}%")
-                  ->orWhere('subject', 'like', "%{$s}%")
-                  ->orWhere('message', 'like', "%{$s}%");
+        if ($when === 'today') {
+            $query->whereDate('created_at', today());
+        } elseif ($when === 'week') {
+            $query->where('created_at', '>=', now()->subDays(7));
+        } elseif ($when === 'month') {
+            $query->where('created_at', '>=', now()->subDays(30));
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%");
             });
         }
 
-        $messages = $query->paginate($validated['per_page'] ?? 20);
+        $query->orderBy($sortBy, $sortDir);
 
-        $payload = [
-            'messages'    => $messages,
-            'unread_count'=> ContactMessage::unread()->count(),
-            'filters'     => [
-                'filter' => $filter,
-                'search' => $validated['search'] ?? null,
-            ],
+        $messages = $query->paginate($perPage);
+
+        $messages->getCollection()->transform(fn (ContactMessage $m) => [
+            'id'         => $m->id,
+            'name'       => $m->name,
+            'email'      => $m->email,
+            'subject'    => $m->subject,
+            'message'    => $m->message,
+            'excerpt'    => mb_strimwidth(strip_tags($m->message), 0, 160, '…'),
+            'is_read'    => (bool) $m->is_read,
+            'created_at' => $m->created_at?->toIso8601String(),
+        ]);
+
+        $counts = [
+            'total'      => ContactMessage::count(),
+            'unread'     => ContactMessage::where('is_read', false)->count(),
+            'read'       => ContactMessage::where('is_read', true)->count(),
+            'this_week'  => ContactMessage::where('created_at', '>=', now()->subDays(7))->count(),
         ];
 
-        return $request->wantsJson()
-            ? response()->json($payload)
-            : Inertia::render('Admin/ContactMessages/Index', $payload);
+        return response()->json([
+            'messages' => $messages,
+            'filters'  => [
+                'status' => $status,
+                'when'   => $when,
+                'search' => $search,
+            ],
+            'sort'   => ['by' => $sortBy, 'dir' => $sortDir],
+            'counts' => $counts,
+        ]);
     }
 
-    /**
-     * Admin — view one message (and mark read).
-     */
+    /* ═══════════════ ADMIN — single message JSON ═══════════════ */
     public function show(Request $request, ContactMessage $contactMessage)
     {
-        if (! $contactMessage->is_read) {
-            $contactMessage->update(['is_read' => true]);
-        }
-
-        $payload = ['contact_message' => $contactMessage];
-
-        return $request->wantsJson()
-            ? response()->json($payload)
-            : Inertia::render('Admin/ContactMessages/Show', $payload);
+        return response()->json([
+            'message' => [
+                'id'         => $contactMessage->id,
+                'name'       => $contactMessage->name,
+                'email'      => $contactMessage->email,
+                'subject'    => $contactMessage->subject,
+                'message'    => $contactMessage->message,
+                'is_read'    => (bool) $contactMessage->is_read,
+                'created_at' => $contactMessage->created_at?->toIso8601String(),
+            ],
+        ]);
     }
 
-    /**
-     * Admin — toggle read/unread.
-     */
+    /* ═══════════════ ADMIN — toggle read state ═══════════════ */
     public function toggleRead(Request $request, ContactMessage $contactMessage)
     {
         $contactMessage->update(['is_read' => ! $contactMessage->is_read]);
 
         return response()->json([
             'message' => $contactMessage->is_read ? 'Marked as read.' : 'Marked as unread.',
-            'is_read' => $contactMessage->is_read,
+            'is_read' => (bool) $contactMessage->is_read,
         ]);
     }
 
-    /**
-     * Admin — delete.
-     */
+    /* ═══════════════ ADMIN — delete ═══════════════ */
     public function destroy(Request $request, ContactMessage $contactMessage)
     {
         $contactMessage->delete();

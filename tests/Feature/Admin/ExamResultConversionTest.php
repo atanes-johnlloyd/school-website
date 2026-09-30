@@ -114,8 +114,11 @@ class ExamResultConversionTest extends TestCase
     {
         [$exam, $result, $applicant, $section] = $this->buildCompletedExamWithApprovedApplicant();
 
-        // Delete section so no space
-        $section->delete();
+        // Remove ALL sections that could match this applicant
+        Section::where('school_year_id', $section->school_year_id)
+            ->where('strand_id', $section->strand_id)
+            ->where('grade_level', '11')
+            ->delete();
 
         $this->actingAs($this->admin())->putJson(
             route('admin.exam-results.update', $result->id),

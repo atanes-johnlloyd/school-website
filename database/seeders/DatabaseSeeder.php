@@ -192,5 +192,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(DemoDataSeeder::class);
         $this->call(TestUsersSeeder::class);
+        $this->call(ApplicantSeeder::class);
+        $this->call(ClassroomActivitySeeder::class);
     }
 }

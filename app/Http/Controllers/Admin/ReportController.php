@@ -22,7 +22,22 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+    /* ═══════════════ INDEX — page shell ═══════════════ */
+    public function index(Request $request): \Inertia\Response
+    {
+        return \Inertia\Inertia::render('Admin/Reports/Index', [
+            'schoolYears' => SchoolYear::select('id', 'label')
+                ->orderByDesc('label')
+                ->get(),
+            'tracks' => Track::select('id', 'code', 'name')
+                ->orderBy('name')
+                ->get(),
+            'activeYearId' => SchoolYear::where('is_active', true)->value('id'),
+        ]);
+    }
+
+    /* ═══════════════ DATA — JSON for the analytics payload ═══════════════ */
+    public function data(Request $request)
     {
         $validated = $request->validate([
             'school_year_id' => ['nullable', 'integer', 'exists:school_years,id'],
@@ -31,29 +46,26 @@ class ReportController extends Controller
 
         $activeYear   = SchoolYear::where('is_active', true)->first();
         $schoolYearId = $validated['school_year_id'] ?? $activeYear?->id;
-        $trackId      = $validated['track_id'] ?? null;
+        $trackId      = $validated['track_id']       ?? null;
 
         return response()->json([
             'school_year_id' => $schoolYearId,
             'track_id'       => $trackId,
-            'school_years'   => SchoolYear::select('id', 'label')->orderByDesc('label')->get(),
-            'tracks'         => Track::select('id', 'code', 'name')->orderBy('name')->get(),
-            'data'           => [
-                'applicant_stats'   => $this->applicantStats($schoolYearId, $trackId),
-                'student_stats'     => $this->studentStats($schoolYearId),
-                'teacher_stats'     => $this->teacherStats(),
-                'section_stats'     => $this->sectionStats($schoolYearId, $trackId),
-                'exam_stats'        => $this->examStats($schoolYearId, $trackId),
-                'exam_summary'      => $this->examResultSummary($schoolYearId),
-                'monthly_trend'     => $this->monthlyTrend($schoolYearId, $trackId),
-                'strand_distribution' => $this->strandDistribution($schoolYearId, $trackId),
-                'section_occupancy' => $this->sectionOccupancy($schoolYearId, $trackId),
-                'grade_summary'     => $this->gradeSummary($schoolYearId),
-                'attendance_summary' => $this->attendanceSummary($schoolYearId),
-                'recent_applications' => $this->recentApplications($schoolYearId, $trackId),
-                'recent_enrollments'  => $this->recentEnrollments($schoolYearId, $trackId),
-                'upcoming_exams'      => $this->upcomingExams($schoolYearId, $trackId),
-            ],
+
+            'applicant_stats'     => $this->applicantStats($schoolYearId, $trackId),
+            'student_stats'       => $this->studentStats($schoolYearId),
+            'teacher_stats'       => $this->teacherStats(),
+            'section_stats'       => $this->sectionStats($schoolYearId, $trackId),
+            'exam_stats'          => $this->examStats($schoolYearId, $trackId),
+            'exam_summary'        => $this->examResultSummary($schoolYearId),
+            'monthly_trend'       => $this->monthlyTrend($schoolYearId, $trackId),
+            'strand_distribution' => $this->strandDistribution($schoolYearId, $trackId),
+            'section_occupancy'   => $this->sectionOccupancy($schoolYearId, $trackId),
+            'grade_summary'       => $this->gradeSummary($schoolYearId),
+            'attendance_summary'  => $this->attendanceSummary($schoolYearId),
+            'recent_applications' => $this->recentApplications($schoolYearId, $trackId),
+            'recent_enrollments'  => $this->recentEnrollments($schoolYearId, $trackId),
+            'upcoming_exams'      => $this->upcomingExams($schoolYearId, $trackId),
         ]);
     }
 
@@ -270,7 +282,7 @@ class ReportController extends Controller
             ];
         }
 
-        $passing  = $grades->where('final_grade', '>=', 75)->count();
+        $passing = $grades->where('final_grade', '>=', \App\Models\SystemSetting::passingGrade())->count();
         $failing  = $total - $passing;
         $average  = round($grades->avg('final_grade'), 2);
         $passRate = round(($passing / $total) * 100, 1);

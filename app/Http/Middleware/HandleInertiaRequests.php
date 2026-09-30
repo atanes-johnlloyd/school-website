@@ -33,12 +33,19 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user'  => $request->user(),
                 'roles' => $request->user()?->getRoleNames() ?? [],
-                'can' => $request->user()
+                'can'   => $request->user()
                     ? $request->user()->getAllPermissions()->pluck('name')->mapWithKeys(fn ($p) => [$p => true])
                     : [],
             ],
+            'ziggy' => fn () => [
+                ...(new Ziggy)->toArray(),
+                'location' => $request->url(),
+            ],
+            'unreadContactCount' => fn () => $request->user()?->hasRole('admin')
+            ? \App\Models\ContactMessage::where('is_read', false)->count()
+            : 0,
         ];
     }
 }
