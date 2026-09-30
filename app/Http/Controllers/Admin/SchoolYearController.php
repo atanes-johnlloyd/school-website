@@ -6,16 +6,62 @@ use App\Http\Controllers\Controller;
 use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SchoolYearController extends Controller
 {
-    public function index(Request $request)
+    /* ═══════════════ INDEX — page shell with nested data ═══════════════ */
+    public function index(Request $request): Response
     {
-        $years = SchoolYear::orderByDesc('label')->get();
-
-        return response()->json(['school_years' => $years]);
+        return Inertia::render('Admin/SchoolYears/Index', [
+            'schoolYears' => SchoolYear::with(['terms' => fn ($q) => $q->orderBy('start_date')])
+                ->withCount(['sections', 'enrollments'])
+                ->orderByDesc('start_date')
+                ->get(),
+        ]);
     }
 
+    /* ═══════════════ LIST — JSON endpoint (kept for API parity) ═══════════════ */
+    public function list(Request $request)
+    {
+        $validated = $request->validate([
+            'status'   => ['nullable', 'in:active,inactive'],
+            'search'   => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by'  => ['nullable', 'in:label,start_date,end_date,is_active'],
+            'sort_dir' => ['nullable', 'in:asc,desc'],
+        ]);
+
+        $sortBy  = $validated['sort_by']  ?? 'start_date';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
+
+        $query = SchoolYear::query()
+            ->with(['terms' => fn ($q) => $q->orderBy('start_date')])
+            ->withCount(['sections', 'enrollments']);
+
+        if (! empty($validated['status'])) {
+            $query->where('is_active', $validated['status'] === 'active');
+        }
+        if (! empty($validated['search'])) {
+            $query->where('label', 'like', '%' . $validated['search'] . '%');
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        $years = $query->paginate($validated['per_page'] ?? 10);
+
+        return response()->json([
+            'schoolYears' => $years,
+            'counts' => [
+                'total'  => SchoolYear::count(),
+                'active' => SchoolYear::where('is_active', true)->count(),
+                'terms'  => \App\Models\Term::count(),
+            ],
+        ]);
+    }
+
+    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -25,7 +71,6 @@ class SchoolYearController extends Controller
             'is_active'  => ['boolean'],
         ]);
 
-        // If this one is active, deactivate others
         if (! empty($validated['is_active'])) {
             SchoolYear::query()->update(['is_active' => false]);
         }
@@ -35,6 +80,7 @@ class SchoolYearController extends Controller
         return response()->json(['school_year' => $year], 201);
     }
 
+    /* ═══════════════ SHOW ═══════════════ */
     public function show(SchoolYear $schoolYear)
     {
         return response()->json([
@@ -42,6 +88,7 @@ class SchoolYearController extends Controller
         ]);
     }
 
+    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, SchoolYear $schoolYear)
     {
         $validated = $request->validate([
@@ -61,9 +108,9 @@ class SchoolYearController extends Controller
         return response()->json(['school_year' => $schoolYear->fresh()]);
     }
 
+    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(SchoolYear $schoolYear)
     {
-        // Block if it has terms, sections, or enrollments
         if ($schoolYear->terms()->exists()
             || $schoolYear->sections()->exists()
             || $schoolYear->enrollments()->exists()) {
@@ -77,11 +124,21 @@ class SchoolYearController extends Controller
         return response()->json(['message' => 'School year deleted.']);
     }
 
+    /* ═══════════════ ACTIVATE ═══════════════ */
     public function activate(SchoolYear $schoolYear)
     {
         SchoolYear::query()->update(['is_active' => false]);
         $schoolYear->update(['is_active' => true]);
 
-        return response()->json(['message' => 'Activated.', 'school_year' => $schoolYear]);
+        return response()->json([
+            'message' => 'Activated.',
+            'school_year' => $schoolYear,
+        ]);
+    }
+
+    /* ═══════════════ SET ACTIVE (legacy alias) ═══════════════ */
+    public function setActive(SchoolYear $schoolYear)
+    {
+        return $this->activate($schoolYear);
     }
 }

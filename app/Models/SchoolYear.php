@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SchoolYear extends Model
 {
@@ -20,5 +21,10 @@ class SchoolYear extends Model
     public function entranceExams()
     {
         return $this->hasMany(EntranceExam::class);
+    }
+    public function students(): BelongsToMany
+    {
+        // Replace 'enrollments' with your actual pivot table name if it's different
+        return $this->belongsToMany(Student::class, 'enrollments'); 
     }
 }

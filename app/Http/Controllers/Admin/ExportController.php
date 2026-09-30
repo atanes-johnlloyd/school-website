@@ -300,14 +300,16 @@ class ExportController extends Controller
         $generalAverage = $generalAverage !== null ? round($generalAverage, 2) : null;
 
         // Determine remarks
+        $passing = \App\Models\SystemSetting::passingGrade();
+
         $overallRemarks = null;
         if ($generalAverage !== null) {
             $overallRemarks = match (true) {
-                $generalAverage >= 90 => 'Outstanding',
-                $generalAverage >= 85 => 'Very Satisfactory',
-                $generalAverage >= 80 => 'Satisfactory',
-                $generalAverage >= 75 => 'Fairly Satisfactory',
-                default               => 'Did Not Meet Expectations',
+                $generalAverage >= 90               => 'Outstanding',
+                $generalAverage >= 85               => 'Very Satisfactory',
+                $generalAverage >= 80               => 'Satisfactory',
+                $generalAverage >= $passing         => 'Fairly Satisfactory',
+                default                             => 'Did Not Meet Expectations',
             };
         }
 

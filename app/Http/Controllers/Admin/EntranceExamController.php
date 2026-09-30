@@ -14,24 +14,40 @@ use App\Models\Track;
 use App\Services\ExamAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class EntranceExamController extends Controller
 {
     public function __construct(protected ExamAssignmentService $assigner) {}
 
+    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(Request $request)
+    {
+        return Inertia::render('Admin/EntranceExams/Index', [
+            'tracks'      => Track::select('id', 'code', 'name')->orderBy('name')->get(),
+            'schoolYears' => SchoolYear::select('id', 'label')->orderByDesc('start_date')->get(),
+        ]);
+    }
+
+    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
+    public function list(Request $request)
     {
         $validated = $request->validate([
             'grade_level'    => ['nullable', 'in:11,12,All'],
             'status'         => ['nullable', 'in:upcoming,ongoing,completed,cancelled'],
             'school_year_id' => ['nullable', 'integer', 'exists:school_years,id'],
             'search'         => ['nullable', 'string', 'max:100'],
+            'per_page'       => ['nullable', 'integer', 'min:10', 'max:100'],
+            'sort_by'        => ['nullable', 'in:exam_name,exam_date,status,grade_level'],
+            'sort_dir'       => ['nullable', 'in:asc,desc'],
         ]);
+
+        $sortBy  = $validated['sort_by']  ?? 'exam_date';
+        $sortDir = $validated['sort_dir'] ?? 'desc';
 
         $query = EntranceExam::query()
             ->with(['track:id,name', 'schoolYear:id,label'])
-            ->withCount('results')
-            ->latest('exam_date');
+            ->withCount('results');
 
         if (! empty($validated['grade_level']) && $validated['grade_level'] !== 'All') {
             $query->forGrade($validated['grade_level']);
@@ -43,27 +59,54 @@ class EntranceExamController extends Controller
             $query->where('exam_name', 'like', '%' . $validated['search'] . '%');
         }
 
-        $exams = $query->get()->filter(function (EntranceExam $e) use ($validated) {
+        // Sort at SQL level (computed_status is not a column)
+        if ($sortBy === 'status') {
+            $query->orderBy('status', $sortDir)->orderBy('exam_date', 'desc');
+        } else {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        // Fetch, apply computed-status filter in PHP, then paginate manually
+        $all = $query->get()->filter(function (EntranceExam $e) use ($validated) {
             if (empty($validated['status'])) return true;
             return strtolower($e->computed_status) === $validated['status'];
         })->values();
 
+        $perPage = $validated['per_page'] ?? 10;
+        $page    = max(1, (int) $request->input('page', 1));
+        $total   = $all->count();
+        $items   = $all->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $exams = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items, $total, $perPage, $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $exams->getCollection()->transform(fn (EntranceExam $e) => [
+            'id'              => $e->id,
+            'exam_name'       => $e->exam_name,
+            'exam_date'       => $e->exam_date?->toDateString(),
+            'exam_time'       => $e->exam_time,
+            'venue'           => $e->venue,
+            'grade_level'     => $e->grade_level,
+            'track'           => $e->track?->name,
+            'school_year'     => $e->schoolYear?->label,
+            'max_capacity'    => $e->max_capacity,
+            'applicant_count' => $e->results_count,
+            'remaining'       => $e->remainingCapacity(),
+            'status'          => $e->computed_status,
+        ]);
+
         return response()->json([
-            'exams' => $exams->map(fn (EntranceExam $e) => [
-                'id'              => $e->id,
-                'exam_name'       => $e->exam_name,
-                'exam_date'       => $e->exam_date?->toDateString(),
-                'exam_time'       => $e->exam_time,
-                'venue'           => $e->venue,
-                'grade_level'     => $e->grade_level,
-                'track'           => $e->track?->name,
-                'school_year'     => $e->schoolYear?->label,
-                'max_capacity'    => $e->max_capacity,
-                'applicant_count' => $e->results_count,
-                'remaining'       => $e->remainingCapacity(),
-                'status'          => $e->computed_status,
-            ]),
-            'stats' => $this->computeStats(),
+            'exams'   => $exams,
+            'filters' => [
+                'grade_level'    => $validated['grade_level']    ?? null,
+                'status'         => $validated['status']         ?? null,
+                'school_year_id' => $validated['school_year_id'] ?? null,
+                'search'         => $validated['search']         ?? null,
+            ],
+            'sort'   => ['by' => $sortBy, 'dir' => $sortDir],
+            'counts' => $this->computeStats(),
         ]);
     }
 

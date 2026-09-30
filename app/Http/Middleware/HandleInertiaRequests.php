@@ -43,6 +43,9 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'unreadContactCount' => fn () => $request->user()?->hasRole('admin')
+            ? \App\Models\ContactMessage::where('is_read', false)->count()
+            : 0,
         ];
     }
 }

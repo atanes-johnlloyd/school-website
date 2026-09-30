@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 
 const props = defineProps({
     show: {
@@ -26,11 +26,9 @@ watch(
         if (props.show) {
             document.body.style.overflow = 'hidden';
             showSlot.value = true;
-
             dialog.value?.showModal();
         } else {
             document.body.style.overflow = '';
-
             setTimeout(() => {
                 dialog.value?.close();
                 showSlot.value = false;
@@ -48,19 +46,27 @@ const close = () => {
 const closeOnEscape = (e) => {
     if (e.key === 'Escape') {
         e.preventDefault();
-
         if (props.show) {
             close();
         }
     }
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
+onMounted(async () => {
+    document.addEventListener('keydown', closeOnEscape);
+    await nextTick();
+    if (props.show) {
+        document.body.style.overflow = 'hidden';
+        showSlot.value = true;
+        dialog.value?.showModal();
+    }
+});
 
 onUnmounted(() => {
     document.removeEventListener('keydown', closeOnEscape);
-
-    document.body.style.overflow = '';
+    if (!document.querySelector('dialog[open]')) {
+        document.body.style.overflow = '';
+    }
 });
 
 const maxWidthClass = computed(() => {
@@ -70,6 +76,9 @@ const maxWidthClass = computed(() => {
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '3xl': 'sm:max-w-3xl',
+        '4xl': 'sm:max-w-4xl',
+        '5xl': 'sm:max-w-5xl',
     }[props.maxWidth];
 });
 </script>
@@ -79,8 +88,9 @@ const maxWidthClass = computed(() => {
         class="z-50 m-0 min-h-full min-w-full overflow-y-auto bg-transparent backdrop:bg-transparent"
         ref="dialog"
     >
+        <!-- Added flex items-center justify-center min-h-screen for absolute viewport centering -->
         <div
-            class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0"
+            class="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-screen"
             scroll-region
         >
             <Transition
@@ -97,7 +107,7 @@ const maxWidthClass = computed(() => {
                     @click="close"
                 >
                     <div
-                        class="absolute inset-0 bg-gray-500 opacity-75"
+                        class="absolute inset-0 bg-black/50 backdrop-blur-xs"
                     />
                 </div>
             </Transition>
@@ -112,7 +122,7 @@ const maxWidthClass = computed(() => {
             >
                 <div
                     v-show="show"
-                    class="mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full"
+                    class="my-auto transform overflow-hidden rounded-3xl bg-transparent shadow-2xl transition-all w-full"
                     :class="maxWidthClass"
                 >
                     <slot v-if="showSlot" />

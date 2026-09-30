@@ -11,6 +11,10 @@ class Announcement extends Model
 {
     use SoftDeletes, Auditable;
 
+    public const PRIORITY_NORMAL    = 'normal';
+    public const PRIORITY_IMPORTANT = 'important';
+    public const PRIORITY_URGENT    = 'urgent';
+
     protected $fillable = [
         'created_by',
         'class_id',
@@ -18,16 +22,17 @@ class Announcement extends Model
         'body',
         'is_pinned',
         'is_school_wide',
+        'priority',
         'published_at',
         'expires_at',
         'image_path',
     ];
 
     protected $casts = [
-        'is_pinned'    => 'boolean',
-        'is_school_wide'  => 'boolean',
-        'published_at' => 'datetime',
-        'expires_at'   => 'datetime',
+        'is_pinned'      => 'boolean',
+        'is_school_wide' => 'boolean',
+        'published_at'   => 'datetime',
+        'expires_at'     => 'datetime',
     ];
 
     // ─── Relationships ──────────────────────────────────
@@ -67,10 +72,52 @@ class Announcement extends Model
         return $q->where('is_pinned', true);
     }
 
-    // Pinned first, then newest
+    public function scopeUrgent(Builder $q): Builder
+    {
+        return $q->where('priority', self::PRIORITY_URGENT);
+    }
+
+    public function scopeImportant(Builder $q): Builder
+    {
+        return $q->where('priority', self::PRIORITY_IMPORTANT);
+    }
+
+    public function scopeSchoolWide(Builder $q): Builder
+    {
+        return $q->where('is_school_wide', true);
+    }
+
+    /** Pinned first, then newest (legacy) */
     public function scopeOrdered(Builder $q): Builder
     {
         return $q->orderByDesc('is_pinned')->orderByDesc('published_at');
+    }
+
+    /**
+     * Urgent → Important → Normal, then pinned first, then newest.
+     */
+    public function scopeOrderedByImportance(Builder $q): Builder
+    {
+        return $q
+            ->orderByRaw("CASE priority
+                WHEN 'urgent'    THEN 1
+                WHEN 'important' THEN 2
+                ELSE 3
+            END")
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at');
+    }
+
+    // ─── Computed ───────────────────────────────────────
+    public function getIsDraftAttribute(): bool
+    {
+        return is_null($this->published_at);
+    }
+
+    public function getIsExpiredAttribute(): bool
+    {
+        return $this->expires_at && $this->expires_at->isPast();
     }
 
     public function getImageUrlAttribute(): ?string
@@ -79,9 +126,4 @@ class Announcement extends Model
     }
 
     protected $appends = ['image_url'];
-
-    public function scopeSchoolWide(Builder $q): Builder
-    {
-        return $q->where('is_school_wide', true);
-    }
 }

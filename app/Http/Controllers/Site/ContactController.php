@@ -20,8 +20,11 @@ class ContactController extends Controller
             ],
         ];
 
-        return $request->wantsJson()
-            ? response()->json($payload)
-            : Inertia::render('Site/Contact', $payload);
+        return \Inertia\Inertia::render('Site/Contact', [
+            'emailVisible' => SystemSetting::contactEmailVisible(),
+            'schoolEmail'  => SystemSetting::get('school_email', ''),
+            'schoolPhone'  => SystemSetting::get('school_phone', ''),
+            'schoolAddress'=> SystemSetting::get('school_address', ''),
+        ]);
     }
 }
