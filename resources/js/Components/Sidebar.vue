@@ -1,199 +1,180 @@
 <template>
-  <aside
-    class="relative w-64 md:w-72 h-screen flex flex-col justify-between p-5 overflow-hidden font-['Inter'] select-none shrink-0 border-r border-emerald-900/10 shadow-sm"
-    style="background-color: #E8FFE8;"
-  >
-    <!-- Watermark Background Image (5% Opacity) -->
+  <div>
+    <!-- Mobile Backdrop Overlay -->
     <div 
-      class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-[0.05]"
-      :style="{ backgroundImage: 'url(' + bgImage + ')' }"
+      v-if="isOpen" 
+      @click="$emit('close-sidebar')" 
+      class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300"
     ></div>
 
-    <!-- Z-Index Wrapper for Content Above Background -->
-    <div class="relative z-10 flex flex-col h-full justify-between">
-      
-      <!-- TOP SECTION: Logo, Headers & Navigation Links -->
-      <div class="flex flex-col space-y-6 overflow-y-auto no-scrollbar">
+    <!-- Sidebar Container (Responsive Slide-over Drawer for Mobile & Sticky Column for Desktop) -->
+    <aside
+      :class="[
+        'fixed md:sticky top-0 left-0 h-screen w-72 flex flex-col bg-[#F9F7F1] dark:bg-[#232D26] border-r border-gray-200 dark:border-[#3F4F43] overflow-hidden transition-all duration-300 z-50',
+        isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'
+      ]"
+    >
+      <!-- Background Image Layer -->
+      <div
+        class="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-60 dark:opacity-[0.15] transition-opacity duration-300"
+        :style="{ backgroundImage: `url(${sidebarBg})` }"
+      ></div>
 
-        <!-- 1. School Logo & Name -->
-        <div class="flex flex-col items-center text-center pt-2">
-          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-[#005506]/30 p-1 flex items-center justify-center bg-white/40 shadow-sm mb-2 overflow-hidden">
-            <img :src="logoImg" alt="Salawag SHS Logo" class="w-full h-full object-contain scale-[2]" />
+      <!-- Sidebar Content Area -->
+      <div class="relative z-10 flex flex-col h-full overflow-y-auto px-5 py-6 no-scrollbar">
+
+        <!-- Mobile Drawer Close Button -->
+        <button 
+          @click="$emit('close-sidebar')" 
+          class="md:hidden absolute top-4 right-4 p-2 rounded-xl bg-white/80 dark:bg-[#2D3A31]/80 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-[#3F4F43] transition-colors"
+          aria-label="Close Navigation"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Logo & School Name Section -->
+        <div class="flex flex-col items-center mb-8 mt-2">
+          
+          <!-- LOGO WITH WATER DROPLET RIPPLE ANIMATION -->
+          <div class="relative flex items-center justify-center mb-3">
+            <!-- Ripple Wave 1 -->
+            <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/40 dark:border-[#86EFAC]/50"></div>
+            
+            <!-- Ripple Wave 2 (Staggered Delay) -->
+            <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/30 dark:border-[#86EFAC]/40" style="animation-delay: 1s;"></div>
+
+            <!-- Center Ambient Glow -->
+            <div class="absolute inset-0 rounded-full bg-[#006907]/10 dark:bg-[#86EFAC]/15 blur-sm animate-pulse"></div>
+
+            <!-- Logo Container -->
+            <div
+              class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-[#2D3A31] border-2 border-[#006907] dark:border-[#86EFAC] flex items-center justify-center p-1 shadow-md transition-colors duration-300 z-10"
+            >
+              <img :src="schoolLogo" alt="Salawag SHS Logo" class="w-full h-full object-contain rounded-full" />
+            </div>
           </div>
-          <h1 class="text-[#004d08] font-black text-xs sm:text-sm tracking-wide uppercase leading-tight">
-            SALAWAG<br />SENIOR HIGH SCHOOL
+
+          <h1
+            class="text-center text-[#006907] dark:text-[#86EFAC] font-extrabold text-sm sm:text-base leading-tight tracking-wide transition-colors duration-300"
+          >
+            SALAWAG<br>SENIOR HIGH SCHOOL
           </h1>
         </div>
 
-        <!-- 2. Academic Workspace & S.Y. Label Row -->
-        <div class="flex items-center justify-between text-[11px] font-bold tracking-tight text-[#004d08]/80 px-1 pt-1 border-t border-[#005506]/15">
-          <span class="uppercase leading-tight">ACADEMIC<br />WORKSPACE</span>
-          <span class="text-right">S.Y. 2024–2025</span>
+        <!-- Workspace & School Year Header -->
+        <div class="flex items-center justify-between mb-4 px-1">
+          <span
+            class="text-xs font-bold text-[#006907] dark:text-slate-300 tracking-wider uppercase transition-colors"
+          >Student Workspace</span>
+          <span
+            class="text-[10px] font-bold text-[#006907] dark:text-[#232D26] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-sm"
+          >S.Y. 25-26</span>
         </div>
 
-        <!-- 3. Navigation Links List -->
-        <nav class="space-y-1.5 pt-1">
-
-          <!-- Dashboard -->
-          <Link
-            :href="route('student.dashboard')"
-            :class="
-              $page.component === 'Dashboard' || $page.component === 'Student/Dashboard' || isRouteActive('student.dashboard')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
+        <!-- Navigation Menu Links -->
+        <nav class="flex flex-col space-y-1.5 flex-1">
+          <Link 
+            v-for="item in menuItems" 
+            :key="item.name" 
+            :href="item.route ? route(item.route) : '#'" 
+            @click="$emit('close-sidebar')"
+            :class="[
+              'flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ease-in-out',
+              isRouteActive(item.route)
+                ? 'bg-[#006907] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-md'
+                : 'text-[#2C3E2D] dark:text-slate-300 hover:bg-[#006907]/10 dark:hover:bg-[#3F4F43] hover:text-[#006907] dark:hover:text-white'
+            ]"
           >
-            <!-- Layout / Dashboard Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span>Dashboard</span>
+            <!-- Icon -->
+            <div class="relative flex-shrink-0 w-5 h-5 flex items-center justify-center">
+              <component 
+                :is="item.icon" 
+                class="w-5 h-5"
+                :class="isRouteActive(item.route) ? 'text-current' : (item.iconColor || 'text-[#006907] dark:text-slate-400')" 
+              />
+              <!-- Notification Indicator Dot -->
+              <span 
+                v-if="item.hasNotification && !isRouteActive(item.route)"
+                class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#F9C20C] rounded-full"
+              ></span>
+            </div>
+            <!-- Label -->
+            <span class="text-sm tracking-wide">{{ item.name }}</span>
           </Link>
-
-          <!-- Subjects -->
-          <Link
-            :href="route('student.classes.index')"
-            :class="
-              $page.component.startsWith('Student/Classes') || isRouteActive('student.classes.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Book / Class Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-            </svg>
-            <span>Subjects</span>
-          </Link>
-
-          <Link
-            :href="route('student.studentrecords.index')"
-            :class="
-              $page.component.startsWith('Student/StudentRecords') || isRouteActive('student.studentrecords.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Academic / Student Records Folder Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>Student Records</span>
-          </Link>
-
-          <!-- Grades -->
-          <Link
-            :href="route('student.grades.index')"
-            :class="
-              $page.component.startsWith('Student/Grades') || isRouteActive('student.grades.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Star Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-            <span>Grades</span>
-          </Link>
-
-          <!-- Schedule -->
-          <Link
-            :href="route('student.schedule.index')"
-            :class="
-              $page.component.startsWith('Student/Schedule') || isRouteActive('student.schedule.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Calendar Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>Schedule</span>
-          </Link>
-
-          <!-- Assessments -->
-          <Link
-            :href="route('student.assessments.index')"
-            :class="
-              $page.component.startsWith('Student/Assessments') || isRouteActive('student.assessments.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Clipboard List Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            <span>Assessments</span>
-          </Link>
-
-          <!-- Quiz Hub -->
-          <Link
-            :href="route('student.quizhub.index')"
-            :class="
-              $page.component.startsWith('Student/QuizHub') || isRouteActive('student.quizhub.*')
-                ? 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all bg-[#004d08] text-white shadow-md'
-                : 'flex items-center gap-3.5 px-4 py-3 rounded-2xl font-semibold text-sm transition-all text-[#004d08] hover:bg-[#005506]/10'
-            "
-          >
-            <!-- Question Box / Quiz Icon -->
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Quiz Hub</span>
-          </Link>
-
         </nav>
 
-      </div>
-
-      <!-- BOTTOM SECTION: Back to Public Website & School ID Box -->
-      <div class="pt-4">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-[#005506]/10 space-y-2">
-          
-          <Link
+        <!-- Footer Card -->
+        <div
+          class="mt-8 bg-white dark:bg-[#2D3A31] rounded-2xl p-4 shadow-sm border border-[#006907]/10 dark:border-[#3F4F43] relative z-10 transition-colors duration-300"
+        >
+          <Link 
             href="/"
-            class="flex items-center gap-2 text-[#004d08] font-bold text-xs hover:underline transition-all"
+            class="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#006907] dark:text-[#86EFAC] hover:text-green-800 dark:hover:text-white transition-colors mb-4"
           >
-            <!-- Left Arrow -->
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span>Back to Public Website</span>
+            Back to Public Website
           </Link>
-
-          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 pt-1">
+          <div
+            class="flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-[#3F4F43] pt-3 transition-colors"
+          >
             <span>School ID</span>
-            <span class="font-bold text-slate-800">342512</span>
+            <span class="text-gray-900 dark:text-white font-bold">342512</span>
           </div>
-
         </div>
-      </div>
 
-    </div>
-  </aside>
+      </div>
+    </aside>
+  </div>
 </template>
 
 <script setup>
 import { Link } from '@inertiajs/vue3'
 
-import bgImage from '@/../assets/img/dashboardbackground.png'
-import logoImg from '@/../assets/img/logo_trans_big.png'
+import sidebarBg from '@/../assets/img/newsidebarbg.png'
+import schoolLogo from '@/../assets/img/logo_trans.png'
+
+defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+})
+
+defineEmits(['close-sidebar'])
 
 const isRouteActive = (routeName) => {
+  if (!routeName) return false
   try {
-    return typeof route === 'function' && route().current(routeName)
+    return route().current(routeName) || route().current(routeName + '.*')
   } catch (e) {
     return false
   }
 }
+
+const IconDashboard = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></svg>` }
+const IconSubjects = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>` }
+const IconRecords = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>` }
+const IconGrades = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>` }
+const IconSchedule = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>` }
+const IconAssessments = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>` }
+const IconQuiz = { template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>` }
+
+const menuItems = [
+  { name: 'Dashboard', icon: IconDashboard, route: 'student.dashboard' },
+  { name: 'Subjects', icon: IconSubjects, route: 'student.classes.index' },
+  { name: 'Student Records', icon: IconRecords, route: 'student.studentrecords.index' },
+  { name: 'Grades', icon: IconGrades, route: 'student.grades.index' },
+  { name: 'Schedule', icon: IconSchedule, route: 'student.schedule.index' },
+  { name: 'Assessments', icon: IconAssessments, route: 'student.assessments.index' },
+  { name: 'Quiz Hub', icon: IconQuiz, route: 'student.quizhub.index' },
+]
 </script>
 
 <style scoped>
-
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -201,5 +182,23 @@ const isRouteActive = (routeName) => {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes waterDripRipple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.ripple-wave {
+  animation: waterDripRipple 2.5s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
 }
 </style>
