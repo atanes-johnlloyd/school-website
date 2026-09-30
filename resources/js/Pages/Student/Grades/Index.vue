@@ -15,8 +15,11 @@
       <div class="relative z-10 p-6 md:p-8 space-y-6 flex-1 pb-16">
         
         <!-- HERO HEADER BANNER -->
-        <div class="w-full bg-[#004d08] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] relative overflow-hidden space-y-4">
-          <div class="space-y-1">
+        <div class="w-full bg-[#004d08] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] relative flex flex-col gap-4 overflow-hidden">
+          <img :src="heroImage" alt="" class="absolute inset-0 h-full w-full object-cover object-center" aria-hidden="true" />
+          <div class="absolute inset-0 bg-[#004d08]/75" aria-hidden="true"></div>
+
+          <div class="relative z-10 space-y-1">
             <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none">
               <span class="text-white">STUDENT</span>
               <span class="animated-stroke-text">GRADES</span>
@@ -31,7 +34,7 @@
           </div>
 
           <!-- Hero Meta Info & Telemetry Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2">
+          <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2">
             
             <!-- Left Info Block -->
             <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
@@ -194,6 +197,7 @@
 import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
+import heroImage from '@/../assets/img/local/student-grades-hero.png'
 
 const props = defineProps({
   grades: Array,

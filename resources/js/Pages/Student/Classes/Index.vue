@@ -15,8 +15,12 @@
       <div class="relative z-10 p-6 md:p-8 space-y-6 flex-1 pb-16">
         
         <!-- DASHBOARD-MATCHED HERO BANNER -->
-        <div class="w-full bg-[#004d08] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] relative overflow-hidden space-y-4">
-          <div class="space-y-1">
+        <div class="w-full bg-[#004d08] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] relative flex flex-col gap-4 overflow-hidden">
+          <img :src="heroImage" alt="" class="absolute inset-0 h-full w-full object-cover object-center" aria-hidden="true" />
+          <div class="absolute inset-0 bg-[#004d08]/75" aria-hidden="true"></div>
+          <StudentHeroMascot note="Open an e-book today—every page brings you closer to your goals!" />
+
+          <div class="relative z-10 space-y-1">
             <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none">
               <span class="text-white">STUDENT</span>
               <span class="animated-stroke-text">SUBJECTS</span>
@@ -31,10 +35,10 @@
           </div>
 
           <!-- Hero Meta Info & Telemetry Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2">
+          <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2">
             
             <!-- Left Info Block -->
-            <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
+            <div class="lg:col-span-7 xl:col-span-6 flex flex-col sm:flex-row items-center gap-4">
               <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 overflow-hidden shrink-0 shadow-inner flex items-center justify-center text-3xl">
                 🎓
               </div>
@@ -52,7 +56,7 @@
             </div>
 
             <!-- Right Quick Telemetry Counters -->
-            <div class="lg:col-span-5 grid grid-cols-2 gap-3">
+            <div class="lg:col-span-5 xl:col-span-4 grid grid-cols-2 gap-3">
               <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
                 <span class="text-[11px] font-medium text-emerald-100/80">Enrolled Track</span>
                 <div class="text-xl font-extrabold text-amber-300 my-0.5">STEM</div>
@@ -217,6 +221,8 @@
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
+import StudentHeroMascot from '@/Components/StudentHeroMascot.vue'
+import heroImage from '@/../assets/img/local/subject-library-hero.png'
 
 const props = defineProps({
   classes: Object,
