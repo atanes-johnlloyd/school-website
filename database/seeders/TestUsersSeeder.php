@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\ClassRoom;
+use App\Models\ClassStudent;
+use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -42,7 +45,6 @@ class TestUsersSeeder extends Seeder
         );
         $teacherUser->syncRoles(['teacher']);
 
-        // Create the teacher profile if missing
         $teacher = Teacher::updateOrCreate(
             ['user_id' => $teacherUser->id],
             [
@@ -57,14 +59,27 @@ class TestUsersSeeder extends Seeder
             ]
         );
 
-        // Assign this teacher to a couple of classes so they have something to see
-        $classes = \App\Models\ClassRoom::inRandomOrder()->take(3)->get();
-        foreach ($classes as $classroom) {
-            $classroom->update(['teacher_id' => $teacher->id]);
+        // ─── Assign test teacher to ALL classes in a fixed section ───
+        // Picks the first section that already has classes (created by
+        // DemoDataSeeder). This guarantees teacher@test.com has a full
+        // roster to work with.
+        $targetSection = Section::whereHas('classroom')
+            ->orderBy('id')
+            ->first();
+
+        $testClasses = collect();
+
+        if ($targetSection) {
+            $testClasses = ClassRoom::where('section_id', $targetSection->id)->get();
+            foreach ($testClasses as $classroom) {
+                $classroom->update(['teacher_id' => $teacher->id]);
+            }
+        } else {
+            $this->command->warn('⚠ No section with classes found. Run DemoDataSeeder first.');
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STUDENT
+        // STUDENT — enrolled in the SAME section as test teacher's classes
         // ═══════════════════════════════════════════════════════════
         $studentUser = User::updateOrCreate(
             ['email' => 'student@test.com'],
@@ -77,7 +92,6 @@ class TestUsersSeeder extends Seeder
         );
         $studentUser->syncRoles(['student']);
 
-        // Create the student profile if missing
         $student = Student::updateOrCreate(
             ['user_id' => $studentUser->id],
             [
@@ -94,33 +108,28 @@ class TestUsersSeeder extends Seeder
             ]
         );
 
-        // Enroll this student in the same section as one of the teacher's classes
-        $targetClass = $classes->first();
-        if ($targetClass) {
-            $section = Section::find($targetClass->section_id);
+        if ($targetSection) {
+            // Enrollment record
+            Enrollment::updateOrCreate(
+                [
+                    'student_id'     => $student->id,
+                    'school_year_id' => $targetSection->school_year_id,
+                ],
+                [
+                    'section_id'  => $targetSection->id,
+                    'status'      => 'enrolled',
+                    'enrolled_at' => now(),
+                    'enrolled_by' => $admin->id,
+                ]
+            );
 
-            if ($section) {
-                // Enrollment record for the year
-                \App\Models\Enrollment::updateOrCreate(
-                    [
-                        'student_id'     => $student->id,
-                        'school_year_id' => $section->school_year_id,
-                    ],
-                    [
-                        'section_id'  => $section->id,
-                        'status'      => 'enrolled',
-                        'enrolled_at' => now(),
-                    ]
+            // Attach to every class in the section (including test teacher's)
+            $sectionClasses = ClassRoom::where('section_id', $targetSection->id)->get();
+            foreach ($sectionClasses as $classroom) {
+                ClassStudent::updateOrCreate(
+                    ['class_id' => $classroom->id, 'student_id' => $student->id],
+                    ['status' => 'active', 'enrolled_at' => now()]
                 );
-
-                // Attach to every class in that section
-                $sectionClasses = \App\Models\ClassRoom::where('section_id', $section->id)->get();
-                foreach ($sectionClasses as $classroom) {
-                    \App\Models\ClassStudent::updateOrCreate(
-                        ['class_id' => $classroom->id, 'student_id' => $student->id],
-                        ['status' => 'active', 'enrolled_at' => now()]
-                    );
-                }
             }
         }
 
@@ -128,5 +137,8 @@ class TestUsersSeeder extends Seeder
         $this->command->info('   admin@test.com   / password');
         $this->command->info('   teacher@test.com / password');
         $this->command->info('   student@test.com / password');
+        $this->command->info('   → Test teacher assigned to ' . $testClasses->count()
+            . ' class(es) in section "' . ($targetSection?->name ?? 'N/A') . '"');
+        $this->command->info('   → Test student enrolled in same section');
     }
 }

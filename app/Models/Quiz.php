@@ -10,12 +10,10 @@ class Quiz extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'class_id', 'class_module_id', 'title', 'description', 'instructions',
+        'class_id', 'class_module_id', 'category', 'title', 'description', 'instructions',
         'time_limit_minutes', 'attempts_allowed', 'shuffle_questions',
         'passing_score', 'available_from', 'available_until', 'is_published',
-        'show_score_immediately',
-        'show_correct_answers',
-        'show_explanations',
+        'show_score_immediately', 'show_correct_answers', 'show_explanations',
         'shuffle_options',
     ];
 

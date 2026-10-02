@@ -992,26 +992,25 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
         // 👈 ADD THIS MISSING ROUTE HERE:
         Route::get('/classes/{classroom}', [StudentClassController::class, 'show'])->name('classes.show');
 
-        Route::get('/assessments', function () {
-            return Inertia::render('Student/Assessments/Index');
-        })->name('assessments.index');
+        Route::get('/assessments', [
+            \App\Http\Controllers\Student\AssessmentController::class, 'index'
+        ])->name('assessments.index');
 
         Route::get('/grades', function () {
             return Inertia::render('Student/Grades/Index');
         })->name('grades.index');
 
-        Route::get('/schedule', function () {
-            return Inertia::render('Student/Schedule/Index');
-        })->name('schedule.index');
+        Route::get('/schedule', [
+            \App\Http\Controllers\Student\ScheduleController::class, 'index'
+        ])->name('schedule.index');
 
-        Route::get('/quizhub', function () {
-            return Inertia::render('Student/QuizHub/Index');
-        })->name('quizhub.index');
+        Route::get('/quizhub', [
+            \App\Http\Controllers\Student\QuizHubController::class, 'index'
+        ])->name('quizhub.index');
 
-        Route::get('/studentrecords', function () {
-            return Inertia::render('Student/StudentRecords/Index');
-        })->name('studentrecords.index');
-
+        Route::get('/studentrecords', [
+            \App\Http\Controllers\Student\StudentRecordsController::class, 'index'
+        ])->name('studentrecords.index');
         Route::get(
             '/classes/{classroom}/assignments',
             [\App\Http\Controllers\Student\AssignmentController::class, 'index']

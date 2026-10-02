@@ -8,11 +8,19 @@ use App\Models\Student;
 class GradeCalculator
 {
     /**
-     * Compute the category averages and weighted final grade
-     * for a student in a specific class.
+     * Compute category averages and the weighted final grade for a
+     * student in a class. Includes BOTH published assignments and
+     * published quizzes, bucketed by their `category` column.
      */
     public function compute(Student $student, ClassRoom $classroom): array
     {
+        $buckets = [
+            'written_work'     => ['earned' => 0.0, 'possible' => 0.0],
+            'performance_task' => ['earned' => 0.0, 'possible' => 0.0],
+            'quarterly_exam'   => ['earned' => 0.0, 'possible' => 0.0],
+        ];
+
+        // ─── 1. Assignments ─────────────────────────────
         $assignments = $classroom->assignments()
             ->where('is_published', true)
             ->with(['submissions' => function ($q) use ($student) {
@@ -20,12 +28,6 @@ class GradeCalculator
                   ->whereNotNull('graded_at');
             }])
             ->get();
-
-        $buckets = [
-            'written_work'     => ['earned' => 0.0, 'possible' => 0.0],
-            'performance_task' => ['earned' => 0.0, 'possible' => 0.0],
-            'quarterly_exam'   => ['earned' => 0.0, 'possible' => 0.0],
-        ];
 
         $grades = [];   // assignment_id => { grade, points }
 
@@ -45,7 +47,49 @@ class GradeCalculator
             ];
         }
 
-        // Category averages (0-100) or null if nothing graded
+        // ─── 2. Quizzes ─────────────────────────────────
+        // For each published quiz, use the student's BEST graded attempt
+        // (highest raw score). Points possible respects any per-question
+        // pivot override set by the teacher.
+        $quizzes = $classroom->quizzes()
+            ->where('is_published', true)
+            ->with('questions')
+            ->get();
+
+        $quizGrades = [];   // quiz_id => { grade, points, attempt_id }
+
+        foreach ($quizzes as $quiz) {
+            $bestAttempt = $quiz->attempts()
+                ->where('student_id', $student->id)
+                ->whereNotNull('submitted_at')
+                ->whereNotNull('score')
+                ->orderByDesc('score')
+                ->first();
+
+            if (! $bestAttempt) {
+                continue;
+            }
+
+            $totalPoints = (float) $quiz->questions->sum(function ($q) {
+                return $q->pivot->points_override ?? $q->points;
+            });
+
+            if ($totalPoints <= 0) {
+                continue;
+            }
+
+            $cat = $quiz->category ?: 'written_work';
+            $buckets[$cat]['earned']   += (float) $bestAttempt->score;
+            $buckets[$cat]['possible'] += $totalPoints;
+
+            $quizGrades[$quiz->id] = [
+                'grade'      => (float) $bestAttempt->score,
+                'points'     => $totalPoints,
+                'attempt_id' => $bestAttempt->id,
+            ];
+        }
+
+        // ─── 3. Category averages (0–100 or null) ───────
         $averages = [];
         foreach ($buckets as $key => $data) {
             $averages[$key] = $data['possible'] > 0
@@ -73,7 +117,6 @@ class GradeCalculator
             ? round($weightedSum / $totalWeight, 2)
             : null;
 
-        // Complete means every category has at least one graded item
         $isComplete = ! in_array(null, array_values($averages), true);
 
         return [
@@ -84,13 +127,11 @@ class GradeCalculator
             'remarks'          => $isComplete ? $this->remarksFor($final) : null,
             'is_complete'      => $isComplete,
             'weights'          => $weights,
-            'grades'           => $grades,   // assignment_id => { grade, points }
+            'grades'           => $grades,       // assignments only (unchanged contract)
+            'quiz_grades'      => $quizGrades,   // quizzes only (new)
         ];
     }
 
-    /**
-     * DepEd uses 75 as the passing threshold.
-     */
     protected function remarksFor(?float $final): ?string
     {
         if ($final === null) return null;

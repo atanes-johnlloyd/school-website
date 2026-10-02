@@ -62,6 +62,7 @@ class QuizController extends Controller
 
         $quiz = $classroom->quizzes()->create([
             'class_module_id'        => $request->validated('class_module_id'),
+            'category'               => $request->validated('category') ?? 'written_work',
             'title'                  => $request->validated('title'),
             'description'            => $request->validated('description'),
             'instructions'           => $request->validated('instructions'),
@@ -98,6 +99,7 @@ class QuizController extends Controller
             'quiz' => [
                 'id'                     => $quiz->id,
                 'title'                  => $quiz->title,
+                'category'               => $quiz->category,
                 'description'            => $quiz->description,
                 'instructions'           => $quiz->instructions,
                 'time_limit_minutes'     => $quiz->time_limit_minutes,

@@ -84,7 +84,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Student/Quizzes/Index', $payload);
+            : Inertia::render('Student/QuizHub/Index', $payload);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -126,7 +126,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Student/Quizzes/Show', $payload);
+            : Inertia::render('Student/QuizHub/Show', $payload);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -416,7 +416,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Student/Quizzes/Result', $payload);
+            : Inertia::render('Student/QuizHub/Result', $payload);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -529,7 +529,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Student/Quizzes/Take', $payload);
+            : Inertia::render('Student/QuizHub/Take', $payload);
     }
 
     protected function buildQuestionsOrder(Quiz $quiz, $questions): array

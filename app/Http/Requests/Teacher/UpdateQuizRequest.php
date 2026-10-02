@@ -15,6 +15,7 @@ class UpdateQuizRequest extends FormRequest
     {
         return [
             'title'                  => ['sometimes', 'string', 'max:255'],
+            'category'               => ['nullable', 'in:written_work,performance_task,quarterly_exam'],
             'description'            => ['nullable', 'string', 'max:2000'],
             'instructions'           => ['nullable', 'string', 'max:5000'],
             'time_limit_minutes'     => ['nullable', 'integer', 'min:1', 'max:300'],

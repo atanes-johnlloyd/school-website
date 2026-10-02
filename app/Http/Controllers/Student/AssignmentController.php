@@ -60,7 +60,7 @@ class AssignmentController extends Controller
             return response()->json($payload);
         }
 
-        return Inertia::render('Student/Assignments/Index', $payload);
+        return Inertia::render('Student/Assessments/Index', $payload);
     }
 
     public function show(Request $request, Assignment $assignment)
@@ -73,15 +73,17 @@ class AssignmentController extends Controller
 
         $payload = [
             'assignment' => [
-                'id'           => $assignment->id,
-                'title'        => $assignment->title,
-                'instructions' => $assignment->instructions,
-                'due_at'       => $assignment->due_at?->toIso8601String(),
-                'points'       => $assignment->points,
-                'allow_late'   => $assignment->allow_late,
-                'subject'      => $assignment->classroom?->subject?->name,
-                'section'      => $assignment->classroom?->section?->name,
-                'teacher'      => $assignment->classroom?->teacher?->user?->name,
+                'id'            => $assignment->id,
+                'title'         => $assignment->title,
+                'instructions'  => $assignment->instructions,
+                'due_at'        => $assignment->due_at?->toIso8601String(),
+                'points'        => $assignment->points,
+                'allow_late'    => $assignment->allow_late,
+                'category'      => $assignment->category,
+                'classroom_id'  => $assignment->class_id,
+                'subject'       => $assignment->classroom?->subject?->name,
+                'section'       => $assignment->classroom?->section?->name,
+                'teacher'       => $assignment->classroom?->teacher?->user?->name,
             ],
             'submission' => $submission ? [
                 'id'           => $submission->id,
@@ -91,6 +93,10 @@ class AssignmentController extends Controller
                 'grade'        => $submission->grade,
                 'feedback'     => $submission->feedback,
                 'graded_at'    => $submission->graded_at?->toIso8601String(),
+                'has_file'     => (bool) $submission->file_path,
+                'download_url' => $submission->file_path
+                    ? route('student.assignments.submission.download', $assignment->id)
+                    : null,
             ] : null,
         ];
 
@@ -98,7 +104,7 @@ class AssignmentController extends Controller
             return response()->json($payload);
         }
 
-        return Inertia::render('Student/Assignments/Show', $payload);
+        return Inertia::render('Student/Assessments/Show', $payload);
     }
 
     public function submit(SubmitAssignmentRequest $request, Assignment $assignment)

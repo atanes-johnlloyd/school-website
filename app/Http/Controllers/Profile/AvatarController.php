@@ -3,52 +3,48 @@
 namespace App\Http\Controllers\Profile;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UploadImageRequest;
-use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AvatarController extends Controller
 {
-    public function __construct(protected ImageUploadService $uploader) {}
-
-    /**
-     * Upload / replace the current user's avatar.
-     */
-    public function update(UploadImageRequest $request)
+    public function update(Request $request)
     {
+        $validated = $request->validate([
+            'avatar' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'avatar.required' => 'Please choose an image.',
+            'avatar.image'    => 'The file must be an image.',
+            'avatar.mimes'    => 'Only JPG, PNG, or WebP allowed.',
+            'avatar.max'      => 'Image must be 2 MB or smaller.',
+        ]);
+
         $user = $request->user();
 
-        DB::transaction(function () use ($user, $request) {
-            // Delete old avatar
-            $this->uploader->delete($user->avatar_path);
+        // Delete old avatar if any
+        if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
 
-            // Store new
-            $path = $this->uploader->store(
-                $request->file('image'),
-                'avatars',
-                512
-            );
+        $path = $validated['avatar']->store('avatars', 'public');
 
-            $user->update(['avatar_path' => $path]);
-        });
+        $user->avatar_path = $path;
+        $user->save();
 
-        return response()->json([
-            'message'    => 'Avatar updated.',
-            'avatar_url' => $user->fresh()->avatar_url,
-        ]);
+        return back()->with('success', 'Profile picture updated.');
     }
 
-    /**
-     * Remove the current user's avatar.
-     */
     public function destroy(Request $request)
     {
         $user = $request->user();
 
-        $this->uploader->delete($user->avatar_path);
-        $user->update(['avatar_path' => null]);
+        if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
 
-        return response()->json(['message' => 'Avatar removed.']);
+        $user->avatar_path = null;
+        $user->save();
+
+        return back()->with('success', 'Profile picture removed.');
     }
 }

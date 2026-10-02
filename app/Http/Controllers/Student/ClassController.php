@@ -147,35 +147,60 @@ class ClassController extends Controller
     {
         $student = $request->user()->student;
 
-        // Authorization: student must be enrolled in this class
         $isEnrolled = $classroom->students()->where('students.id', $student?->id)->exists();
-
         if (! $student || ! $isEnrolled) {
             abort(403);
         }
 
         $classroom->load(['subject', 'section', 'term', 'teacher.user:id,name']);
 
-        // Fetch assignments using the published scope defined on your Assignment model
-        $assignments = Assignment::query()
+        $assignments = \App\Models\Assignment::query()
             ->where('class_id', $classroom->id)
-            ->published() // ← Changed from ->where('is_published', true)
+            ->published()
             ->with(['submissions' => fn ($q) => $q->where('student_id', $student->id)])
             ->orderBy('due_at', 'asc')
             ->get()
-            ->map(function ($assignment) {
-                $submission = $assignment->submissions->first();
+            ->map(function ($a) {
+                $submission = $a->submissions->first();
                 return [
-                    'id'         => $assignment->id,
-                    'title'      => $assignment->title,
-                    'due_at'     => $assignment->due_at?->toIso8601String() ?? $assignment->due_at,
-                    'points'     => $assignment->points,
+                    'id'         => $a->id,
+                    'title'      => $a->title,
+                    'instructions' => $a->instructions,
+                    'due_at'     => $a->due_at?->toIso8601String(),
+                    'points'     => $a->points,
+                    'category'   => $a->category,
                     'submission' => $submission ? [
-                        'status' => $submission->status,
-                        'grade'  => $submission->grade,
+                        'id'           => $submission->id,
+                        'status'       => $submission->status,
+                        'grade'        => $submission->grade,
+                        'feedback'     => $submission->feedback,
+                        'submitted_at' => $submission->submitted_at?->toIso8601String(),
+                        'text_content' => $submission->text_content,
+                        'has_file'     => (bool) $submission->file_path,
+                        'download_url' => $submission->file_path
+                            ? route('student.assignments.submission.download', $a->id)
+                            : null,
                     ] : null,
                 ];
             });
+
+        $announcements = $classroom->announcements()
+            ->published()
+            ->active()
+            ->with('author:id,name')
+            ->ordered()
+            ->limit(20)
+            ->get()
+            ->map(fn ($a) => [
+                'id'           => $a->id,
+                'title'        => $a->title,
+                'body'         => $a->body,
+                'body_preview' => \Str::limit(strip_tags($a->body), 120),
+                'is_pinned'    => $a->is_pinned,
+                'author'       => $a->author?->name,
+                'published_at' => $a->published_at?->toIso8601String(),
+                'category'     => 'General',
+            ]);
 
         return Inertia::render('Student/Classes/Show', [
             'classroom' => [
@@ -186,7 +211,8 @@ class ClassController extends Controller
                 'teacher'      => $classroom->teacher?->user?->name,
                 'term'         => $classroom->term?->name,
             ],
-            'assignments' => $assignments,
+            'announcements' => $announcements,
+            'assignments'   => $assignments,
         ]);
     }
 }

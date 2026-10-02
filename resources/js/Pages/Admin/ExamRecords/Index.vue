@@ -2,7 +2,7 @@
   <AdminLayout>
     <div class="space-y-6 pb-10 font-['Inter']">
 
-      <<div class="relative overflow-hidden bg-[#004d08] text-white rounded-2xl p-6 md:p-8 shadow-lg border border-emerald-900/40">
+      <div class="relative overflow-hidden bg-[#004d08] text-white rounded-2xl p-6 md:p-8 shadow-lg border border-emerald-900/40">
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
 
             <!-- Left: title & description -->
