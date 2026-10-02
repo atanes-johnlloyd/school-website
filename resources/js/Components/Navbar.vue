@@ -66,13 +66,15 @@ function scrollToTop() {
           Admissions
         </Link>
 
-        <a href="#about" class="text-white hover:text-[#87EA8E] transition-colors duration-200">
+        <Link :href="route('about-us')" class="hover:text-amber-400 transition-colors"
+          :class="{ 'text-amber-400 font-bold': $page.component === 'Site/AboutUs/AboutUs' }">
           About Us
-        </a>
+        </Link>
 
-        <a href="#faculty" class="text-white hover:text-[#87EA8E] transition-colors duration-200">
+        <Link :href="route('faculty-staff')" class="hover:text-amber-400 transition-colors"
+          :class="{ 'text-amber-400 font-bold': $page.component === 'Site/FacultyStaff/FacultyStaff' }">
           Faculty & Staff
-        </a>
+        </Link>
 
         <!-- Divider Line -->
         <div class="h-5 w-[1px] bg-white/40"></div>

@@ -13,8 +13,13 @@
 
 /* Keyframe Definitions */
 @keyframes fillToOutline {
-  0% { background-position: 0% 0%; }
-  100% { background-position: -100% 0%; }
+  0% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: -100% 0%;
+  }
 }
 
 @keyframes maskReveal {
@@ -22,6 +27,7 @@
     transform: translateY(150%);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0%);
     opacity: 1;
@@ -33,6 +39,7 @@
     transform: scaleX(0);
     opacity: 0;
   }
+
   100% {
     transform: scaleX(1);
     opacity: 1;
@@ -44,6 +51,7 @@
     transform: scale(0.9) translateY(30px);
     opacity: 0;
   }
+
   100% {
     transform: scale(1) translateY(0);
     opacity: 1;
@@ -55,6 +63,7 @@
     transform: translateY(80px);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -83,16 +92,28 @@
 }
 
 /* Staggered Card Swipes */
-.animate-card-swipe-1 { animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
-.animate-card-swipe-2 { animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both; }
-.animate-card-swipe-3 { animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both; }
-.animate-card-swipe-4 { animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both; }
+.animate-card-swipe-1 {
+  animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.animate-card-swipe-2 {
+  animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
+.animate-card-swipe-3 {
+  animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+}
+
+.animate-card-swipe-4 {
+  animation: swipeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+}
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -100,29 +121,63 @@
 }
 
 @keyframes heroZoom {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes floatSoft {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes bounceSubtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 @keyframes pulseSlow {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes sheenMove {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
 }
 
 .animate-fade-in-up {
@@ -163,6 +218,7 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -183,12 +239,12 @@
       <!-- OVERLAPPED NAVBAR COMPONENT -->
       <Navbar />
 
-      <!-- Background Image Overlay with Green Tint -->
+      <!-- Background Image Overlay with Matching Admissions Green Tint & Gradient -->
       <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=80"
           alt="Salawag Students Collaborating"
           class="w-full h-full object-cover object-center opacity-25 mix-blend-overlay scale-105 animate-hero-zoom transition-transform duration-1000" />
-        <div class="absolute inset-0 bg-gradient-to-r from-[#004d08]/95 via-[#004d08]/85 to-[#003805]/70"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#004d08]/98 via-[#004d08]/88 to-[#003805]/75"></div>
       </div>
 
       <!-- Animated Gradient Sheen -->
@@ -198,10 +254,10 @@
 
       <!-- Ambient Light Glow Orbs -->
       <div
-        class="absolute -top-24 -left-24 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow">
+        class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow">
       </div>
       <div
-        class="absolute -bottom-24 right-0 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow delay-1000">
+        class="absolute -bottom-24 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow delay-1000">
       </div>
 
       <!-- Main Content Container -->
@@ -242,7 +298,9 @@
 
           <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-200/90 pt-0.5">
             <svg class="w-4 h-4 text-amber-300 animate-bounce-subtle" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
             </svg>
             <span>No Tuition • Free Public Senior High</span>
           </div>
@@ -344,8 +402,7 @@
 
             <div class="pt-4 border-t border-slate-100 flex items-end justify-between gap-3">
               <div>
-                <h3
-                  class="font-extrabold text-[#005506] text-sm sm:text-base leading-snug">
+                <h3 class="font-extrabold text-[#005506] text-sm sm:text-base leading-snug">
                   {{ voice.name }}
                 </h3>
                 <p class="text-[11px] sm:text-xs text-slate-500 font-semibold line-clamp-1">
@@ -373,7 +430,8 @@
           <div
             class="inline-flex items-center gap-2 bg-[#eaf5ed] border border-[#a2d5ad]/40 text-[#005506] text-xs font-bold px-4 py-1.5 rounded-full animate-bounce-subtle">
             <svg class="w-4 h-4 text-[#005506]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84 51.38 51.38 0 00-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84 51.38 51.38 0 00-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
             </svg>
             <span>DepEd Strengthened SHS Framework (S.Y. 2026–2027)</span>
           </div>
@@ -465,8 +523,10 @@
 
             <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-4 text-xs sm:text-sm">
               <div class="flex items-center gap-2 text-slate-600 font-medium">
-                <svg class="w-4 h-4 text-[#005506]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
+                <svg class="w-4 h-4 text-[#005506]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
                 </svg>
                 <span>UP, DLSU & Cavite State Univ. Aligned</span>
               </div>
@@ -489,7 +549,8 @@
                 <span
                   class="inline-flex items-center gap-1.5 bg-[#fef8e7] text-[#b88600] text-xs font-bold px-3 py-1 rounded-full">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                   </svg>
                   <span>Direct Employment & TESDA NC II</span>
                 </span>
@@ -554,8 +615,10 @@
 
             <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-4 text-xs sm:text-sm">
               <div class="flex items-center gap-2 text-slate-600 font-medium">
-                <svg class="w-4 h-4 text-[#e3ad1b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
+                <svg class="w-4 h-4 text-[#e3ad1b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
                 </svg>
                 <span>100% Salawag On-Site Testing Lab</span>
               </div>
@@ -622,8 +685,10 @@
         <div>
           <span
             class="inline-flex items-center gap-2 bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-sm animate-bounce-subtle">
-            <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.38-.09-2.072-.09-1.96 0-3.86.25-5.688.72 1.307-3.8 4.316-6.81 8.116-8.117a18.258 18.258 0 01.72-5.688c.69.03 1.382.06 2.072.09m6.812 6.812c.06.69.09 1.382.09 2.072 0 1.96-.25 3.86-.72 5.688-3.8-1.307-6.81-4.316-8.117-8.116a18.258 18.258 0 01-5.688-.72c.03-.69.06-1.382.09-2.072" />
+            <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M10.34 15.84c-.688-.06-1.38-.09-2.072-.09-1.96 0-3.86.25-5.688.72 1.307-3.8 4.316-6.81 8.116-8.117a18.258 18.258 0 01.72-5.688c.69.03 1.382.06 2.072.09m6.812 6.812c.06.69.09 1.382.09 2.072 0 1.96-.25 3.86-.72 5.688-3.8-1.307-6.81-4.316-8.117-8.116a18.258 18.258 0 01-5.688-.72c.03-.69.06-1.382.09-2.072" />
             </svg>
             <span>Admissions Open for School Year 2026–2027</span>
           </span>

@@ -33,6 +33,15 @@ Route::get('/admission', function () {
     return Inertia::render('Site/Admissions/Admissions');
 })->name('site.admissions');
 
+Route::get('/about-us', function () {
+    return Inertia::render('Site/AboutUs/AboutUs');
+})->name('about-us');
+
+// Faculty & Staff Directory Route
+Route::get('/faculty-staff', function () {
+    return Inertia::render('Site/FacultyStaff/FacultyStaff');
+})->name('faculty-staff');
+
 Route::post(
     '/contact',
     [\App\Http\Controllers\ContactController::class, 'store']
