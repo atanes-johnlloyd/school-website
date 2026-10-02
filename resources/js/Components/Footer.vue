@@ -5,37 +5,37 @@ import catImg from '@/../assets/img/cat_not_hug.png'
 </script>
 
 <template>
-  <footer class="relative w-full pt-16 pb-0 overflow-visible font-['Inter'] z-30 m-0">
+  <footer class="relative w-full pt-12 sm:pt-16 pb-0 overflow-visible font-['Inter'] z-30 m-0">
     <!-- Full-Bleed Outer Container -->
     <div class="relative w-full">
 
-      <!-- Mascot Overlapping Above the Footer Top Border (Kept intact) -->
-      <div class="absolute left-2 sm:left-6 lg:left-12 -top-20 sm:-top-28 lg:-top-36 z-20 pointer-events-none">
+      <!-- Mascot Overlapping Above Footer Border (Mobile Optimized) -->
+      <div class="absolute left-3 sm:left-6 lg:left-12 -top-14 sm:-top-24 md:-top-28 lg:-top-36 z-20 pointer-events-none">
         <img 
           :src="catImg" 
           alt="Salawag SHS Mascot"
-          class="w-[290px] sm:w-[360px] md:w-[400px] lg:w-[450px] h-auto object-contain drop-shadow-xl" 
+          class="w-[140px] xs:w-[170px] sm:w-[220px] md:w-[320px] lg:w-[420px] h-auto object-contain drop-shadow-xl" 
         />
       </div>
 
-      <!-- Footer Green Banner Section with Original Background Image & Gradient Overlay -->
+      <!-- Footer Green Banner Section -->
       <div 
-        class="relative z-10 w-full border-t-2 border-[#eab308]/60 shadow-2xl pl-64 sm:pl-80 md:pl-[420px] lg:pl-[480px] pr-6 sm:pr-12 md:pr-16 lg:pr-24 py-10 md:py-14 text-white"
+        class="relative z-10 w-full border-t-2 border-[#eab308]/60 shadow-2xl pt-16 sm:pt-20 md:pt-14 pb-10 md:pb-14 pl-5 sm:pl-8 md:pl-[340px] lg:pl-[440px] pr-5 sm:pr-8 md:pr-12 lg:pr-20 text-white"
         :style="{
-          backgroundImage: `linear-gradient(rgba(0, 85, 6, 0.90), rgba(0, 85, 6, 0.90)), url(${bannerImg})`,
+          backgroundImage: `linear-gradient(rgba(0, 85, 6, 0.92), rgba(0, 85, 6, 0.92)), url(${bannerImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }"
       >
-        <div class="max-w-[1400px] mx-auto space-y-10">
+        <div class="max-w-[1400px] mx-auto space-y-8 md:space-y-10">
 
           <!-- 4-COLUMN CONTENT GRID -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 text-left">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 text-left">
 
             <!-- COLUMN 1: BRANDING & SCHOOL ID -->
             <div class="space-y-3">
               <div class="flex items-center gap-3">
-                <img :src="logoImg" alt="Salawag SHS Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain shrink-0" />
+                <img :src="logoImg" alt="Salawag SHS Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
                 <div>
                   <h3 class="font-['Anton'] text-lg sm:text-xl tracking-wide uppercase leading-tight text-white">
                     SALAWAG SHS
@@ -51,7 +51,7 @@ import catImg from '@/../assets/img/cat_not_hug.png'
               </p>
 
               <div>
-                <span class="inline-block bg-white/10 backdrop-blur-sm text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-white/20">
+                <span class="inline-block bg-white/10 backdrop-blur-sm text-amber-300 text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full border border-white/20">
                   School ID: 342512
                 </span>
               </div>
@@ -107,9 +107,9 @@ import catImg from '@/../assets/img/cat_not_hug.png'
           </div>
 
           <!-- BOTTOM COPYRIGHT BAR -->
-          <div class="pt-6 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-emerald-200/80 font-normal">
+          <div class="pt-6 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-[11px] text-emerald-200/80 font-normal">
             <p>© 2026 Salawag Senior High School. Department of Education - Republic of the Philippines.</p>
-            <p class="font-medium text-amber-300">Serbisyong Tapat Para sa Kabataang Salawagueño</p>
+            <p class="font-medium text-amber-300 shrink-0">Serbisyong Tapat Para sa Kabataang Salawagueño</p>
           </div>
 
         </div>
