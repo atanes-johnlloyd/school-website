@@ -53,6 +53,6 @@ class AdmissionController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Site/Admission', $payload);
+            : Inertia::render('Site/Admissions/Admissions', $payload);
     }
 }

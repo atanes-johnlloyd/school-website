@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Models\QuizRetakeGrant;
+use App\Models\Student;
 
 class QuizSubmissionController extends Controller
 {
@@ -119,6 +120,7 @@ class QuizSubmissionController extends Controller
                 'started_at'    => $attempt->started_at?->toIso8601String(),
                 'submitted_at'  => $attempt->submitted_at?->toIso8601String(),
                 'warning_count' => $attempt->warning_count,
+                'quiz_id'       => $attempt->quiz_id,
                 'quiz_title'    => $attempt->quiz?->title,
             ],
             'answers' => $answers,

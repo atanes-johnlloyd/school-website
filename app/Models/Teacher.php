@@ -13,13 +13,14 @@ class Teacher extends Model
 
     protected $fillable = [
         'user_id', 'employee_no', 'sex', 'date_of_birth', 'contact_number',
-        'date_hired', 'department', 'specialization', 'is_active',
+        'date_hired', 'department', 'specialization', 'is_active', 'is_publicly_visible',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'date_hired'    => 'date',
         'is_active'     => 'boolean',
+        'is_publicly_visible'=> 'boolean',
     ];
 
     public function user()      { return $this->belongsTo(User::class); }

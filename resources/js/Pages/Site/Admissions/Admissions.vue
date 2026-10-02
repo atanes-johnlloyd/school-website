@@ -1,31 +1,27 @@
 <template>
 
-  <Head title="Admissions - Salawag LMS" />
+  <Head :title="`Admissions - ${school.name}`" />
 
   <!-- Main Background Canvas -->
   <div class="min-h-screen bg-[#E8FFE8] font-['Inter'] text-slate-800 overflow-x-hidden">
 
-    <!-- OVERLAPPED HERO BANNER SECTION (BRAND GREEN #004d08 WITH IMAGE OVERLAY) -->
+    <!-- OVERLAPPED HERO BANNER SECTION -->
     <section
       class="relative w-full min-h-[65vh] md:min-h-[72vh] bg-[#004d08] text-white overflow-hidden shadow-md flex items-center">
 
-      <!-- Overlapped Transparent Navbar Component -->
       <Navbar />
 
-      <!-- Background Image Overlay with Green Tint & Gradient -->
       <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1920&q=80"
-          alt="Salawag High School Admissions & Students"
+          :alt="`${school.name} Admissions & Students`"
           class="w-full h-full object-cover object-center opacity-25 mix-blend-overlay scale-105 animate-hero-zoom transition-transform duration-1000" />
         <div class="absolute inset-0 bg-gradient-to-r from-[#004d08]/98 via-[#004d08]/88 to-[#003805]/75"></div>
       </div>
 
-      <!-- Animated Gradient Sheen -->
       <div
         class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-sheen pointer-events-none z-0">
       </div>
 
-      <!-- Ambient Glow Effects -->
       <div
         class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow">
       </div>
@@ -37,7 +33,6 @@
       <div
         class="relative z-10 w-full max-w-[1500px] mx-auto px-6 sm:px-12 md:px-16 lg:px-24 pt-28 md:pt-36 pb-16 space-y-6">
 
-        <!-- Main Headline -->
         <div class="space-y-4 max-w-4xl">
           <h1
             class="font-['Anton'] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight uppercase leading-[1.02] text-white animate-fade-in-up">
@@ -54,9 +49,14 @@
             transferees. Receive 100% tuition-free, values-grounded DepEd secondary education with complete state
             voucher funding, cutting-edge labs, and zero hidden laboratory fees.
           </p>
+
+          <p
+            class="text-xs sm:text-sm text-emerald-200/90 font-semibold pt-2 animate-fade-in-up animation-delay-200">
+            📅 Application window: <strong class="text-amber-300">{{ application_opens }}</strong> –
+            <strong class="text-amber-300">{{ application_closes }}</strong>
+          </p>
         </div>
 
-        <!-- Action Buttons -->
         <div class="pt-3 flex flex-wrap items-center gap-4 animate-fade-in-up animation-delay-400">
           <a href="#view-application-flow"
             class="group relative inline-flex items-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full shadow-lg hover:shadow-amber-400/20 transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer overflow-hidden">
@@ -89,7 +89,6 @@
       <div class="transition-all duration-1000"
         :class="isPhasesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
 
-        <!-- Header -->
         <div class="text-center space-y-4 max-w-3xl mx-auto mb-12 sm:mb-16">
           <span
             class="inline-block bg-[#eaf5ed] text-[#005506] text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#005506]/10">
@@ -105,7 +104,6 @@
           </p>
         </div>
 
-        <!-- 5-Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch">
 
           <!-- PHASE 01 -->
@@ -114,31 +112,21 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span
-                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">
-                  1
-                </span>
+                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">1</span>
                 <span
-                  class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  PHASE 01
-                </span>
+                  class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 01</span>
               </div>
-
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">
-                  Online Pre-Registration
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">
-                  Encode your 12-digit DepEd LRN, primary strand interests, and parental guardian contacts.
-                </p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Online Pre-Registration</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">Encode your 12-digit DepEd LRN, primary
+                  strand interests, and parental guardian contacts.</p>
               </div>
             </div>
-
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-[#005506]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>10 Mins</span>
               </div>
@@ -152,32 +140,21 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span
-                  class="w-10 h-10 rounded-full bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shadow-md">
-                  2
-                </span>
+                  class="w-10 h-10 rounded-full bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shadow-md">2</span>
                 <span
-                  class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  PHASE 02
-                </span>
+                  class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 02</span>
               </div>
-
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">
-                  Credential Scan & Upload
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">
-                  Submit clear snapshots or PDFs of Form 138 (G10 Card), PSA Birth Certificate, and Certificate of Good
-                  Moral.
-                </p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Credential Scan & Upload</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">Submit clear snapshots or PDFs of Form 138
+                  (G10 Card), PSA Birth Certificate, and Certificate of Good Moral.</p>
               </div>
             </div>
-
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-amber-700">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>24h Review</span>
               </div>
@@ -191,25 +168,16 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span
-                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">
-                  3
-                </span>
+                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">3</span>
                 <span
-                  class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  PHASE 03
-                </span>
+                  class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 03</span>
               </div>
-
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">
-                  Aptitude & Guidance
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">
-                  Brief career profiling assessment or online counselor session to confirm your strand fit.
-                </p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Aptitude & Guidance</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">Brief career profiling assessment or
+                  online counselor session to confirm your strand fit.</p>
               </div>
             </div>
-
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1 text-[#005506]">
@@ -229,25 +197,16 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span
-                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">
-                  4
-                </span>
+                  class="w-10 h-10 rounded-full bg-[#005506] text-white font-black text-sm flex items-center justify-center shadow-md">4</span>
                 <span
-                  class="bg-slate-100 text-slate-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  PHASE 04
-                </span>
+                  class="bg-slate-100 text-slate-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 04</span>
               </div>
-
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">
-                  Official Section & COR
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">
-                  Receive your digital Certificate of Registration (COR), assigned homeroom adviser, and schedule.
-                </p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Official Section & COR</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">Receive your digital Certificate of
+                  Registration (COR), assigned homeroom adviser, and schedule.</p>
               </div>
             </div>
-
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-slate-700">
@@ -268,26 +227,16 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <span
-                  class="w-10 h-10 rounded-full bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shadow-md">
-                  5
-                </span>
+                  class="w-10 h-10 rounded-full bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shadow-md">5</span>
                 <span
-                  class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  PHASE 05
-                </span>
+                  class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 05</span>
               </div>
-
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">
-                  RFID & Welcome Kit
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">
-                  Visit the campus media hub to capture your biometrics, pick up student manual, and receive official
-                  badge.
-                </p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">RFID & Welcome Kit</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">Visit the campus media hub to capture your
+                  biometrics, pick up student manual, and receive official badge.</p>
               </div>
             </div>
-
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-amber-800">
@@ -452,7 +401,6 @@
                 </div>
               </div>
 
-              <!-- Address Section -->
               <div class="pt-2 border-t border-slate-100">
                 <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block mb-3">Residential
                   Address</span>
@@ -582,7 +530,6 @@
                 </div>
               </div>
 
-              <!-- Document Uploads -->
               <div class="pt-4 border-t border-slate-100">
                 <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block mb-4">Required Documents
                   Upload</span>
@@ -841,18 +788,24 @@
                 </p>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div v-for="cluster in sampleClusters" :key="cluster.cluster_id"
-                  @click="form.selected_cluster = cluster.cluster_id"
+              <div v-if="allStrands.length === 0"
+                class="text-center py-12 text-slate-500 italic text-sm bg-slate-50 rounded-2xl border border-slate-200">
+                No strands are currently available. Please check back later or contact the registrar.
+              </div>
+
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div v-for="strand in allStrands" :key="strand.id"
+                  @click="form.selected_cluster = strand.id"
                   class="cluster-card border-2 border-slate-200 hover:border-emerald-400 rounded-2xl p-5 cursor-pointer transition-all bg-white"
-                  :class="{ 'selected border-emerald-600 shadow-md ring-2 ring-emerald-500': form.selected_cluster === cluster.cluster_id }">
+                  :class="{ 'selected border-emerald-600 shadow-md ring-2 ring-emerald-500': form.selected_cluster === strand.id }">
                   <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md">{{
-                      cluster.cluster_code }}</span>
-                    <span class="text-xs text-slate-400 font-medium">{{ cluster.track_name }}</span>
+                      strand.code }}</span>
+                    <span class="text-xs text-slate-400 font-medium">{{ strand.track_name }}</span>
                   </div>
-                  <h4 class="font-bold text-slate-900 text-base">{{ cluster.cluster_name }}</h4>
-                  <p class="text-xs text-slate-500 mt-1 leading-relaxed">{{ cluster.description }}</p>
+                  <h4 class="font-bold text-slate-900 text-base">{{ strand.name }}</h4>
+                  <p v-if="strand.description" class="text-xs text-slate-500 mt-1 leading-relaxed">{{
+                    strand.description }}</p>
                 </div>
               </div>
 
@@ -907,8 +860,9 @@
                 <div class="flex items-center gap-4">
                   <span class="font-semibold text-slate-600">Track:</span>
                   <div class="w-56 h-20 bg-emerald-700 rounded-xl p-3 flex flex-col justify-center">
-                    <span class="font-bold text-white text-sm">{{ selectedClusterObject?.cluster_code || '---' }}</span>
-                    <span class="text-xs text-emerald-200">{{ selectedClusterObject?.cluster_name || 'No clusterselected' }}</span>
+                    <span class="font-bold text-white text-sm">{{ selectedClusterObject?.code || '---' }}</span>
+                    <span class="text-xs text-emerald-200">{{ selectedClusterObject?.name || 'No cluster selected'
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -918,9 +872,9 @@
                   class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all text-sm">
                   ← Back
                 </button>
-                <button type="submit"
-                  class="px-10 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 transition-all text-sm uppercase tracking-wider">
-                  Submit Application ✓
+                <button type="submit" :disabled="isSubmitting"
+                  class="px-10 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 transition-all text-sm uppercase tracking-wider">
+                  {{ isSubmitting ? 'Submitting…' : 'Submit Application ✓' }}
                 </button>
               </div>
             </div>
@@ -937,13 +891,11 @@
       <div class="transition-all duration-1000"
         :class="isStatusVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
 
-        <!-- Section Title Header -->
         <div class="text-center space-y-3 max-w-3xl mx-auto mb-10">
           <span
             class="inline-block bg-[#fcf8e8] text-[#936e00] text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-wider border border-[#e3d7a5]/40">
             ADMISSIONS STATUS VERIFICATION
           </span>
-          <!-- Bold Main Heading set to Brand Green -->
           <h2 class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl text-[#005506] tracking-wide uppercase">
             Track Your Application Progress
           </h2>
@@ -953,10 +905,8 @@
           </p>
         </div>
 
-        <!-- Tracker Card Container -->
         <div class="max-w-4xl mx-auto bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-100 space-y-8">
 
-          <!-- Search Bar Form -->
           <form @submit.prevent="lookupApplication" class="flex flex-col sm:flex-row gap-3">
             <div class="relative flex-grow">
               <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none"
@@ -967,32 +917,37 @@
               <input type="text" v-model="trackingCode" placeholder="e.g. SSHS-2026-8812"
                 class="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#005506] focus:border-transparent transition-all" />
             </div>
-            <button type="submit"
-              class="bg-[#005506] hover:bg-[#004004] text-white font-bold text-sm px-8 py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
-              <span>Look Up Record</span>
+            <button type="submit" :disabled="isLookingUp"
+              class="bg-[#005506] hover:bg-[#004004] disabled:opacity-60 text-white font-bold text-sm px-8 py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+              <span>{{ isLookingUp ? 'Searching…' : 'Look Up Record' }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </button>
           </form>
 
-          <!-- Applicant Record Result Box -->
+          <div v-if="searchError"
+            class="bg-red-50 text-red-700 text-xs font-semibold px-4 py-3 rounded-2xl border border-red-200">
+            {{ searchError }}
+          </div>
+
           <div v-if="searchResult"
             class="bg-[#FAF7EE] rounded-2xl p-6 sm:p-8 border border-[#EDE7D5] space-y-6 animate-fade-in-up">
 
-            <!-- Record Top Row Header -->
             <div
               class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/60">
               <div>
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                  APPLICANT RECORD #{{ searchResult.code }}
+                  APPLICANT RECORD #{{ searchResult.reference_number }}
                 </span>
-                <!-- Bold Applicant Name set to Brand Green -->
                 <h3 class="text-xl sm:text-2xl font-black text-[#005506] tracking-tight">
-                  {{ searchResult.name }}
+                  {{ searchResult.full_name }}
                 </h3>
                 <p class="text-xs text-slate-600 font-medium mt-0.5">
-                  Primary Strand: <strong class="text-slate-800">{{ searchResult.strand }}</strong>
+                  Primary Strand: <strong class="text-slate-800">{{ searchResult.strand || 'TBA' }}</strong>
+                </p>
+                <p class="text-xs text-slate-600 font-medium mt-0.5">
+                  School Year: <strong class="text-slate-800">{{ searchResult.school_year || '—' }}</strong>
                 </p>
               </div>
 
@@ -1000,18 +955,15 @@
                 <span
                   class="inline-flex items-center gap-1.5 bg-emerald-100 text-[#005506] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wide">
                   <span class="w-2 h-2 rounded-full bg-[#005506] animate-pulse"></span>
-                  {{ searchResult.statusBadge }}
+                  {{ searchResult.status_label }}
                 </span>
                 <p class="text-[11px] text-slate-400 mt-1 font-medium">
-                  Submitted on: {{ searchResult.submittedDate }}
+                  Submitted on: {{ formatDate(searchResult.submitted_at) }}
                 </p>
               </div>
             </div>
 
-            <!-- 4-Step Progress Cards Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-
-              <!-- STEP 1 -->
               <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm space-y-1">
                 <div class="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
                   <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -1025,7 +977,6 @@
                 <p class="text-[11px] text-slate-500">Passed validation</p>
               </div>
 
-              <!-- STEP 2 -->
               <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm space-y-1">
                 <div class="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
                   <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -1039,21 +990,18 @@
                 <p class="text-[11px] text-slate-500">Registrar cleared</p>
               </div>
 
-              <!-- STEP 3 (ACTIVE) -->
               <div class="bg-[#FFFBEA] rounded-xl p-4 border border-amber-300/80 shadow-sm space-y-1">
                 <div class="flex items-center gap-1.5 text-amber-800 text-xs font-bold uppercase tracking-wider">
                   <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>SCHEDULED</span>
+                  <span>IN PROGRESS</span>
                 </div>
                 <h4 class="font-bold text-[#005506] text-sm">Strand Interview</h4>
-                <p class="text-[11px] text-amber-700 font-bold">Tomorrow, 10:30 AM</p>
+                <p class="text-[11px] text-amber-700 font-bold">Awaiting schedule</p>
               </div>
 
-              <!-- STEP 4 -->
               <div class="bg-slate-100/60 rounded-xl p-4 border border-slate-200/50 space-y-1 opacity-70">
                 <div class="flex items-center gap-1.5 text-slate-400 text-xs font-bold uppercase tracking-wider">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1064,10 +1012,14 @@
                 <h4 class="font-bold text-slate-700 text-sm">COR & Section</h4>
                 <p class="text-[11px] text-slate-400">Awaiting interview</p>
               </div>
-
             </div>
 
-            <!-- Action Note Banner -->
+            <div v-if="searchResult.rejection_reason"
+              class="bg-red-50 rounded-xl p-4 border border-red-200">
+              <h5 class="text-xs font-bold text-red-700">Rejection Reason</h5>
+              <p class="text-xs text-red-600 leading-normal mt-0.5">{{ searchResult.rejection_reason }}</p>
+            </div>
+
             <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-start gap-3">
               <div
                 class="w-8 h-8 rounded-lg bg-emerald-100 text-[#005506] flex items-center justify-center shrink-0 mt-0.5">
@@ -1077,11 +1029,10 @@
                 </svg>
               </div>
               <div>
-                <h5 class="text-xs font-bold text-[#005506]">Guidance Office Appointment Cleared</h5>
+                <h5 class="text-xs font-bold text-[#005506]">Next Step</h5>
                 <p class="text-xs text-slate-600 leading-normal mt-0.5">
-                  Please report to SSHS Building B, Room 204 (Admissions Center) or join the Google Meet link sent to
-                  your
-                  guardian's registered email with your original Form 138 hardcopy.
+                  Please keep an eye on your registered email/phone for the guidance office appointment. Bring your
+                  original Form 138 hardcopy.
                 </p>
               </div>
             </div>
@@ -1094,20 +1045,17 @@
 
     </section>
 
-
     <!-- ADMISSIONS FAQS & REQUIREMENTS SECTION -->
     <section ref="faqRef" class="w-full max-w-[1500px] mx-auto px-6 sm:px-12 md:px-16 lg:px-24 py-16">
 
       <div class="transition-all duration-1000"
         :class="isFaqVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
 
-        <!-- Header -->
         <div class="text-center space-y-3 max-w-3xl mx-auto mb-10">
           <span
             class="inline-block bg-slate-200/70 text-slate-700 text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-wider">
             NEED GUIDANCE?
           </span>
-          <!-- Bold Heading set to Brand Green -->
           <h2 class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl text-[#005506] tracking-wide uppercase">
             Admissions FAQs & Requirements
           </h2>
@@ -1116,11 +1064,22 @@
           </p>
         </div>
 
-        <!-- Accordion List Container -->
+        <!-- Requirements card (from props) -->
+        <div v-if="requirements.length"
+          class="max-w-4xl mx-auto mb-10 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+          <h3 class="font-bold text-[#005506] text-sm mb-3 uppercase tracking-wider">Required Documents Checklist</h3>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-slate-700">
+            <li v-for="(req, i) in requirements" :key="i" class="flex items-start gap-2">
+              <span
+                class="w-4 h-4 mt-0.5 rounded-full bg-emerald-100 text-[#005506] flex items-center justify-center text-[10px] font-bold shrink-0">✓</span>
+              <span>{{ req }}</span>
+            </li>
+          </ul>
+        </div>
+
         <div class="max-w-4xl mx-auto space-y-3">
           <div v-for="(faq, index) in faqs" :key="index"
             class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md">
-            <!-- Toggle Header Button -->
             <button type="button" @click="toggleFaq(index)"
               class="w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-bold text-[#005506] text-sm sm:text-base hover:text-emerald-700 transition-colors cursor-pointer">
               <span>{{ faq.question }}</span>
@@ -1131,7 +1090,6 @@
               </svg>
             </button>
 
-            <!-- Expandable Tab Content Body -->
             <div v-show="openFaqIndex === index"
               class="px-6 pb-6 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-4 animate-fade-in-up">
               {{ faq.answer }}
@@ -1152,173 +1110,86 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import Swal from 'sweetalert2'
+import axios from 'axios'
 import Navbar from '@/Components/Navbar.vue'
 import Footer from '@/Components/Footer.vue'
 import { Head } from '@inertiajs/vue3'
 import rawPsgcData from './data/psgc.min.json'
 
+/* -------------------- PROPS FROM BACKEND -------------------- */
+const props = defineProps({
+  school: { type: Object, required: true },
+  tracks: { type: Array, default: () => [] },
+  requirements: { type: Array, default: () => [] },
+  application_opens: { type: String, default: 'June 1' },
+  application_closes: { type: String, default: 'August 31' },
+})
+
+/* -------------------- FLATTEN STRANDS FROM TRACKS -------------------- */
+const allStrands = computed(() => {
+  const list = []
+  props.tracks.forEach(track => {
+    (track.strands || []).forEach(strand => {
+      list.push({
+        id: strand.id,
+        code: strand.code,
+        name: strand.name,
+        description: strand.description || '',
+        track_name: track.name,
+        track_code: track.code,
+      })
+    })
+  })
+  return list
+})
+
+const selectedClusterObject = computed(() =>
+  allStrands.value.find(c => c.id === form.selected_cluster)
+)
+
+/* -------------------- STATE -------------------- */
 const currentStep = ref(1)
 const formContainer = ref(null)
 const errors = reactive({})
+const isSubmitting = ref(false)
 
-// File input refs (needed to reset native file inputs)
+// File input refs
 const ref_psa = ref(null)
 const ref_form137 = ref(null)
 const ref_good_moral = ref(null)
 const ref_picture = ref(null)
 
-// Field max-lengths (kept in sync with template `maxlength` bindings)
 const MAX = {
   surname: 50, given_name: 50, middle_name: 50, suffix: 10,
   street: 100, religion: 50, jhs_name: 100, school_address: 150,
   father_name: 80, father_occupation: 60, father_education: 60,
   mother_name: 80, mother_occupation: 60, mother_education: 60,
   guardian_name: 80, guardian_occupation: 60, guardian_education: 60,
-  lrn: 12, mobile_number: 11, zip_code: 4, year_graduated: 4
+  lrn: 12, mobile_number: 11, zip_code: 4, year_graduated: 4,
 }
 
-// Factory so we can cleanly reset every time
 const makeInitialForm = () => ({
   applicant_type: 'Grade11',
   desired_grade_level: '11',
-  selected_track: 'ASSH',
-  surname: '',
-  given_name: '',
-  middle_name: '',
-  suffix: '',
-  dob: '',
-  age: '',
-  sex: '',
-  lrn: '',
-  mobile_number: '',
-  email: '',
-  province: '',
-  municipality: '',
-  barangay: '',
-  street: '',
-  zip_code: '',
-  religion: '',
-  jhs_name: '',
-  school_address: '',
-  school_type: '',
-  year_graduated: '2026',
-  father_name: '',
-  father_occupation: '',
-  father_contact: '',
-  father_education: '',
-  mother_name: '',
-  mother_occupation: '',
-  mother_contact: '',
-  mother_education: '',
-  guardian_name: '',
-  guardian_occupation: '',
-  guardian_contact: '',
-  guardian_education: '',
-  selected_cluster: ''
+  surname: '', given_name: '', middle_name: '', suffix: '',
+  dob: '', age: '', sex: '', lrn: '', mobile_number: '', email: '',
+  province: '', municipality: '', barangay: '', street: '', zip_code: '', religion: '',
+  jhs_name: '', school_address: '', school_type: '', year_graduated: '2026',
+  father_name: '', father_occupation: '', father_contact: '', father_education: '',
+  mother_name: '', mother_occupation: '', mother_contact: '', mother_education: '',
+  guardian_name: '', guardian_occupation: '', guardian_contact: '', guardian_education: '',
+  selected_cluster: '',
 })
 
 const form = reactive(makeInitialForm())
 const files = reactive({ psa: null, form137: null, good_moral: null, picture: null })
 const fileNames = reactive({ psa: '', form137: '', good_moral: '', picture: '' })
 
-const sampleClusters = [
-  { cluster_id: '1', cluster_code: 'STEM-01', track_name: 'Academic Track', cluster_name: 'Science & Engineering Cluster', description: 'Specialized focus on advanced calculus, physics, chemistry, and research.' },
-  { cluster_id: '2', cluster_code: 'ABM-01', track_name: 'Academic Track', cluster_name: 'Accountancy & Business Cluster', description: 'Fundamentals of financial management, entrepreneurship, and economics.' },
-  { cluster_id: '3', cluster_code: 'HUMSS-01', track_name: 'Academic Track', cluster_name: 'Humanities & Social Sciences', description: 'Focus on communication, creative writing, world religions, and politics.' },
-  { cluster_id: '4', cluster_code: 'TVL-ICT', track_name: 'TVL Track', cluster_name: 'Information & Communication Technology', description: 'Hands-on programming, computer systems servicing, and web design.' }
-]
-
+/* -------------------- ADDRESS CASCADE -------------------- */
 const addressData = ref([])
 const provincesList = ref([])
 const citiesList = ref([])
 const barangaysList = ref([])
-
-/* ---------------- SCROLL-TRIGGERED SECTION ANIMATIONS ---------------- */
-
-// Section refs
-const phasesRef = ref(null)
-const statusRef = ref(null)
-const faqRef = ref(null)
-
-// Section visibility states
-const isPhasesVisible = ref(false)
-const isApplicationVisible = ref(false)
-const isStatusVisible = ref(false)
-const isFaqVisible = ref(false)
-
-let observer = null
-
-onMounted(() => {
-  try {
-    const flatData = Array.isArray(rawPsgcData) ? rawPsgcData : (rawPsgcData.default || [])
-    addressData.value = buildAddressHierarchy(flatData)
-    provincesList.value = addressData.value.slice().sort((a, b) => a.name.localeCompare(b.name))
-  } catch (e) {
-    console.error('PSGC data processing failed:', e)
-  }
-
-  // Set up IntersectionObserver for scroll-triggered section reveals
-  if (typeof IntersectionObserver !== 'undefined') {
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target === phasesRef.value) {
-            isPhasesVisible.value = entry.isIntersecting
-          } else if (entry.target === statusRef.value) {
-            isStatusVisible.value = entry.isIntersecting
-          } else if (entry.target === faqRef.value) {
-            isFaqVisible.value = entry.isIntersecting
-          } else if (entry.target === formContainer.value) {
-            isApplicationVisible.value = entry.isIntersecting
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
-
-    // Observe sections on next tick so refs are populated
-    nextTick(() => {
-      if (phasesRef.value) observer.observe(phasesRef.value)
-      if (statusRef.value) observer.observe(statusRef.value)
-      if (faqRef.value) observer.observe(faqRef.value)
-      if (formContainer.value) observer.observe(formContainer.value)
-    })
-  } else {
-    // Fallback for very old browsers – show everything
-    isPhasesVisible.value = true
-    isApplicationVisible.value = true
-    isStatusVisible.value = true
-    isFaqVisible.value = true
-  }
-})
-
-onUnmounted(() => {
-  if (observer) observer.disconnect()
-})
-
-/* ---------------- HELPERS ---------------- */
-
-// Strip every non-digit char and cap at maxLen. Works with v-model.
-const sanitizeNumeric = (field, maxLen) => {
-  let v = String(form[field] ?? '').replace(/\D/g, '')
-  if (maxLen && v.length > maxLen) v = v.slice(0, maxLen)
-  if (form[field] !== v) form[field] = v
-}
-
-// Focus & scroll to the first errored field
-const focusFirstError = () => {
-  const firstKey = Object.keys(errors)[0]
-  if (!firstKey) return
-  nextTick(() => {
-    const el = document.querySelector(`[data-field="${firstKey}"]`)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      setTimeout(() => {
-        try { el.focus({ preventScroll: true }) } catch (_) { }
-      }, 350)
-    }
-  })
-}
 
 function buildAddressHierarchy(flatData) {
   const provinces = {}
@@ -1355,9 +1226,7 @@ const onProvinceChange = () => {
   form.municipality = ''
   form.barangay = ''
   const prov = addressData.value.find(p => p.name === form.province)
-  if (prov) {
-    citiesList.value = prov.cities.slice().sort((a, b) => a.name.localeCompare(b.name))
-  }
+  if (prov) citiesList.value = prov.cities.slice().sort((a, b) => a.name.localeCompare(b.name))
 }
 
 const onMunicipalityChange = () => {
@@ -1366,12 +1235,11 @@ const onMunicipalityChange = () => {
   const prov = addressData.value.find(p => p.name === form.province)
   if (prov) {
     const mun = prov.cities.find(m => m.name === form.municipality)
-    if (mun) {
-      barangaysList.value = mun.barangays.slice().sort((a, b) => a.localeCompare(b))
-    }
+    if (mun) barangaysList.value = mun.barangays.slice().sort((a, b) => a.localeCompare(b))
   }
 }
 
+/* -------------------- HELPERS -------------------- */
 const calculateAge = () => {
   if (!form.dob) { form.age = ''; return }
   const birth = new Date(form.dob)
@@ -1391,11 +1259,27 @@ const handleFileChange = (e, key) => {
   }
 }
 
+const sanitizeNumeric = (field, maxLen) => {
+  let v = String(form[field] ?? '').replace(/\D/g, '')
+  if (maxLen && v.length > maxLen) v = v.slice(0, maxLen)
+  if (form[field] !== v) form[field] = v
+}
+
+const focusFirstError = () => {
+  const firstKey = Object.keys(errors)[0]
+  if (!firstKey) return
+  nextTick(() => {
+    const el = document.querySelector(`[data-field="${firstKey}"]`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => { try { el.focus({ preventScroll: true }) } catch (_) { } }, 350)
+    }
+  })
+}
+
 const scrollToForm = () => {
   nextTick(() => {
-    if (formContainer.value) {
-      formContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    if (formContainer.value) formContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
   })
 }
 
@@ -1405,8 +1289,7 @@ const goToStep = (step) => {
   scrollToForm()
 }
 
-/* ---------------- VALIDATION ---------------- */
-
+/* -------------------- VALIDATION -------------------- */
 const namePattern = /^[A-Za-zÀ-ÿ\s\-'.]+$/
 const alphaNumPattern = /^[A-Za-zÀ-ÿ0-9\s\-'.,&]+$/
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -1448,49 +1331,39 @@ const handleNext = (step) => {
   Object.keys(errors).forEach(k => delete errors[k])
 
   if (step === 1) {
-    // Surname
     if (!form.surname) errors.surname = 'Surname is required.'
     else if (form.surname.length > MAX.surname) errors.surname = `Surname must be ${MAX.surname} characters or less.`
     else if (!namePattern.test(form.surname)) errors.surname = 'Surname may only contain letters, spaces, hyphens, apostrophes, and periods.'
 
-    // Given name
     if (!form.given_name) errors.given_name = 'Given name is required.'
     else if (form.given_name.length > MAX.given_name) errors.given_name = `Given name must be ${MAX.given_name} characters or less.`
     else if (!namePattern.test(form.given_name)) errors.given_name = 'Given name may only contain letters, spaces, hyphens, apostrophes, and periods.'
 
-    // Middle name (optional)
     if (form.middle_name) {
       if (form.middle_name.length > MAX.middle_name) errors.middle_name = `Middle name must be ${MAX.middle_name} characters or less.`
       else if (!namePattern.test(form.middle_name)) errors.middle_name = 'Middle name may only contain letters, spaces, hyphens, apostrophes, and periods.'
     }
 
-    // Suffix (optional)
     if (form.suffix) {
       if (form.suffix.length > MAX.suffix) errors.suffix = `Suffix must be ${MAX.suffix} characters or less.`
       else if (!/^[A-Za-z.]+$/.test(form.suffix)) errors.suffix = 'Suffix may only contain letters and periods.'
     }
 
-    // DOB / Age
     if (!form.dob) errors.dob = 'Date of birth is required.'
     else if (!form.age || form.age < 15 || form.age > 85) errors.dob = 'Age must be between 15 and 85.'
 
-    // Sex
     if (!form.sex) errors.sex = 'Please select sex.'
 
-    // LRN
     if (!form.lrn) errors.lrn = 'LRN is required.'
     else if (!/^\d{10,12}$/.test(form.lrn)) errors.lrn = 'LRN must be 10–12 digits.'
 
-    // Mobile
     if (!form.mobile_number) errors.mobile_number = 'Mobile number is required.'
     else if (!/^\d{10,11}$/.test(form.mobile_number)) errors.mobile_number = 'Mobile number must be 10–11 digits (e.g., 09XXXXXXXXX).'
 
-    // Email
     if (!form.email) errors.email = 'Email address is required.'
     else if (form.email.length > 100) errors.email = 'Email must be 100 characters or less.'
     else if (!emailPattern.test(form.email)) errors.email = 'Please enter a valid email address.'
 
-    // Address
     if (!form.province) errors.province = 'Province is required.'
     if (!form.municipality) errors.municipality = 'City/Municipality is required.'
     if (!form.barangay) errors.barangay = 'Barangay is required.'
@@ -1537,7 +1410,7 @@ const handleNext = (step) => {
     const mother = validateProfile('mother', 'Mother')
     const guardian = validateProfile('guardian', 'Guardian')
 
-      ;[...father.errs, ...mother.errs, ...guardian.errs].forEach(([k, m]) => { errors[k] = m })
+    ;[...father.errs, ...mother.errs, ...guardian.errs].forEach(([k, m]) => { errors[k] = m })
 
     const hasComplete = [father, mother, guardian].some(p => p.active && p.valid)
     if (!hasComplete && Object.keys(errors).length === 0) {
@@ -1566,88 +1439,155 @@ const handleNext = (step) => {
   scrollToForm()
 }
 
-const selectedClusterObject = computed(() =>
-  sampleClusters.find(c => c.cluster_id === form.selected_cluster)
-)
-
 const getStepBadgeClass = (step) => {
   if (currentStep.value > step) return 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-100 text-emerald-800 border-2 border-emerald-600'
   if (currentStep.value === step) return 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-700 text-white shadow-lg'
   return 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-slate-500 border-2 border-slate-300'
 }
 
-/* ---------------- SUBMIT & RESET ---------------- */
-
+/* -------------------- SUBMIT & RESET -------------------- */
 const resetApplication = () => {
-  // Reset form fields
   Object.assign(form, makeInitialForm())
-
-  // Reset files
   files.psa = files.form137 = files.good_moral = files.picture = null
   fileNames.psa = fileNames.form137 = fileNames.good_moral = fileNames.picture = ''
-
-    // Clear the underlying native <input type=file> elements
-    ;[ref_psa, ref_form137, ref_good_moral, ref_picture].forEach(r => {
-      if (r.value) r.value.value = ''
-    })
-
-  // Clear errors
+  ;[ref_psa, ref_form137, ref_good_moral, ref_picture].forEach(r => { if (r.value) r.value.value = '' })
   Object.keys(errors).forEach(k => delete errors[k])
-
-  // Reset address cascades
   citiesList.value = []
   barangaysList.value = []
-
-  // Back to phase 1
   currentStep.value = 1
 
   nextTick(() => {
-    if (formContainer.value) {
-      formContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    if (formContainer.value) formContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
   })
 }
 
-const submitApplication = () => {
-  Swal.fire({
-    icon: 'success',
-    title: 'Application Submitted!',
-    text: 'Your application form has been received successfully.',
-    confirmButtonColor: '#006907',
-    allowOutsideClick: false,
-    allowEscapeKey: false
-  }).then(() => {
+const submitApplication = async () => {
+  isSubmitting.value = true
+  try {
+    const payload = new FormData()
+
+    // Personal
+    payload.append('strand_id', form.selected_cluster)
+    payload.append('applicant_type', form.applicant_type)
+    payload.append('desired_grade_level', form.desired_grade_level)
+    payload.append('last_name', form.surname)
+    payload.append('first_name', form.given_name)
+    payload.append('middle_name', form.middle_name || '')
+    payload.append('extension_name', form.suffix || '')
+    payload.append('lrn', form.lrn)
+    payload.append('date_of_birth', form.dob)
+    payload.append('sex', form.sex)
+    payload.append('religion', form.religion)
+    payload.append('contact_number', form.mobile_number)
+    payload.append('email', form.email)
+
+    // Address
+    payload.append('house_street', form.street)
+    payload.append('barangay', form.barangay)
+    payload.append('municipality', form.municipality)
+    payload.append('province', form.province)
+    payload.append('zip_code', form.zip_code)
+
+    // Previous school
+    payload.append('prev_school_name', form.jhs_name)
+    payload.append('prev_school_address', form.school_address)
+    payload.append('prev_school_type', form.school_type)
+    payload.append('last_school_year', form.year_graduated)
+
+    // Contacts (only those with name)
+    const contacts = [
+      { role: 'father', full_name: form.father_name, occupation: form.father_occupation, contact_number: form.father_contact, relationship: 'Father' },
+      { role: 'mother', full_name: form.mother_name, occupation: form.mother_occupation, contact_number: form.mother_contact, relationship: 'Mother' },
+      { role: 'guardian', full_name: form.guardian_name, occupation: form.guardian_occupation, contact_number: form.guardian_contact, relationship: 'Guardian' },
+    ].filter(c => (c.full_name || '').trim())
+
+    contacts.forEach((c, i) => {
+      payload.append(`contacts[${i}][role]`, c.role)
+      payload.append(`contacts[${i}][full_name]`, c.full_name)
+      payload.append(`contacts[${i}][relationship]`, c.relationship)
+      payload.append(`contacts[${i}][occupation]`, c.occupation || '')
+      payload.append(`contacts[${i}][contact_number]`, c.contact_number || '')
+    })
+
+    // Documents
+    const uploads = [
+      { key: 'psa', label: 'PSA Birth Certificate' },
+      { key: 'form137', label: 'Form 137' },
+      { key: 'good_moral', label: 'Good Moral Certificate' },
+      { key: 'picture', label: '2x2 ID Photo' },
+    ]
+    uploads.forEach((u, i) => {
+      if (files[u.key]) {
+        payload.append(`documents[${i}]`, files[u.key])
+        payload.append(`document_types[${i}]`, u.label)
+      }
+    })
+
+    const { data } = await axios.post('/site/admission/apply', payload, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Application Submitted!',
+      html: `Your reference number is:<br><strong class="text-lg tracking-wider">${data.reference_number}</strong><br><br>Please save this for tracking your status.`,
+      confirmButtonColor: '#006907',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+    })
+
+    // Set the tracker code so the user can immediately check
+    trackingCode.value = data.reference_number
     resetApplication()
-  })
-}
-
-// Tracker State
-const trackingCode = ref('SSHS-2026-8812')
-const searchResult = ref({
-  code: 'SSHS-2026-8812',
-  name: 'Juan Carlos S. Dela Cruz',
-  strand: 'STEM (Grade 11 - Regular Day Program)',
-  statusBadge: 'STEP 3 OF 5 IN PROGRESS',
-  submittedDate: 'Feb 12, 2026'
-})
-
-const lookupApplication = () => {
-  if (!trackingCode.value) return
-  // Simulated lookup result
-  searchResult.value = {
-    code: trackingCode.value.toUpperCase(),
-    name: 'Juan Carlos S. Dela Cruz',
-    strand: 'STEM (Grade 11 - Regular Day Program)',
-    statusBadge: 'STEP 3 OF 5 IN PROGRESS',
-    submittedDate: 'Feb 12, 2026'
+  } catch (err) {
+    const message = err.response?.data?.message || 'Submission failed. Please check all fields and try again.'
+    const fieldErrors = err.response?.data?.errors || {}
+    Object.assign(errors, Object.fromEntries(
+      Object.entries(fieldErrors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+    ))
+    Swal.fire({
+      icon: 'error',
+      title: 'Could not submit',
+      text: message,
+      confirmButtonColor: '#b91c1c',
+    })
+  } finally {
+    isSubmitting.value = false
   }
 }
 
-// Interactive FAQs Tab State
-const openFaqIndex = ref(0) // Default first item open
+/* -------------------- TRACKER -------------------- */
+const trackingCode = ref('')
+const searchResult = ref(null)
+const searchError = ref('')
+const isLookingUp = ref(false)
 
+const formatDate = (iso) => {
+  if (!iso) return '—'
+  try {
+    return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  } catch { return iso }
+}
+
+const lookupApplication = async () => {
+  searchError.value = ''
+  searchResult.value = null
+  if (!trackingCode.value.trim()) return
+
+  isLookingUp.value = true
+  try {
+    const { data } = await axios.get(`/site/admission/status/${encodeURIComponent(trackingCode.value.trim())}`)
+    searchResult.value = data.applicant
+  } catch (err) {
+    searchError.value = err.response?.data?.message || 'Application not found. Please check your reference number.'
+  } finally {
+    isLookingUp.value = false
+  }
+}
+
+/* -------------------- FAQS -------------------- */
+const openFaqIndex = ref(0)
 const toggleFaq = (index) => {
   openFaqIndex.value = openFaqIndex.value === index ? null : index
 }
@@ -1671,94 +1611,102 @@ const faqs = [
   }
 ]
 
+/* -------------------- SCROLL OBSERVERS -------------------- */
+const phasesRef = ref(null)
+const statusRef = ref(null)
+const faqRef = ref(null)
+
+const isPhasesVisible = ref(false)
+const isApplicationVisible = ref(false)
+const isStatusVisible = ref(false)
+const isFaqVisible = ref(false)
+
+let observer = null
+
+onMounted(() => {
+  // Address data
+  try {
+    const flatData = Array.isArray(rawPsgcData) ? rawPsgcData : (rawPsgcData.default || [])
+    addressData.value = buildAddressHierarchy(flatData)
+    provincesList.value = addressData.value.slice().sort((a, b) => a.name.localeCompare(b.name))
+  } catch (e) {
+    console.error('PSGC data processing failed:', e)
+  }
+
+  // Scroll reveal
+  if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target === phasesRef.value) isPhasesVisible.value = entry.isIntersecting
+          else if (entry.target === statusRef.value) isStatusVisible.value = entry.isIntersecting
+          else if (entry.target === faqRef.value) isFaqVisible.value = entry.isIntersecting
+          else if (entry.target === formContainer.value) isApplicationVisible.value = entry.isIntersecting
+        })
+      },
+      { threshold: 0.12 }
+    )
+
+    nextTick(() => {
+      if (phasesRef.value) observer.observe(phasesRef.value)
+      if (statusRef.value) observer.observe(statusRef.value)
+      if (faqRef.value) observer.observe(faqRef.value)
+      if (formContainer.value) observer.observe(formContainer.value)
+    })
+  } else {
+    isPhasesVisible.value = true
+    isApplicationVisible.value = true
+    isStatusVisible.value = true
+    isFaqVisible.value = true
+  }
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 </script>
 
 <style scoped>
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes heroZoom {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.08);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
-
 @keyframes floatSoft {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-3px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
 }
-
 @keyframes pulseSlow {
-
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
-
 @keyframes sheenMove {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(200%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
-
 .animate-fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
 .animate-hero-zoom {
   animation: heroZoom 20s ease-in-out infinite;
 }
-
 .animate-float-soft {
   animation: floatSoft 4s ease-in-out infinite;
 }
-
 .animate-pulse-slow {
   animation: pulseSlow 6s ease-in-out infinite;
 }
-
 .animate-sheen {
   animation: sheenMove 5s ease-in-out infinite;
 }
-
 .animation-delay-200 {
   animation-delay: 0.2s;
   animation-fill-mode: backwards;
 }
-
 .animation-delay-400 {
   animation-delay: 0.4s;
   animation-fill-mode: backwards;
@@ -1776,7 +1724,6 @@ input[inputmode="numeric"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 input[inputmode="numeric"] {
   -moz-appearance: textfield;
 }

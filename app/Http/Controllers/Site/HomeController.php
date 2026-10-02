@@ -77,6 +77,6 @@ class HomeController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Site/Home', $payload);
+            : Inertia::render('Site/Home/Home', $payload);
     }
 }

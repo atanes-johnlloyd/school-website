@@ -16,6 +16,7 @@ class StoreQuizRequest extends FormRequest
         return [
             'title'                  => ['required', 'string', 'max:255'],
             'category'               => ['nullable', 'in:written_work,performance_task,quarterly_exam'],
+            'type'                   => ['nullable', 'in:multiple_choice,true_false,essay,short_answer'],
             'description'            => ['nullable', 'string', 'max:2000'],
             'instructions'           => ['nullable', 'string', 'max:5000'],
             'time_limit_minutes'     => ['nullable', 'integer', 'min:1', 'max:300'],

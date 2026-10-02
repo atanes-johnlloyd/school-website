@@ -175,6 +175,22 @@
             <span class="text-sm tracking-wide">DepEd LR Resources</span>
           </Link>
 
+          <Link
+              :href="route('teacher.announcements.index')"
+              @click="$emit('close-sidebar')"
+              :class="[
+                'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
+                isRouteActive('teacher.announcements.*')
+                  ? 'bg-[#006907] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-md font-extrabold'
+                  : 'text-[#2C3E2D] dark:text-slate-300 hover:bg-[#006907]/10 dark:hover:bg-[#3F4F43] hover:text-[#006907] dark:hover:text-white'
+              ]"
+            >
+              <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              </svg>
+              <span class="text-sm tracking-wide">Announcements</span>
+            </Link>
+
           <!-- Quiz Hub & Exam Bank -->
           <Link 
             :href="route('teacher.quizzes.index')" 
@@ -198,7 +214,7 @@
       <div class="relative z-10 p-4 pt-2 shrink-0 bg-[#F9F7F1]/95 dark:bg-[#232D26]/95 backdrop-blur-xs border-t border-[#006907]/10 dark:border-[#3F4F43]">
         <div class="bg-white dark:bg-[#2D3A31] rounded-2xl p-4 shadow-sm border border-[#006907]/10 dark:border-[#3F4F43] transition-colors duration-300">
           <Link 
-            :href="route('dashboard')"
+            :href="route('home')"
             class="flex items-center gap-2.5 text-xs font-bold text-[#006907] dark:text-[#86EFAC] hover:text-green-800 dark:hover:text-white transition-colors mb-3 group"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

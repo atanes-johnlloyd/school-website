@@ -16,38 +16,26 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Admin\SchoolYearController;
 
 // ─────────────────────────────────────────────────────────────
-// Public / Landing Page
+// Public / Landing Pages
 // ─────────────────────────────────────────────────────────────
-// Home Route
-Route::get('/', function () {
-    return Inertia::render('Site/Home/Home');
-})->name('home');
+Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->name('home');
 
-// Academics Route
-Route::get('/academics', function () {
-    return Inertia::render('Site/Academics/Academics');
-})->name('site.academics');
+Route::get('/academics', [\App\Http\Controllers\Site\AcademicsController::class, 'index'])->name('site.academics');
 
-// Admissions Route
-Route::get('/admission', function () {
-    return Inertia::render('Site/Admissions/Admissions');
-})->name('site.admissions');
+Route::get('/admission', [\App\Http\Controllers\Site\AdmissionController::class, 'index'])->name('site.admissions');
 
-Route::get('/about-us', function () {
-    return Inertia::render('Site/AboutUs/AboutUs');
-})->name('about-us');
+Route::get('/about-us', [\App\Http\Controllers\Site\AboutController::class, 'index'])->name('about-us');
 
-// Faculty & Staff Directory Route
-Route::get('/faculty-staff', function () {
-    return Inertia::render('Site/FacultyStaff/FacultyStaff');
-})->name('faculty-staff');
+Route::get('/faculty-staff', [\App\Http\Controllers\Site\FacultyStaffController::class, 'index'])->name('faculty-staff');
 
-Route::post(
-    '/contact',
-    [\App\Http\Controllers\ContactController::class, 'store']
-)
-    ->middleware('throttle:5,1')   // 5 submissions per minute
-    ->name('contact.store');
+// Application submission (already exists under site prefix, but we can keep it)
+Route::prefix('site')->name('site.')->group(function () {
+    Route::post('/admission/apply', [\App\Http\Controllers\Site\ApplicationController::class, 'store'])
+        ->middleware('throttle:3,1')
+        ->name('admission.apply');
+    Route::get('/admission/status/{reference}', [\App\Http\Controllers\Site\ApplicationController::class, 'status'])
+        ->name('admission.status');
+});
 
 // ─────────────────────────────────────────────────────────────
 // Role-based Dashboard Redirect
@@ -695,6 +683,9 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         // Assignments & Tasks Hub (cross-class)
         Route::get('/tasks', [\App\Http\Controllers\Teacher\AssignmentController::class, 'allTasks'])
             ->name('tasks.index');
+
+        Route::get('/announcements', [\App\Http\Controllers\Teacher\AnnouncementController::class, 'allAnnouncements'])
+            ->name('announcements.index');
 
         // DepEd LR Resources (cross-class)
         Route::get('/resources', [\App\Http\Controllers\Teacher\LessonController::class, 'allResources'])

@@ -26,6 +26,6 @@ class AboutController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Public/About', $payload);
+            : Inertia::render('Site/AboutUs/AboutUs', $payload);
     }
 }

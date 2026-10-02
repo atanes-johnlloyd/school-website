@@ -25,7 +25,7 @@ class QuestionBankController extends Controller
         $validated = $request->validate([
             'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'category'   => ['nullable', 'string', 'max:100'],
-            'type'       => ['nullable', 'in:multiple_choice,true_false,essay'],
+            'type'       => ['nullable', 'in:multiple_choice,true_false,essay,short_answer'],
             'search'     => ['nullable', 'string', 'max:200'],
             'per_page'   => ['nullable', 'integer', 'min:5', 'max:100'],
         ]);

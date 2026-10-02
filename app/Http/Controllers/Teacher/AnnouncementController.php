@@ -8,6 +8,7 @@ use App\Http\Requests\Teacher\UpdateAnnouncementRequest;
 use App\Models\Announcement;
 use App\Models\ClassRoom;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AnnouncementController extends Controller
 {
@@ -142,5 +143,65 @@ class AnnouncementController extends Controller
         $announcement->delete();
 
         return response()->json(['message' => 'Announcement deleted.']);
+    }
+
+    public function allAnnouncements(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $activeTerm = \App\Models\Term::where('is_active', true)->first();
+
+        $classroomIds = ClassRoom::where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->pluck('id');
+
+        $announcements = Announcement::query()
+            ->whereIn('class_id', $classroomIds)
+            ->with(['classroom:id,subject_id,section_id',
+                    'classroom.subject:id,code,name',
+                    'classroom.section:id,name',
+                    'author:id,name'])
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Announcement $a) => [
+                'id'            => $a->id,
+                'title'         => $a->title,
+                'body_preview'  => \Str::limit(strip_tags($a->body), 140),
+                'is_pinned'     => (bool) $a->is_pinned,
+                'is_published'  => $a->published_at !== null,
+                'published_at'  => $a->published_at?->toIso8601String(),
+                'published_human' => $a->published_at?->diffForHumans(),
+                'classroom_id'  => $a->class_id,
+                'subject'       => $a->classroom?->subject?->name,
+                'section'       => $a->classroom?->section?->name,
+                'author'        => $a->author?->name,
+                'image_url'     => $a->image_url,
+            ]);
+
+        $classrooms = ClassRoom::whereIn('id', $classroomIds)
+            ->with(['subject:id,name,code','section:id,name'])
+            ->withCount('announcements')
+            ->get()
+            ->map(fn ($c) => [
+                'id'                => $c->id,
+                'subject'           => $c->subject?->name,
+                'subject_code'      => $c->subject?->code,
+                'section'           => $c->section?->name,
+                'announcements_count' => (int) $c->announcements_count,
+            ]);
+
+        return Inertia::render('Teacher/Announcements/Index', [
+            'announcements' => $announcements,
+            'classrooms'    => $classrooms,
+            'stats' => [
+                'total'     => $announcements->count(),
+                'published' => $announcements->where('is_published', true)->count(),
+                'draft'     => $announcements->where('is_published', false)->count(),
+                'pinned'    => $announcements->where('is_pinned', true)->count(),
+            ],
+            'active_term' => $activeTerm?->name,
+        ]);
     }
 }
