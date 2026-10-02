@@ -704,7 +704,7 @@
         </p>
 
         <div class="pt-2">
-          <a href="/site/admission"
+          <a href="/admission#view-application-flow"
             class="group relative inline-flex items-center justify-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm sm:text-base px-8 sm:px-10 py-4 rounded-full shadow-xl transition-all duration-300 hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden">
             <span
               class="absolute inset-0 w-1/2 h-full bg-white/30 -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out"></span>

@@ -58,7 +58,7 @@
 
         <!-- Action Buttons -->
         <div class="pt-3 flex flex-wrap items-center gap-4 animate-fade-in-up animation-delay-400">
-          <a href="#registration-form"
+          <a href="#view-application-flow"
             class="group relative inline-flex items-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm px-7 py-3.5 rounded-full shadow-lg hover:shadow-amber-400/20 transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer overflow-hidden">
             <span>Fill Registration Form</span>
             <svg class="w-4 h-4 text-slate-950 group-hover:rotate-12 transition-transform" fill="none"
@@ -84,8 +84,7 @@
     </section>
 
     <!-- THE 5-PHASE TRAIL SECTION -->
-    <section ref="phasesRef"
-      class="w-full max-w-[1500px] mx-auto px-6 sm:px-12 md:px-16 lg:px-24 py-16 md:py-20">
+    <section ref="phasesRef" class="w-full max-w-[1500px] mx-auto px-6 sm:px-12 md:px-16 lg:px-24 py-16 md:py-20">
 
       <div class="transition-all duration-1000"
         :class="isPhasesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
@@ -327,7 +326,8 @@
                 class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
                 SY 2026–2027 Admissions
               </span>
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Student Application Form</h2>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Student Application Form
+              </h2>
               <p class="text-sm text-slate-600 mt-1">Please complete each section below with accurate details to finish
                 your application.</p>
             </div>
@@ -379,7 +379,8 @@
                   <p v-if="errors.given_name" class="text-red-500 text-xs mt-1">{{ errors.given_name }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Middle Name</label>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Middle
+                    Name</label>
                   <input type="text" v-model="form.middle_name" maxlength="50" data-field="middle_name"
                     class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                     :class="errors.middle_name ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -396,8 +397,8 @@
                   <p v-if="errors.suffix" class="text-red-500 text-xs mt-1">{{ errors.suffix }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Date of Birth <span
-                      class="text-red-500">*</span></label>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Date of Birth
+                    <span class="text-red-500">*</span></label>
                   <input type="date" v-model="form.dob" @change="calculateAge" data-field="dob"
                     class="w-full px-3 py-2.5 rounded-lg border text-sm transition-all"
                     :class="errors.dob ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -433,8 +434,8 @@
                   <p v-if="errors.lrn" class="text-red-500 text-xs mt-1">{{ errors.lrn }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mobile Number <span
-                      class="text-red-500">*</span></label>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mobile Number
+                    <span class="text-red-500">*</span></label>
                   <input type="text" v-model="form.mobile_number" @input="sanitizeNumeric('mobile_number', 11)"
                     inputmode="numeric" pattern="[0-9]*" maxlength="11" data-field="mobile_number"
                     placeholder="09XXXXXXXXX" class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
@@ -442,8 +443,8 @@
                   <p v-if="errors.mobile_number" class="text-red-500 text-xs mt-1">{{ errors.mobile_number }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address <span
-                      class="text-red-500">*</span></label>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address
+                    <span class="text-red-500">*</span></label>
                   <input type="email" v-model="form.email" maxlength="100" data-field="email" autocomplete="email"
                     class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                     :class="errors.email ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -503,8 +504,8 @@
                   <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Zip Code <span
                         class="text-red-500">*</span></label>
-                    <input type="text" v-model="form.zip_code" @input="sanitizeNumeric('zip_code', 4)" inputmode="numeric"
-                      pattern="[0-9]*" maxlength="4" data-field="zip_code"
+                    <input type="text" v-model="form.zip_code" @input="sanitizeNumeric('zip_code', 4)"
+                      inputmode="numeric" pattern="[0-9]*" maxlength="4" data-field="zip_code"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.zip_code ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
                     <p v-if="errors.zip_code" class="text-red-500 text-xs mt-1">{{ errors.zip_code }}</p>
@@ -548,8 +549,8 @@
                   <p v-if="errors.jhs_name" class="text-red-500 text-xs mt-1">{{ errors.jhs_name }}</p>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">School Address <span
-                      class="text-red-500">*</span></label>
+                  <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">School Address
+                    <span class="text-red-500">*</span></label>
                   <input type="text" v-model="form.school_address" maxlength="150" data-field="school_address"
                     class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                     :class="errors.school_address ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -609,8 +610,10 @@
                     class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between"
                     :class="errors.form137 ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
                     <div>
-                      <p class="text-xs font-bold text-slate-800">Form 137 / SF10 <span class="text-red-500">*</span></p>
-                      <p class="text-[11px]" :class="fileNames.form137 ? 'text-emerald-600 font-bold' : 'text-slate-400'">
+                      <p class="text-xs font-bold text-slate-800">Form 137 / SF10 <span class="text-red-500">*</span>
+                      </p>
+                      <p class="text-[11px]"
+                        :class="fileNames.form137 ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.form137 || 'PDF or JPG (Max 5MB)' }}
                       </p>
                     </div>
@@ -646,7 +649,8 @@
                     :class="errors.picture ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
                     <div>
                       <p class="text-xs font-bold text-slate-800">2x2 ID Photo <span class="text-red-500">*</span></p>
-                      <p class="text-[11px]" :class="fileNames.picture ? 'text-emerald-600 font-bold' : 'text-slate-400'">
+                      <p class="text-[11px]"
+                        :class="fileNames.picture ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.picture || 'PNG or JPG (Max 2MB)' }}
                       </p>
                     </div>
@@ -685,7 +689,8 @@
                 <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Father's Information</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full
+                      Name</label>
                     <input type="text" v-model="form.father_name" maxlength="80" data-field="father_name"
                       placeholder="e.g. Juan Dela Cruz"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
@@ -693,7 +698,8 @@
                     <p v-if="errors.father_name" class="text-red-500 text-xs mt-1">{{ errors.father_name }}</p>
                   </div>
                   <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
+                    <label
+                      class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
                     <input type="text" v-model="form.father_occupation" maxlength="60" data-field="father_occupation"
                       placeholder="e.g. Engineer" class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.father_occupation ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -716,7 +722,8 @@
                       placeholder="e.g. College Graduate"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.father_education ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
-                    <p v-if="errors.father_education" class="text-red-500 text-xs mt-1">{{ errors.father_education }}</p>
+                    <p v-if="errors.father_education" class="text-red-500 text-xs mt-1">{{ errors.father_education }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -735,7 +742,8 @@
                     <p v-if="errors.mother_name" class="text-red-500 text-xs mt-1">{{ errors.mother_name }}</p>
                   </div>
                   <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
+                    <label
+                      class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
                     <input type="text" v-model="form.mother_occupation" maxlength="60" data-field="mother_occupation"
                       placeholder="e.g. Teacher" class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.mother_occupation ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
@@ -758,7 +766,8 @@
                       placeholder="e.g. College Graduate"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.mother_education ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
-                    <p v-if="errors.mother_education" class="text-red-500 text-xs mt-1">{{ errors.mother_education }}</p>
+                    <p v-if="errors.mother_education" class="text-red-500 text-xs mt-1">{{ errors.mother_education }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -768,7 +777,8 @@
                 <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Guardian's Information</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full
+                      Name</label>
                     <input type="text" v-model="form.guardian_name" maxlength="80" data-field="guardian_name"
                       placeholder="e.g. Pedro Santos"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
@@ -776,9 +786,10 @@
                     <p v-if="errors.guardian_name" class="text-red-500 text-xs mt-1">{{ errors.guardian_name }}</p>
                   </div>
                   <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
-                    <input type="text" v-model="form.guardian_occupation" maxlength="60" data-field="guardian_occupation"
-                      placeholder="e.g. Self-employed"
+                    <label
+                      class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Occupation</label>
+                    <input type="text" v-model="form.guardian_occupation" maxlength="60"
+                      data-field="guardian_occupation" placeholder="e.g. Self-employed"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.guardian_occupation ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
                     <p v-if="errors.guardian_occupation" class="text-red-500 text-xs mt-1">{{ errors.guardian_occupation
@@ -791,7 +802,8 @@
                       inputmode="numeric" pattern="[0-9]*" maxlength="11" data-field="guardian_contact"
                       placeholder="09XXXXXXXXX" class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.guardian_contact ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
-                    <p v-if="errors.guardian_contact" class="text-red-500 text-xs mt-1">{{ errors.guardian_contact }}</p>
+                    <p v-if="errors.guardian_contact" class="text-red-500 text-xs mt-1">{{ errors.guardian_contact }}
+                    </p>
                   </div>
                   <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Educational
@@ -800,7 +812,8 @@
                       placeholder="e.g. High School Graduate"
                       class="w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all"
                       :class="errors.guardian_education ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
-                    <p v-if="errors.guardian_education" class="text-red-500 text-xs mt-1">{{ errors.guardian_education }}
+                    <p v-if="errors.guardian_education" class="text-red-500 text-xs mt-1">{{ errors.guardian_education
+                    }}
                     </p>
                   </div>
                 </div>
@@ -824,7 +837,8 @@
             <div v-if="currentStep === 4" class="p-6 sm:p-10 space-y-6">
               <div class="border-b border-slate-100 pb-4">
                 <h3 class="text-xl font-bold text-slate-800">4. Select Senior High School Track</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Select one preferred strand or specialized elective cluster.</p>
+                <p class="text-xs text-slate-500 mt-0.5">Select one preferred strand or specialized elective cluster.
+                </p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -881,7 +895,8 @@
                 <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mt-4">Address</h4>
                 <div class="grid grid-cols-2 gap-2">
                   <div><span class="font-semibold text-slate-600">Province:</span> {{ form.province }}</div>
-                  <div><span class="font-semibold text-slate-600">City/Municipality:</span> {{ form.municipality }}</div>
+                  <div><span class="font-semibold text-slate-600">City/Municipality:</span> {{ form.municipality }}
+                  </div>
                   <div><span class="font-semibold text-slate-600">Barangay:</span> {{ form.barangay }}</div>
                   <div><span class="font-semibold text-slate-600">Street:</span> {{ form.street }}</div>
                   <div><span class="font-semibold text-slate-600">Zip Code:</span> {{ form.zip_code }}</div>
@@ -893,8 +908,7 @@
                   <span class="font-semibold text-slate-600">Track:</span>
                   <div class="w-56 h-20 bg-emerald-700 rounded-xl p-3 flex flex-col justify-center">
                     <span class="font-bold text-white text-sm">{{ selectedClusterObject?.cluster_code || '---' }}</span>
-                    <span class="text-xs text-emerald-200">{{ selectedClusterObject?.cluster_name || 'No cluster selected'
-                    }}</span>
+                    <span class="text-xs text-emerald-200">{{ selectedClusterObject?.cluster_name || 'No clusterselected' }}</span>
                   </div>
                 </div>
               </div>
@@ -1065,7 +1079,8 @@
               <div>
                 <h5 class="text-xs font-bold text-[#005506]">Guidance Office Appointment Cleared</h5>
                 <p class="text-xs text-slate-600 leading-normal mt-0.5">
-                  Please report to SSHS Building B, Room 204 (Admissions Center) or join the Google Meet link sent to your
+                  Please report to SSHS Building B, Room 204 (Admissions Center) or join the Google Meet link sent to
+                  your
                   guardian's registered email with your original Form 138 hardcopy.
                 </p>
               </div>
@@ -1522,7 +1537,7 @@ const handleNext = (step) => {
     const mother = validateProfile('mother', 'Mother')
     const guardian = validateProfile('guardian', 'Guardian')
 
-    ;[...father.errs, ...mother.errs, ...guardian.errs].forEach(([k, m]) => { errors[k] = m })
+      ;[...father.errs, ...mother.errs, ...guardian.errs].forEach(([k, m]) => { errors[k] = m })
 
     const hasComplete = [father, mother, guardian].some(p => p.active && p.valid)
     if (!hasComplete && Object.keys(errors).length === 0) {
@@ -1571,10 +1586,10 @@ const resetApplication = () => {
   files.psa = files.form137 = files.good_moral = files.picture = null
   fileNames.psa = fileNames.form137 = fileNames.good_moral = fileNames.picture = ''
 
-  // Clear the underlying native <input type=file> elements
-  ;[ref_psa, ref_form137, ref_good_moral, ref_picture].forEach(r => {
-    if (r.value) r.value.value = ''
-  })
+    // Clear the underlying native <input type=file> elements
+    ;[ref_psa, ref_form137, ref_good_moral, ref_picture].forEach(r => {
+      if (r.value) r.value.value = ''
+    })
 
   // Clear errors
   Object.keys(errors).forEach(k => delete errors[k])

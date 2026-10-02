@@ -1,4 +1,5 @@
 <template>
+
   <Head title="QuizHub - Salawag LMS" />
 
   <div :class="[
@@ -8,78 +9,130 @@
     <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
 
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop
-        searchPlaceholder="Search quizzes, subjects, or challenge tasks..."
-        @open-sidebar="isSidebarOpen = true"
-        @font-size-changed="(size) => fontSizeMode = size"
-      />
+      <navbartop searchPlaceholder="Search quizzes, subjects, or challenge tasks..."
+        @open-sidebar="isSidebarOpen = true" @font-size-changed="(size) => fontSizeMode = size" />
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
 
         <!-- HERO -->
-        <div class="animate-fade-in-down w-full bg-[#004d08] dark:bg-[#152B1C] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] dark:border-[#3F4F43] relative overflow-hidden space-y-4">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-sheen pointer-events-none"></div>
+        <div v-observe
+          class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
+          <img
+            :src="heroImage || 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=1600&auto=format&fit=crop'"
+            alt="Salawag QuizHub Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <div class="space-y-1 relative z-10">
-            <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap">
-              <span class="text-white">SALAWAG</span>
-              <span class="animated-stroke-text">QUIZHUB</span>
-            </div>
-            <p class="text-xs sm:text-sm italic font-medium text-emerald-100/80">
-              "Master your domain through proctored evaluations and interactive problem-solving."
-            </p>
-            <div class="flex items-center gap-2 pt-1 max-w-xl">
-              <div class="h-[1.5px] w-full bg-white/40"></div>
-              <span class="text-white text-xs animate-spin-slow">★</span>
-            </div>
+          <!-- Animated Green Overlay (Blend mode matched to system) -->
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2 relative z-10">
-            <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center shrink-0">
-                <Icon icon="sparkles" size="xl" class="text-white" />
+          <!-- Ambient Light Glow Highlights -->
+          <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+          </div>
+          <div
+            class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+          </div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+
+            <!-- Top Badge Container -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
+                <span>⚡</span> SALAWAG QUIZHUB
               </div>
-              <div class="space-y-1 text-center sm:text-left">
-                <div class="inline-block bg-white/15 backdrop-blur-sm text-emerald-100 text-[11px] font-bold px-3 py-0.5 rounded-full border border-white/10">
-                  {{ active_term || 'Active Term' }}
-                </div>
-                <h2 class="font-bold text-lg sm:text-xl text-white tracking-tight leading-snug">
-                  Active & Scheduled Assessments
-                </h2>
-                <p class="text-xs text-emerald-100/70 font-medium">
-                  {{ counts.all }} {{ counts.all === 1 ? 'quiz' : 'quizzes' }} across your classes
-                </p>
+
+              <div
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                {{ active_term || 'Active Term Cycle' }}
               </div>
             </div>
 
-            <div class="lg:col-span-5 grid grid-cols-2 gap-3">
-              <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-emerald-100/80">Ready to Take</span>
-                <div class="text-xl font-extrabold text-amber-300 my-0.5">{{ counts.available }}</div>
-                <span class="text-[10px] text-emerald-100/70">Available now</span>
+            <!-- Main Title & Quote Section -->
+            <div class="space-y-1 sm:space-y-1.5 max-w-3xl">
+              <div
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>SALAWAG</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">QUIZHUB</span>
               </div>
-              <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-emerald-100/80">Completed</span>
-                <div class="text-xl font-extrabold text-white my-0.5">{{ counts.completed }}</div>
-                <span class="text-[10px] text-emerald-100/70">Ready to review</span>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium italic">
+                "Master your domain through proctored evaluations and interactive problem-solving."
+              </p>
+            </div>
+
+            <!-- Details Row & Stat Cards Grid -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+              <!-- Left Subheader / Icon Info -->
+              <div class="flex items-center gap-3 sm:gap-4">
+                <div
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                  <Icon icon="sparkles" size="lg" class="text-white" />
+                </div>
+
+                <div class="space-y-0.5 min-w-0">
+                  <h2 class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
+                    Active & Scheduled Assessments
+                  </h2>
+                  <p class="text-white/90 text-[11px] sm:text-sm font-medium">
+                    <span class="font-black text-[#F9C20C]">{{ counts.all }}</span> {{ counts.all === 1 ? 'quiz' :
+                    'quizzes' }} across your active classes
+                  </p>
+                </div>
+              </div>
+
+              <!-- Stat Cards Grid (Right-Aligned / Stretched) -->
+              <div class="grid grid-cols-2 gap-2.5 sm:gap-3 shrink-0 sm:w-80">
+                <!-- Ready to Take -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Ready to Take
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight mt-0.5">
+                    {{ counts.available }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                    Available now
+                  </span>
+                </div>
+
+                <!-- Completed -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Completed
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight mt-0.5">
+                    {{ counts.completed }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                    Ready to review
+                  </span>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
 
         <!-- WORKSPACE -->
-        <div class="animate-fade-slide-up rounded-3xl bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
+        <div
+          class="animate-fade-slide-up rounded-3xl bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
 
           <!-- TABS + SEARCH -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/60 dark:border-[#3F4F43]">
-            <div class="flex items-center gap-1.5 bg-[#f5f7f2] dark:bg-[#232D26] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] overflow-x-auto w-full sm:w-auto">
-              <button v-for="tab in filterTabs" :key="tab.id" @click="activeTab = tab.id"
-                :class="[
-                  'px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer active:scale-95',
-                  activeTab === tab.id
-                    ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-xs'
-                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                ]">
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/60 dark:border-[#3F4F43]">
+            <div
+              class="flex items-center gap-1.5 bg-[#f5f7f2] dark:bg-[#232D26] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] overflow-x-auto w-full sm:w-auto">
+              <button v-for="tab in filterTabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+                'px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer active:scale-95',
+                activeTab === tab.id
+                  ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-xs'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              ]">
                 <span>{{ tab.label }}</span>
                 <span :class="[
                   'text-[10px] px-1.5 py-0.2 rounded-full font-black transition-colors',
@@ -108,7 +161,8 @@
 
               <div class="space-y-3">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
-                  <span class="text-[10px] font-extrabold uppercase text-[#004d08] dark:text-[#86EFAC] bg-white dark:bg-[#2D3A31] px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-[#3F4F43]">
+                  <span
+                    class="text-[10px] font-extrabold uppercase text-[#004d08] dark:text-[#86EFAC] bg-white dark:bg-[#2D3A31] px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-[#3F4F43]">
                     {{ quiz.subject || 'Subject' }}
                   </span>
                   <span :class="statusPillClass(quiz.status)">
@@ -117,7 +171,8 @@
                 </div>
 
                 <div>
-                  <h3 class="font-extrabold text-slate-900 dark:text-white text-base leading-snug group-hover:text-[#004d08] dark:group-hover:text-[#86EFAC] transition-colors line-clamp-2">
+                  <h3
+                    class="font-extrabold text-slate-900 dark:text-white text-base leading-snug group-hover:text-[#004d08] dark:group-hover:text-[#86EFAC] transition-colors line-clamp-2">
                     {{ quiz.title }}
                   </h3>
                   <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
@@ -125,7 +180,8 @@
                   </p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#2D3A31] p-3 rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
+                <div
+                  class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#2D3A31] p-3 rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
                   <div class="inline-flex items-center gap-1.5">
                     <Icon icon="clock" size="xs" class="text-slate-400" />
                     {{ quiz.time_limit_minutes ? quiz.time_limit_minutes + ' min' : 'No limit' }}
@@ -144,7 +200,8 @@
                   </div>
                 </div>
 
-                <p v-if="quiz.availability_note" class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold inline-flex items-center gap-1">
+                <p v-if="quiz.availability_note"
+                  class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold inline-flex items-center gap-1">
                   <Icon icon="info" size="xs" />
                   {{ quiz.availability_note }}
                 </p>
@@ -152,8 +209,7 @@
 
               <div>
                 <!-- Available -->
-                <button v-if="quiz.status === 'available'"
-                  @click="startQuizPrep(quiz)"
+                <button v-if="quiz.status === 'available'" @click="startQuizPrep(quiz)"
                   class="w-full bg-[#004d08] dark:bg-[#86EFAC] hover:bg-[#003805] text-white dark:text-[#232D26] text-xs font-black py-3 rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95">
                   <Icon icon="arrow-right" size="sm" />
                   Start Assessment
@@ -192,7 +248,8 @@
             </div>
           </div>
 
-          <div v-else class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-3xl p-12 text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
+          <div v-else
+            class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-3xl p-12 text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
             <div class="flex justify-center text-slate-400">
               <Icon icon="clipboard-list" size="xl" />
             </div>
@@ -207,12 +264,15 @@
     </main>
 
     <!-- PRE-QUIZ GUIDELINES MODAL -->
-    <div v-if="showPrepModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] text-slate-900 dark:text-slate-100 rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-6 shadow-xl">
+    <div v-if="showPrepModal"
+      class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div
+        class="bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] text-slate-900 dark:text-slate-100 rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-6 shadow-xl">
 
         <div class="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#3F4F43] pb-5">
           <div class="flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-300 flex items-center justify-center shrink-0">
+            <div
+              class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-300 flex items-center justify-center shrink-0">
               <Icon icon="alert-triangle" size="md" />
             </div>
             <div>
@@ -230,8 +290,10 @@
         </div>
 
         <div class="space-y-3.5">
-          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#232D26] border border-slate-100 dark:border-[#3F4F43]">
-            <div class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-slate-200/80 dark:border-[#3F4F43] text-slate-700 dark:text-slate-200 shrink-0">
+          <div
+            class="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#232D26] border border-slate-100 dark:border-[#3F4F43]">
+            <div
+              class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-slate-200/80 dark:border-[#3F4F43] text-slate-700 dark:text-slate-200 shrink-0">
               <Icon icon="clock" size="sm" />
             </div>
             <div class="text-xs leading-relaxed">
@@ -244,23 +306,29 @@
             </div>
           </div>
 
-          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#232D26] border border-slate-100 dark:border-[#3F4F43]">
-            <div class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-slate-200/80 dark:border-[#3F4F43] text-slate-700 dark:text-slate-200 shrink-0">
+          <div
+            class="flex items-start gap-3.5 p-3.5 rounded-xl bg-slate-50 dark:bg-[#232D26] border border-slate-100 dark:border-[#3F4F43]">
+            <div
+              class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-slate-200/80 dark:border-[#3F4F43] text-slate-700 dark:text-slate-200 shrink-0">
               <Icon icon="check-circle" size="sm" />
             </div>
             <div class="text-xs leading-relaxed">
               <span class="font-bold text-slate-900 dark:text-white block mb-0.5">Autosave</span>
-              <span class="text-slate-600 dark:text-slate-300">Every answer is saved automatically. You can close and resume the attempt.</span>
+              <span class="text-slate-600 dark:text-slate-300">Every answer is saved automatically. You can close and
+                resume the attempt.</span>
             </div>
           </div>
 
-          <div class="flex items-start gap-3.5 p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-500/30">
-            <div class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-rose-200 dark:border-rose-500/30 text-rose-500 shrink-0">
+          <div
+            class="flex items-start gap-3.5 p-3.5 rounded-xl bg-rose-50/50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-500/30">
+            <div
+              class="p-2 bg-white dark:bg-[#2D3A31] rounded-lg border border-rose-200 dark:border-rose-500/30 text-rose-500 shrink-0">
               <Icon icon="alert-triangle" size="sm" />
             </div>
             <div class="text-xs leading-relaxed">
               <span class="font-bold text-rose-950 dark:text-rose-300 block mb-0.5">3 Warnings Limit</span>
-              <span class="text-rose-700 dark:text-rose-400">Tab switching or leaving fullscreen mode logs a warning. 3 warnings = auto-submit.</span>
+              <span class="text-rose-700 dark:text-rose-400">Tab switching or leaving fullscreen mode logs a warning. 3
+                warnings = auto-submit.</span>
             </div>
           </div>
         </div>
@@ -270,8 +338,7 @@
             class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-[#3F4F43] hover:bg-slate-50 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer active:scale-95">
             Cancel
           </button>
-          <button @click="enterQuiz"
-            :disabled="starting"
+          <button @click="enterQuiz" :disabled="starting"
             class="px-6 py-2.5 rounded-xl bg-[#004d08] dark:bg-[#86EFAC] hover:bg-[#003805] text-white dark:text-[#232D26] text-xs font-bold transition-all shadow-sm cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-50">
             <span>{{ starting ? 'Starting...' : 'Start Exam' }}</span>
             <Icon icon="arrow-right" size="sm" />
@@ -291,8 +358,8 @@ import navbartop from '@/Components/navbartop.vue'
 import Icon from '@/Components/Icon.vue'
 
 const props = defineProps({
-  quizzes:     { type: Array,  default: () => [] },
-  counts:      { type: Object, default: () => ({ all: 0, available: 0, in_progress: 0, upcoming: 0, completed: 0, closed: 0 }) },
+  quizzes: { type: Array, default: () => [] },
+  counts: { type: Object, default: () => ({ all: 0, available: 0, in_progress: 0, upcoming: 0, completed: 0, closed: 0 }) },
   active_term: { type: String, default: null },
 })
 
@@ -306,11 +373,11 @@ const selectedPrepQuiz = ref(null)
 const starting = ref(false)
 
 const filterTabs = computed(() => [
-  { id: 'all',         label: 'All',        count: props.counts.all },
-  { id: 'available',   label: 'Available',  count: props.counts.available },
-  { id: 'in_progress', label: 'In Progress',count: props.counts.in_progress },
-  { id: 'upcoming',    label: 'Upcoming',   count: props.counts.upcoming },
-  { id: 'completed',   label: 'Completed',  count: props.counts.completed },
+  { id: 'all', label: 'All', count: props.counts.all },
+  { id: 'available', label: 'Available', count: props.counts.available },
+  { id: 'in_progress', label: 'In Progress', count: props.counts.in_progress },
+  { id: 'upcoming', label: 'Upcoming', count: props.counts.upcoming },
+  { id: 'completed', label: 'Completed', count: props.counts.completed },
 ])
 
 const filteredQuizzes = computed(() => {
@@ -339,42 +406,119 @@ function enterQuiz() {
 
 function statusPillClass(status) {
   return {
-    available:   'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-[#86EFAC] border-emerald-200 dark:border-emerald-900/40',
+    available: 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-[#86EFAC] border-emerald-200 dark:border-emerald-900/40',
     in_progress: 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/40',
-    upcoming:    'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-900/40',
-    completed:   'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-violet-100 dark:bg-violet-950/60 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-900/40',
-    closed:      'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-slate-200 dark:bg-[#3F4F43] text-slate-600 dark:text-slate-300 border-slate-300 dark:border-[#3F4F43]',
+    upcoming: 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-900/40',
+    completed: 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-violet-100 dark:bg-violet-950/60 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-900/40',
+    closed: 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-slate-200 dark:bg-[#3F4F43] text-slate-600 dark:text-slate-300 border-slate-300 dark:border-[#3F4F43]',
   }[status] || 'text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#3F4F43]'
 }
 
 function statusLabel(status) {
   return {
-    available:   'Available',
+    available: 'Available',
     in_progress: 'In Progress',
-    upcoming:    'Upcoming',
-    completed:   'Completed',
-    closed:      'Closed',
+    upcoming: 'Upcoming',
+    completed: 'Completed',
+    closed: 'Closed',
   }[status] || status
 }
 </script>
 
 <style scoped>
-.animated-stroke-text { color: transparent; -webkit-text-stroke: 1.5px #ffffff; }
+.animated-stroke-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #ffffff;
+}
 
-@keyframes fadeInDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px);  } to { opacity: 1; transform: translateY(0); } }
-@keyframes sheenMove   { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-@keyframes spinSlow    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 
-.animate-fade-in-down  { animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-slide-up { animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.animate-sheen         { animation: sheenMove 4s ease-in-out infinite; }
-.animate-spin-slow     { display: inline-block; animation: spinSlow 12s linear infinite; }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheenMove {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.animate-sheen {
+  animation: sheenMove 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  display: inline-block;
+  animation: spinSlow 12s linear infinite;
+}
+
+.text-scale-sm :deep(.text-xs) {
+  font-size: 0.65rem !important;
+  line-height: 0.85rem !important;
+}
+
+.text-scale-sm :deep(.text-sm) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.text-scale-sm :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-xs) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-sm) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-lg :deep(.text-base) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
 </style>

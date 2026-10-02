@@ -1,4 +1,5 @@
 <template>
+
   <Head title="Schedule - Salawag LMS" />
 
   <div :class="[
@@ -8,123 +9,202 @@
     <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
 
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop
-        searchPlaceholder="Search weekly schedule, subjects, teachers, or rooms..."
-        @open-sidebar="isSidebarOpen = true"
-        @font-size-changed="(size) => fontSizeMode = size"
-      />
+      <navbartop searchPlaceholder="Search weekly schedule, subjects, teachers, or rooms..."
+        @open-sidebar="isSidebarOpen = true" @font-size-changed="(size) => fontSizeMode = size" />
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
 
         <!-- HERO -->
-        <div class="animate-fade-in-down w-full bg-[#004d08] dark:bg-[#152B1C] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#003805] dark:border-[#3F4F43] relative overflow-hidden space-y-4">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-sheen pointer-events-none"></div>
+        <div v-observe
+          class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
+          <img
+            :src="heroImage || 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1600&auto=format&fit=crop'"
+            alt="Student Schedule Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <div class="space-y-1 relative z-10">
-            <div class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap">
-              <span class="text-white">STUDENT</span>
-              <span class="animated-stroke-text">SCHEDULE</span>
-            </div>
-            <p class="text-xs sm:text-sm italic font-medium text-emerald-100/80">
-              "Your journey to knowledge starts with one click."
-            </p>
-            <div class="flex items-center gap-2 pt-1 max-w-xl">
-              <div class="h-[1.5px] w-full bg-white/40"></div>
-              <span class="text-white text-xs animate-spin-slow">★</span>
-            </div>
+          <!-- Animated Green Overlay (Blend mode matched to system dark green) -->
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2 relative z-10">
-            <template v-if="live_class">
-              <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center shrink-0 relative">
-                  <Icon icon="clock" size="xl" class="text-white" />
-                  <span class="absolute top-2 right-2 w-3 h-3 bg-amber-400 rounded-full animate-ping border-2 border-[#004d08]"></span>
-                </div>
-                <div class="space-y-1 text-center sm:text-left">
-                  <div class="inline-flex items-center gap-1.5 bg-amber-400/20 backdrop-blur-sm text-amber-300 text-[11px] font-extrabold px-3 py-0.5 rounded-full border border-amber-400/30 uppercase tracking-wide">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
-                    Live Now
-                  </div>
-                  <h2 class="font-bold text-lg sm:text-xl text-white tracking-tight leading-snug">
-                    {{ live_class.subject }}
-                  </h2>
-                  <p class="text-xs text-emerald-100/80 font-medium">
-                    {{ live_class.instructor }} <span v-if="live_class.room"> • {{ live_class.room }}</span> • {{ live_class.time_start }} – {{ live_class.time_end }}
-                  </p>
-                </div>
+          <!-- Ambient Light Glow Highlights -->
+          <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+          </div>
+          <div
+            class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+          </div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+
+            <!-- Top Badge Container -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
+                <span>📅</span> STUDENT SCHEDULE
               </div>
 
-              <div class="lg:col-span-5 grid grid-cols-2 gap-3">
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                  <span class="text-[11px] font-medium text-emerald-100/80">In Session</span>
-                  <div class="text-lg font-extrabold text-amber-300 my-0.5 truncate">{{ live_class.subject_code }}</div>
-                  <span class="text-[10px] text-emerald-100/70">Ends at {{ live_class.time_end }}</span>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                  <span class="text-[11px] font-medium text-emerald-100/80">Next Class</span>
-                  <div class="text-lg font-extrabold text-white my-0.5 truncate">
-                    {{ next_class ? next_class.time_start : '—' }}
-                  </div>
-                  <span class="text-[10px] text-emerald-100/70 truncate">
-                    {{ next_class ? next_class.subject : 'No more today' }}
-                  </span>
-                </div>
+              <div
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                {{ active_term || 'Active Term Cycle' }}
               </div>
-            </template>
+            </div>
 
-            <template v-else>
-              <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center shrink-0">
-                  <Icon icon="calendar" size="xl" class="text-white" />
-                </div>
-                <div class="space-y-1 text-center sm:text-left">
-                  <div class="inline-block bg-white/15 backdrop-blur-sm text-emerald-100 text-[11px] font-bold px-3 py-0.5 rounded-full border border-white/10">
-                    {{ active_term || 'S.Y. —' }}
-                  </div>
-                  <h2 class="font-bold text-lg sm:text-xl text-white tracking-tight leading-snug">
-                    Weekly Academic Timetable
-                  </h2>
-                  <p class="text-xs text-emerald-100/70 font-medium">
-                    {{ total_classes }} {{ total_classes === 1 ? 'class' : 'classes' }} scheduled
-                  </p>
-                </div>
+            <!-- Main Title & Quote Section -->
+            <div class="space-y-1 sm:space-y-1.5 max-w-3xl">
+              <div
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>STUDENT</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">SCHEDULE</span>
               </div>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium italic">
+                "Your journey to knowledge starts with one click."
+              </p>
+            </div>
 
-              <div class="lg:col-span-5 grid grid-cols-2 gap-3">
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                  <span class="text-[11px] font-medium text-emerald-100/80">Today's Classes</span>
-                  <div class="text-xl font-extrabold text-amber-300 my-0.5">{{ today_classes_count }}</div>
-                  <span class="text-[10px] text-emerald-100/70 capitalize">{{ today_name }}</span>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between">
-                  <span class="text-[11px] font-medium text-emerald-100/80">Next Class</span>
-                  <div class="text-xl font-extrabold text-white my-0.5 truncate">
-                    {{ next_class ? next_class.time_start : '—' }}
+            <!-- Details Row & Stat Cards Grid -->
+            <div class="pt-1">
+              <!-- Dynamic View: LIVE NOW -->
+              <template v-if="live_class">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="flex items-center gap-3 sm:gap-4">
+                    <div
+                      class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center relative transition-transform hover:scale-105 duration-300">
+                      <Icon icon="clock" size="lg" class="text-white" />
+                      <span
+                        class="absolute top-2 right-2 w-3 h-3 bg-[#F9C20C] rounded-full animate-ping border-2 border-[#004d05]"></span>
+                    </div>
+
+                    <div class="space-y-0.5 min-w-0">
+                      <div
+                        class="inline-flex items-center gap-1.5 bg-[#F9C20C]/20 backdrop-blur-sm text-[#F9C20C] text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full border border-[#F9C20C]/40 uppercase tracking-wide">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#F9C20C] animate-ping"></span>
+                        Live Now
+                      </div>
+                      <h2
+                        class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight truncate">
+                        {{ live_class.subject }}
+                      </h2>
+                      <p class="text-white/90 text-[11px] sm:text-sm font-medium">
+                        {{ live_class.instructor }} <span v-if="live_class.room"> • {{ live_class.room }}</span> • {{
+                        live_class.time_start }} – {{ live_class.time_end }}
+                      </p>
+                    </div>
                   </div>
-                  <span class="text-[10px] text-emerald-100/70 truncate">
-                    {{ next_class ? next_class.subject : 'No more today' }}
-                  </span>
+
+                  <!-- Stat Cards Grid (Live Class State) -->
+                  <div class="grid grid-cols-2 gap-2.5 sm:gap-3 shrink-0 sm:w-80">
+                    <!-- In Session -->
+                    <div
+                      class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                      <span
+                        class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                        In Session
+                      </span>
+                      <div class="text-sm sm:text-lg font-black text-[#F9C20C] leading-tight mt-0.5 truncate">
+                        {{ live_class.subject_code }}
+                      </div>
+                      <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                        Ends at {{ live_class.time_end }}
+                      </span>
+                    </div>
+
+                    <!-- Next Class -->
+                    <div
+                      class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                      <span
+                        class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                        Next Class
+                      </span>
+                      <div class="text-sm sm:text-lg font-black text-white leading-tight mt-0.5 truncate">
+                        {{ next_class ? next_class.time_start : '—' }}
+                      </div>
+                      <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                        {{ next_class ? next_class.subject : 'No more today' }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </template>
+              </template>
+
+              <!-- Dynamic View: STANDARD / NO LIVE CLASS -->
+              <template v-else>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="flex items-center gap-3 sm:gap-4">
+                    <div
+                      class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                      <Icon icon="calendar" size="lg" class="text-white" />
+                    </div>
+
+                    <div class="space-y-0.5 min-w-0">
+                      <h2 class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
+                        Weekly Academic Timetable
+                      </h2>
+                      <p class="text-white/90 text-[11px] sm:text-sm font-medium">
+                        <span class="font-black text-[#F9C20C]">{{ total_classes }}</span> {{ total_classes === 1 ?
+                        'class' : 'classes' }} scheduled
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Stat Cards Grid (Standard State) -->
+                  <div class="grid grid-cols-2 gap-2.5 sm:gap-3 shrink-0 sm:w-80">
+                    <!-- Today's Classes -->
+                    <div
+                      class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                      <span
+                        class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                        Today's Classes
+                      </span>
+                      <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight mt-0.5">
+                        {{ today_classes_count }}
+                      </div>
+                      <span
+                        class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 capitalize truncate">
+                        {{ today_name }}
+                      </span>
+                    </div>
+
+                    <!-- Next Class -->
+                    <div
+                      class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                      <span
+                        class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                        Next Class
+                      </span>
+                      <div class="text-sm sm:text-lg font-black text-white leading-tight mt-0.5 truncate">
+                        {{ next_class ? next_class.time_start : '—' }}
+                      </div>
+                      <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                        {{ next_class ? next_class.subject : 'No more today' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
           </div>
         </div>
 
         <!-- TIMETABLE WORKSPACE -->
-        <div class="animate-fade-slide-up rounded-3xl bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
+        <div
+          class="animate-fade-slide-up rounded-3xl bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
 
           <!-- FILTER BAR -->
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/60 dark:border-[#3F4F43]">
-            <div class="flex items-center gap-1 bg-[#f5f7f2] dark:bg-[#232D26] p-1 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] overflow-x-auto">
-              <span class="text-[10px] font-extrabold uppercase text-slate-500 dark:text-slate-400 px-2">FILTER DAY:</span>
-              <button v-for="filter in dayFilters" :key="filter.id" @click="selectedDayFilter = filter.id"
-                :class="[
-                  'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5',
-                  selectedDayFilter === filter.id
-                    ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-xs'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-[#3F4F43]'
-                ]">
+          <div
+            class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/60 dark:border-[#3F4F43]">
+            <div
+              class="flex items-center gap-1 bg-[#f5f7f2] dark:bg-[#232D26] p-1 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] overflow-x-auto">
+              <span class="text-[10px] font-extrabold uppercase text-slate-500 dark:text-slate-400 px-2">FILTER
+                DAY:</span>
+              <button v-for="filter in dayFilters" :key="filter.id" @click="selectedDayFilter = filter.id" :class="[
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap active:scale-95 flex items-center gap-1.5',
+                selectedDayFilter === filter.id
+                  ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-xs'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-[#3F4F43]'
+              ]">
                 <span>{{ filter.label }}</span>
                 <span v-if="filter.id === today_name" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
               </button>
@@ -153,7 +233,7 @@
               {{ searchQuery ? 'No Matching Classes Found' : 'No Schedule Yet' }}
             </h4>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              {{ searchQuery ? `Nothing matched "${searchQuery}".` : 'Your timetable will appear once the registrar publishes schedules.' }}
+              {{ searchQuery ? `Nothing matched "${searchQuery}".` : 'Your timetable will appear once the registrarpublishesschedules.' }}
             </p>
             <button v-if="searchQuery" @click="resetFilters"
               class="bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#003805] transition-colors">
@@ -167,18 +247,18 @@
               :class="selectedDayFilter === 'all' ? 'min-w-[1100px] grid-cols-12' : 'w-full grid-cols-12'">
 
               <!-- HEADER ROW -->
-              <div class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex items-center justify-center text-center font-extrabold text-xs text-[#004d08] dark:text-[#86EFAC] uppercase tracking-wider border border-slate-200/60 dark:border-[#3F4F43]">
+              <div
+                class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex items-center justify-center text-center font-extrabold text-xs text-[#004d08] dark:text-[#86EFAC] uppercase tracking-wider border border-slate-200/60 dark:border-[#3F4F43]">
                 TIME SLOT
               </div>
 
-              <div v-for="day in visibleColumns" :key="day.id"
-                :class="[
-                  selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
-                  'rounded-2xl p-3 text-center flex flex-col justify-center border transition-all',
-                  day.isToday
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-[#004d08] dark:border-[#86EFAC] shadow-xs'
-                    : 'bg-[#f5f7f2] dark:bg-[#232D26] border-slate-200/60 dark:border-[#3F4F43]'
-                ]">
+              <div v-for="day in visibleColumns" :key="day.id" :class="[
+                selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
+                'rounded-2xl p-3 text-center flex flex-col justify-center border transition-all',
+                day.isToday
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border-[#004d08] dark:border-[#86EFAC] shadow-xs'
+                  : 'bg-[#f5f7f2] dark:bg-[#232D26] border-slate-200/60 dark:border-[#3F4F43]'
+              ]">
                 <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center justify-center gap-1.5">
                   <span>{{ day.name }}</span>
                   <span v-if="day.isToday" class="w-2 h-2 rounded-full bg-[#004d08] dark:bg-[#86EFAC]"></span>
@@ -192,12 +272,14 @@
               <template v-for="slot in displayRows" :key="slot.slot_id || `banner-${slot.bannerTitle}`">
 
                 <template v-if="slot.isBanner">
-                  <div class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
+                  <div
+                    class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
                     <span>{{ slot.timeStart }}</span>
                     <span class="text-slate-400 dark:text-slate-500 font-normal">—</span>
                     <span>{{ slot.timeEnd }}</span>
                   </div>
-                  <div class="col-span-10 bg-[#f7f6f0] dark:bg-[#1C261F] rounded-2xl p-4 border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between px-6">
+                  <div
+                    class="col-span-10 bg-[#f7f6f0] dark:bg-[#1C261F] rounded-2xl p-4 border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between px-6">
                     <div class="flex items-center gap-3">
                       <Icon icon="sparkles" size="lg" class="text-amber-500" />
                       <div>
@@ -209,7 +291,8 @@
                         </p>
                       </div>
                     </div>
-                    <span class="bg-white dark:bg-[#2D3A31] text-[#004d08] dark:text-[#86EFAC] text-xs font-black px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-[#3F4F43] shadow-2xs">
+                    <span
+                      class="bg-white dark:bg-[#2D3A31] text-[#004d08] dark:text-[#86EFAC] text-xs font-black px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-[#3F4F43] shadow-2xs">
                       {{ slot.bannerBadge }}
                     </span>
                   </div>
@@ -217,7 +300,8 @@
 
                 <template v-else>
                   <!-- Time label -->
-                  <div class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
+                  <div
+                    class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
                     <span>{{ slot.time_start }}</span>
                     <span class="text-slate-400 dark:text-slate-500 font-normal">—</span>
                     <span>{{ slot.time_end }}</span>
@@ -225,22 +309,20 @@
 
                   <!-- Day cells -->
                   <template v-for="day in visibleColumns" :key="day.id">
-                    <div v-if="!slot.days[day.id]"
-                      :class="[
-                        selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
-                        'bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/60 dark:border-[#3F4F43] rounded-2xl p-4 flex items-center justify-center min-h-[120px]'
-                      ]">
+                    <div v-if="!slot.days[day.id]" :class="[
+                      selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
+                      'bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/60 dark:border-[#3F4F43] rounded-2xl p-4 flex items-center justify-center min-h-[120px]'
+                    ]">
                       <span class="text-lg leading-none text-slate-400 dark:text-slate-600">—</span>
                     </div>
 
-                    <div v-else
-                      :class="[
-                        selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
-                        isActive(slot.days[day.id])
-                          ? 'bg-amber-500/10 border-2 border-amber-400 shadow-xs'
-                          : 'bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43]',
-                        'rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all hover:-translate-y-1 hover:shadow-md'
-                      ]">
+                    <div v-else :class="[
+                      selectedDayFilter === 'all' ? 'col-span-2' : 'col-span-10',
+                      isActive(slot.days[day.id])
+                        ? 'bg-amber-500/10 border-2 border-amber-400 shadow-xs'
+                        : 'bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43]',
+                      'rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all hover:-translate-y-1 hover:shadow-md'
+                    ]">
                       <div class="space-y-1.5">
                         <div class="flex items-center justify-between gap-1">
                           <span :class="[
@@ -251,7 +333,8 @@
                           ]">
                             {{ slot.days[day.id].subject_code || 'SUBJECT' }}
                           </span>
-                          <span v-if="isActive(slot.days[day.id])" class="text-[9px] font-black bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded animate-pulse">
+                          <span v-if="isActive(slot.days[day.id])"
+                            class="text-[9px] font-black bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded animate-pulse">
                             LIVE
                           </span>
                         </div>
@@ -263,7 +346,8 @@
                         </p>
                       </div>
 
-                      <div v-if="slot.days[day.id].room" class="bg-white dark:bg-[#2D3A31] rounded-xl p-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5 border border-slate-200/60 dark:border-[#3F4F43]">
+                      <div v-if="slot.days[day.id].room"
+                        class="bg-white dark:bg-[#2D3A31] rounded-xl p-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5 border border-slate-200/60 dark:border-[#3F4F43]">
                         <Icon icon="school" size="xs" class="text-slate-400" />
                         {{ slot.days[day.id].room }}
                       </div>
@@ -290,12 +374,12 @@ import navbartop from '@/Components/navbartop.vue'
 import Icon from '@/Components/Icon.vue'
 
 const props = defineProps({
-  slots:         { type: Array,  default: () => [] },
-  schedules:     { type: Array,  default: () => [] },
-  today_name:    { type: String, default: '' },
-  live_class:    { type: Object, default: null },
-  next_class:    { type: Object, default: null },
-  active_term:   { type: String, default: null },
+  slots: { type: Array, default: () => [] },
+  schedules: { type: Array, default: () => [] },
+  today_name: { type: String, default: '' },
+  live_class: { type: Object, default: null },
+  next_class: { type: Object, default: null },
+  active_term: { type: String, default: null },
   total_classes: { type: Number, default: 0 },
 })
 
@@ -410,22 +494,99 @@ function resetFilters() {
 </script>
 
 <style scoped>
-.animated-stroke-text { color: transparent; -webkit-text-stroke: 1.5px #ffffff; }
+.animated-stroke-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #ffffff;
+}
 
-@keyframes fadeInDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px);  } to { opacity: 1; transform: translateY(0); } }
-@keyframes sheenMove   { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-@keyframes spinSlow    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 
-.animate-fade-in-down  { animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-slide-up { animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.animate-sheen         { animation: sheenMove 4s ease-in-out infinite; }
-.animate-spin-slow     { display: inline-block; animation: spinSlow 12s linear infinite; }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheenMove {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.animate-sheen {
+  animation: sheenMove 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  display: inline-block;
+  animation: spinSlow 12s linear infinite;
+}
+
+.text-scale-sm :deep(.text-xs) {
+  font-size: 0.65rem !important;
+  line-height: 0.85rem !important;
+}
+
+.text-scale-sm :deep(.text-sm) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.text-scale-sm :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-xs) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-sm) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-lg :deep(.text-base) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
 </style>

@@ -1,4 +1,5 @@
 <template>
+
   <Head title="My Classes - Salawag LMS" />
 
   <div :class="[
@@ -15,67 +16,79 @@
 
         <!-- HERO -->
         <div
-          class="animate-fade-in-down w-full bg-[#107a24] dark:bg-[#254d32] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#0d641d] dark:border-[#3F4F43] relative overflow-hidden space-y-4">
-          <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            <img :src="heroImage" alt="Hero Background"
-              class="w-full h-full object-cover object-bottom translate-y-4 opacity-30 dark:opacity-20 mix-blend-overlay scale-105 transition-transform duration-700 hover:scale-100" />
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-[#107a24]/90 via-[#107a24]/70 to-transparent dark:from-[#254d32]/95 dark:via-[#254d32]/80">
-            </div>
-          </div>
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-sheen pointer-events-none z-0">
-          </div>
+          class="animate-fade-in-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none p-4 sm:p-6 md:p-8">
 
-          <div class="space-y-1 relative z-10">
-            <div
-              class="font-['Anton'] text-3xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap">
-              <span class="text-white">STUDENT</span>
-              <span class="animated-stroke-text">SUBJECTS</span>
-            </div>
-            <p class="text-xs sm:text-sm italic font-medium text-emerald-100/90">
-              "Your journey to knowledge starts with one click."
-            </p>
-            <div class="flex items-center gap-2 pt-1 max-w-xl">
-              <div class="h-[1.5px] w-full bg-white/40"></div>
-              <span class="text-white text-xs animate-spin-slow">★</span>
-            </div>
-          </div>
+          <!-- Hero Background Image -->
+          <img :src="heroImage" alt="Student Subjects Hero"
+            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center pt-2 relative z-10">
-            <div class="lg:col-span-7 flex flex-col sm:flex-row items-center gap-4">
+          <!-- Animated Green Overlay -->
+          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+
+            <!-- Top Badge Container -->
+            <div class="flex flex-wrap items-center gap-2">
               <div
-                class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/20 bg-white/10 overflow-hidden shrink-0 shadow-inner flex items-center justify-center transition-transform hover:scale-105 duration-300">
-                <Icon icon="academic-cap" size="xl" class="text-white" />
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 py-1 rounded-full shadow-sm tracking-wide">
+                <span>📚</span> STUDENT SUBJECTS
               </div>
-              <div class="space-y-1 text-center sm:text-left">
-                <div
-                  class="inline-block bg-white/15 backdrop-blur-sm text-emerald-100 text-[11px] font-bold px-3 py-0.5 rounded-full border border-white/10 animate-float-soft">
-                  {{ activeTerm || 'Active Term' }}
-                </div>
-                <h2 class="font-bold text-lg sm:text-xl text-white tracking-tight leading-snug">
+
+              <div
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                {{ activeTerm || 'Active Term' }}
+              </div>
+            </div>
+
+            <!-- Icon + Title Row -->
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div
+                class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                <Icon icon="academic-cap" size="lg" class="text-white" />
+              </div>
+
+              <div class="space-y-0.5 min-w-0">
+                <h2 class="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
                   Senior High School Curriculum
                 </h2>
-                <p class="text-xs text-emerald-100/80 font-medium">
+                <p class="text-white/90 text-[11px] sm:text-sm leading-snug font-medium">
                   {{ classList.length }} Active {{ classList.length === 1 ? 'Subject' : 'Subjects' }}
+                  • School Year <span class="font-bold">2026–2027</span>
                 </p>
               </div>
             </div>
 
-            <div class="lg:col-span-5 grid grid-cols-2 gap-3">
+            <!-- Stat Cards Row — full width, horizontally stretched -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+
+              <!-- Track -->
               <div
-                class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between hover:-translate-y-1 hover:bg-white/15 transition-all duration-300">
-                <span class="text-[11px] font-medium text-emerald-100/90">Track</span>
-                <div class="text-xl font-extrabold text-amber-300 my-0.5 truncate">{{ studentStrand }}</div>
-                <span class="text-[10px] text-emerald-100/80">Academic Strand</span>
+                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
+                <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
+                  Track
+                </span>
+                <div class="text-base sm:text-xl font-black text-[#F9C20C] leading-tight mt-1 break-words">
+                  {{ studentStrand }}
+                </div>
+                <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">Academic Strand</span>
               </div>
+
+              <!-- Total Subjects -->
               <div
-                class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl py-3 px-4 flex flex-col justify-between hover:-translate-y-1 hover:bg-white/15 transition-all duration-300">
-                <span class="text-[11px] font-medium text-emerald-100/90">Total Subjects</span>
-                <div class="text-xl font-extrabold text-white my-0.5">{{ pagination.total || classList.length }}</div>
-                <span class="text-[10px] text-emerald-100/80">{{ activeTerm || '—' }}</span>
+                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
+                <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
+                  Total Subjects
+                </span>
+                <div class="text-base sm:text-xl font-black text-white leading-tight mt-1">
+                  {{ pagination.total || classList.length }}
+                </div>
+                <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">{{ activeTerm || '—' }}</span>
               </div>
+
             </div>
+
           </div>
         </div>
 
@@ -125,16 +138,19 @@
               <Icon icon="search" size="lg" />
             </div>
             <p class="text-slate-600 dark:text-slate-200 font-bold text-base">No subjects match your search</p>
-            <p class="text-slate-400 dark:text-slate-400 text-xs">Try adjusting your search keywords or filter settings.</p>
+            <p class="text-slate-400 dark:text-slate-400 text-xs">Try adjusting your search keywords or filter settings.
+            </p>
           </div>
 
-          <div v-else class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            <Link v-for="(klass, index) in classList" :key="klass.id"
-              :href="route('student.classes.show', klass.id)" :style="{ animationDelay: `${index * 70}ms` }"
+          <div v-else
+            class="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <Link v-for="(klass, index) in classList" :key="klass.id" :href="route('student.classes.show', klass.id)"
+              :style="{ animationDelay: `${index * 70}ms` }"
               class="subject-card bg-white dark:bg-[#2D3A31] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 group cursor-pointer">
               <div
                 class="relative h-36 bg-gradient-to-br from-amber-100 via-emerald-50 to-teal-100 dark:from-[#232D26] dark:via-[#1B281F] dark:to-[#152B1C] p-4 flex flex-col justify-between overflow-hidden">
-                <div class="absolute inset-0 opacity-30 dark:opacity-10 flex items-center justify-center pointer-events-none">
+                <div
+                  class="absolute inset-0 opacity-30 dark:opacity-10 flex items-center justify-center pointer-events-none">
                   <svg class="w-48 h-48 text-[#005506] dark:text-[#86EFAC]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4l7 3.82 7-3.82v-4L12 17l-7-3.82z" />
                   </svg>
@@ -194,10 +210,8 @@
             of <strong class="text-slate-800 dark:text-white">{{ pagination.total }}</strong> subjects
           </p>
           <div class="flex items-center gap-1.5">
-            <button v-for="link in pagination.links" :key="link.label"
-              :disabled="!link.url || link.active" @click="goToPage(link.url)"
-              v-html="link.label"
-              :class="[
+            <button v-for="link in pagination.links" :key="link.label" :disabled="!link.url || link.active"
+              @click="goToPage(link.url)" v-html="link.label" :class="[
                 'min-w-[36px] h-9 px-3 rounded-xl text-xs font-bold transition-all',
                 link.active
                   ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-sm'
@@ -239,11 +253,11 @@ const strands = computed(() => props.filterOptions?.strands ?? [])
 
 const pagination = computed(() => ({
   current_page: props.classes?.current_page ?? 1,
-  last_page:    props.classes?.last_page ?? 1,
-  total:        props.classes?.total ?? 0,
-  from:         props.classes?.from ?? 0,
-  to:           props.classes?.to ?? 0,
-  links:        props.classes?.links ?? [],
+  last_page: props.classes?.last_page ?? 1,
+  total: props.classes?.total ?? 0,
+  from: props.classes?.from ?? 0,
+  to: props.classes?.to ?? 0,
+  links: props.classes?.links ?? [],
 }))
 
 const studentStrand = computed(() => {
@@ -274,26 +288,131 @@ function goToPage(url) {
 </script>
 
 <style scoped>
-.animated-stroke-text { color: transparent; -webkit-text-stroke: 1.5px #ffffff; }
+.animated-stroke-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #ffffff;
+}
 
-@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes floatSoft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes sheenMove { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-@keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 
-.animate-fade-in-down    { animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-slide-left { animation: fadeSlideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.animate-fade-slide-up   { animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
-.animate-float-soft      { animation: floatSoft 3s ease-in-out infinite; }
-.animate-sheen           { animation: sheenMove 4s ease-in-out infinite; }
-.animate-spin-slow       { display: inline-block; animation: spinSlow 12s linear infinite; }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+@keyframes fadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSoft {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes sheenMove {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-slide-left {
+  animation: fadeSlideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.animate-float-soft {
+  animation: floatSoft 3s ease-in-out infinite;
+}
+
+.animate-sheen {
+  animation: sheenMove 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  display: inline-block;
+  animation: spinSlow 12s linear infinite;
+}
+
+.text-scale-sm :deep(.text-xs) {
+  font-size: 0.65rem !important;
+  line-height: 0.85rem !important;
+}
+
+.text-scale-sm :deep(.text-sm) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.text-scale-sm :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-xs) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+.text-scale-lg :deep(.text-sm) {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-scale-lg :deep(.text-base) {
+  font-size: 1.125rem !important;
+  line-height: 1.75rem !important;
+}
 </style>

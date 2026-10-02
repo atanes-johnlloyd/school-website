@@ -3,59 +3,83 @@
     <div class="space-y-6 max-w-7xl mx-auto pb-10 font-['Inter']">
 
       <!-- Hero Header Banner -->
-      <div class="relative overflow-hidden bg-[#004d08] text-white rounded-2xl p-6 md:p-8 shadow-lg border border-emerald-900/40">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="bg-amber-400/20 text-amber-300 text-xs font-medium px-2.5 py-0.5 rounded-md border border-amber-400/30">
-                STUDENT MANAGEMENT
+      <div
+        class="relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[240px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+        <!-- Background Image Layer -->
+        <img
+          :src="heroImage || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1600&auto=format&fit=crop'"
+          alt="Admissions Pipeline Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+
+        <!-- Animated Dark Green Overlay -->
+        <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply"></div>
+
+        <!-- Ambient Light Glow Highlights -->
+        <div
+          class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+        </div>
+        <div class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+        </div>
+
+        <!-- Content Container -->
+        <div class="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-2 sm:space-y-3 max-w-2xl">
+            <!-- Top Capsule Badges -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <span
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
+                <span>🎓</span> STUDENT MANAGEMENT
               </span>
-              <span class="text-emerald-200 text-xs font-normal">&bull; Admissions &amp; Applications</span>
+
+              <span
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Admissions &amp; Applications
+              </span>
             </div>
-            <h1 class="font-['Anton'] text-3xl md:text-4xl tracking-wide uppercase">
-              Admissions <span class="text-amber-400">Pipeline</span>
-            </h1>
-            <p class="text-emerald-100/80 text-sm mt-1 max-w-xl font-normal">
-              Review incoming enrollment requests, verify applicant records, and process student admissions.
-            </p>
+
+            <!-- Title & Subtitle -->
+            <div class="space-y-1 sm:space-y-1.5">
+              <h1
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>ADMISSIONS</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">PIPELINE</span>
+              </h1>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
+                Review incoming enrollment requests, verify applicant records, and process student admissions.
+              </p>
+            </div>
           </div>
 
-          <!-- Right side of the hero banner, replace the single button -->
-          <div class="flex items-center gap-2 shrink-0">
-            <button
-              @click="showImportModal = true"
-              class="inline-flex items-center justify-center gap-2 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-50 border border-emerald-700/50 font-medium px-4 py-3 rounded-xl transition-all active:scale-95 text-sm cursor-pointer"
-              title="Import applicants from CSV"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 12V4m0 0L8 8m4-4l4 4" />
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap pt-2 md:pt-0">
+            <button @click="showImportModal = true"
+              class="inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-black/40 backdrop-blur-md text-white border border-white/20 font-bold px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all active:scale-95 text-xs sm:text-sm cursor-pointer shadow-sm"
+              title="Import applicants from CSV">
+              <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 12V4m0 0L8 8m4-4l4 4" />
               </svg>
               <span class="hidden sm:inline">Import</span>
             </button>
 
-            <button
-              @click="exportApplicants"
-              class="inline-flex items-center justify-center gap-2 bg-emerald-900/60 hover:bg-emerald-900 text-emerald-50 border border-emerald-700/50 font-medium px-4 py-3 rounded-xl transition-all active:scale-95 text-sm cursor-pointer"
-              title="Export filtered applicants to CSV"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5m0 0l5-5m-5 5V3" />
+            <button @click="exportApplicants"
+              class="inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-black/40 backdrop-blur-md text-white border border-white/20 font-bold px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all active:scale-95 text-xs sm:text-sm cursor-pointer shadow-sm"
+              title="Export filtered applicants to CSV">
+              <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5m0 0l5-5m-5 5V3" />
               </svg>
               <span class="hidden sm:inline">Export</span>
             </button>
 
-            <button
-              @click="openCreateModal"
-              class="inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-[#004d08] font-medium px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm cursor-pointer"
-            >
-              <span class="text-lg leading-none">+</span>
+            <button @click="openCreateModal"
+              class="inline-flex items-center justify-center gap-2 bg-[#F9C20C] hover:bg-[#e0ae0a] text-[#2C3E2D] font-black px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs sm:text-sm cursor-pointer">
+              <span class="text-base sm:text-lg leading-none">+</span>
               <span>New Application</span>
             </button>
           </div>
-        </div>
-
-        <div class="absolute -right-6 -bottom-8 opacity-10 text-9xl font-['Anton'] pointer-events-none select-none text-white">
-          APPLY
         </div>
       </div>
 
@@ -63,43 +87,40 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
         <!-- Total -->
-        <button
-          @click="setStatusFilter('')"
-          :class="[
-            'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-            filters.status === ''
-              ? 'bg-[#004d08]/5 dark:bg-[#86EFAC]/5 border-[#004d08]/40 dark:border-[#86EFAC]/30'
-              : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
-          ]"
-        >
+        <button @click="setStatusFilter('')" :class="[
+          'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
+          filters.status === ''
+            ? 'bg-[#004d08]/5 dark:bg-[#86EFAC]/5 border-[#004d08]/40 dark:border-[#86EFAC]/30'
+            : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
+        ]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-gray-400 tracking-wider">Total Applications</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ totalApplicationsCount }}</p>
             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-normal">All Records</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-[#1C261E] border border-gray-100 dark:border-[#3F4F43] flex items-center justify-center text-gray-600 dark:text-gray-300 shrink-0">
+          <div
+            class="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-[#1C261E] border border-gray-100 dark:border-[#3F4F43] flex items-center justify-center text-gray-600 dark:text-gray-300 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
         </button>
 
         <!-- Pending -->
-        <button
-          @click="setStatusFilter('pending')"
-          :class="[
-            'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-            filters.status === 'pending'
-              ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800'
-              : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
-          ]"
-        >
+        <button @click="setStatusFilter('pending')" :class="[
+          'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
+          filters.status === 'pending'
+            ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800'
+            : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
+        ]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-amber-500 tracking-wider">Pending</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.pending || 0 }}</p>
             <span class="text-[10px] text-amber-600 dark:text-amber-400 font-normal">Awaiting Action</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-[#1C261E] border border-amber-100 dark:border-[#3F4F43] flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+          <div
+            class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-[#1C261E] border border-amber-100 dark:border-[#3F4F43] flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -107,44 +128,41 @@
         </button>
 
         <!-- Under Review -->
-        <button
-          @click="setStatusFilter('under_review')"
-          :class="[
-            'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-            filters.status === 'under_review'
-              ? 'bg-blue-50/60 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
-              : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
-          ]"
-        >
+        <button @click="setStatusFilter('under_review')" :class="[
+          'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
+          filters.status === 'under_review'
+            ? 'bg-blue-50/60 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
+            : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
+        ]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-blue-500 tracking-wider">Under Review</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.under_review || 0 }}</p>
             <span class="text-[10px] text-blue-600 dark:text-blue-400 font-normal">Being Evaluated</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-[#1C261E] border border-blue-100 dark:border-[#3F4F43] flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+          <div
+            class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-[#1C261E] border border-blue-100 dark:border-[#3F4F43] flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
           </div>
         </button>
 
         <!-- Approved -->
-        <button
-          @click="setStatusFilter('approved')"
-          :class="[
-            'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-            filters.status === 'approved'
-              ? 'bg-sky-50/60 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800'
-              : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
-          ]"
-        >
+        <button @click="setStatusFilter('approved')" :class="[
+          'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
+          filters.status === 'approved'
+            ? 'bg-sky-50/60 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800'
+            : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
+        ]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-sky-500 tracking-wider">Approved</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.approved || 0 }}</p>
             <span class="text-[10px] text-sky-600 dark:text-sky-400 font-normal">Scheduled for Exam</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-[#1C261E] border border-sky-100 dark:border-[#3F4F43] flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
+          <div
+            class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-[#1C261E] border border-sky-100 dark:border-[#3F4F43] flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -152,24 +170,23 @@
         </button>
 
         <!-- Enrolled -->
-        <button
-          @click="setStatusFilter('enrolled')"
-          :class="[
-            'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-            filters.status === 'enrolled'
-              ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
-              : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
-          ]"
-        >
+        <button @click="setStatusFilter('enrolled')" :class="[
+          'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
+          filters.status === 'enrolled'
+            ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
+            : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
+        ]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-emerald-500 tracking-wider">Enrolled</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.enrolled || 0 }}</p>
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">Successfully Admitted</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+          <div
+            class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
             </svg>
           </div>
         </button>
@@ -177,25 +194,26 @@
       </div>
 
       <!-- Main Directory Card -->
-      <div class="bg-white dark:bg-[#2D3A31] rounded-2xl border border-gray-200/80 dark:border-[#3F4F43] shadow-xs overflow-hidden transition-colors">
+      <div
+        class="bg-white dark:bg-[#2D3A31] rounded-2xl border border-gray-200/80 dark:border-[#3F4F43] shadow-xs overflow-hidden transition-colors">
 
         <!-- Controls Header -->
-        <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 flex flex-col lg:flex-row gap-3 justify-between lg:items-center">
+        <div
+          class="p-4 sm:p-5 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 flex flex-col lg:flex-row gap-3 justify-between lg:items-center">
           <div>
-            <h2 class="text-xs font-medium text-gray-900 dark:text-white uppercase tracking-wider">Applications Roster</h2>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">Search, filter, and process applicant records</p>
+            <h2 class="text-xs font-medium text-gray-900 dark:text-white uppercase tracking-wider">Applications Roster
+            </h2>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">Search, filter, and process applicant
+              records</p>
           </div>
 
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto lg:justify-end">
 
             <!-- Cluster Filter (was "Strand") -->
             <div class="relative">
-              <select
-                v-model="filters.strand_id"
-                @change="fetchApplications()"
+              <select v-model="filters.strand_id" @change="fetchApplications()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[180px] truncate"
-                title="Filter by cluster"
-              >
+                title="Filter by cluster">
                 <option value="">All Clusters</option>
                 <option v-for="strand in strands" :key="strand.id" :value="strand.id" :title="strand.name">
                   {{ strand.code || strand.name }}
@@ -205,11 +223,8 @@
 
             <!-- Grade Level Filter (new) -->
             <div class="relative">
-              <select
-                v-model="filters.grade_level"
-                @change="fetchApplications()"
-                class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer"
-              >
+              <select v-model="filters.grade_level" @change="fetchApplications()"
+                class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All Grades</option>
                 <option :value="11">Grade 11</option>
                 <option :value="12">Grade 12</option>
@@ -218,11 +233,8 @@
 
             <!-- School Year Filter -->
             <div class="relative">
-              <select
-                v-model="filters.school_year_id"
-                @change="fetchApplications()"
-                class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer"
-              >
+              <select v-model="filters.school_year_id" @change="fetchApplications()"
+                class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All School Years</option>
                 <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
                   {{ sy.label || sy.name }}
@@ -232,21 +244,15 @@
 
             <!-- Search Input (unchanged) -->
             <div class="relative w-full sm:w-64">
-              <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <input
-                v-model="filters.search"
-                @input="debouncedFetch"
-                type="text"
+              <input v-model="filters.search" @input="debouncedFetch" type="text"
                 placeholder="Search reference, name, LRN..."
-                class="w-full pl-10 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal"
-              />
-              <button
-                v-if="filters.search"
-                @click="filters.search = ''; fetchApplications()"
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-              >
+                class="w-full pl-10 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal" />
+              <button v-if="filters.search" @click="filters.search = ''; fetchApplications()"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -254,11 +260,8 @@
             </div>
 
             <!-- Reset Filters -->
-            <button
-              v-if="hasActiveFilters"
-              @click="clearFilters"
-              class="px-3 py-2 text-xs font-normal text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl border border-gray-200 dark:border-[#3F4F43] transition-colors cursor-pointer shrink-0"
-            >
+            <button v-if="hasActiveFilters" @click="clearFilters"
+              class="px-3 py-2 text-xs font-normal text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl border border-gray-200 dark:border-[#3F4F43] transition-colors cursor-pointer shrink-0">
               Reset
             </button>
 
@@ -269,27 +272,32 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 text-[10px] font-medium uppercase text-gray-400 tracking-wider">
+              <tr
+                class="border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 text-[10px] font-medium uppercase text-gray-400 tracking-wider">
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('full_name')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('full_name')"
+                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Applicant Student
                     <SortIcon field="full_name" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('desired_grade_level')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('desired_grade_level')"
+                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Academic Intent
                     <SortIcon field="desired_grade_level" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('email')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('email')"
+                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Contact &amp; LRN
                     <SortIcon field="email" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5 text-center">
-                  <button @click="setSort('status')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('status')"
+                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Status
                     <SortIcon field="status" />
                   </button>
@@ -297,17 +305,16 @@
                 <th class="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-[#3F4F43] text-xs font-normal text-gray-800 dark:text-gray-200">
+            <tbody
+              class="divide-y divide-gray-100 dark:divide-[#3F4F43] text-xs font-normal text-gray-800 dark:text-gray-200">
 
-              <tr
-                v-for="item in applications.data"
-                :key="item.id"
-                class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors"
-              >
+              <tr v-for="item in applications.data" :key="item.id"
+                class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors">
                 <!-- Applicant Name & Reference -->
                 <td class="py-4 px-5">
                   <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-[#1C261E] text-[#004d08] dark:text-[#86EFAC] border border-emerald-200 dark:border-[#3F4F43] flex items-center justify-center font-medium text-xs shrink-0">
+                    <div
+                      class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-[#1C261E] text-[#004d08] dark:text-[#86EFAC] border border-emerald-200 dark:border-[#3F4F43] flex items-center justify-center font-medium text-xs shrink-0">
                       {{ getInitials(item.full_name) }}
                     </div>
                     <div>
@@ -348,8 +355,7 @@
                 <td class="py-4 px-5 text-center">
                   <span
                     class="px-2.5 py-1 rounded-full text-[10px] font-normal uppercase tracking-wider inline-flex items-center gap-1.5 border"
-                    :class="getStatusBadgeClass(item.status)"
-                  >
+                    :class="getStatusBadgeClass(item.status)">
                     <span class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(item.status)"></span>
                     {{ item.status ? item.status.replace('_', ' ') : 'Pending' }}
                   </span>
@@ -358,21 +364,15 @@
                 <!-- Actions -->
                 <td class="py-4 px-5 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    <button
-                      @click="openViewModal(item)"
-                      :disabled="isLockedByOther(item)"
+                    <button @click="openViewModal(item)" :disabled="isLockedByOther(item)"
                       :title="isLockedByOther(item) ? `Under review by ${item.reviewer_name || 'another admin'}` : 'Review Application'"
-                      class="px-2.5 py-1 text-[10px] font-normal text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 rounded-lg border border-sky-200 dark:border-sky-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
+                      class="px-2.5 py-1 text-[10px] font-normal text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 rounded-lg border border-sky-200 dark:border-sky-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                       View
                     </button>
 
-                    <button
-                      @click="openEditModal(item)"
-                      :disabled="isLockedByOther(item)"
+                    <button @click="openEditModal(item)" :disabled="isLockedByOther(item)"
                       :title="isLockedByOther(item) ? `Under review by ${item.reviewer_name || 'another admin'}` : ''"
-                      class="px-2.5 py-1 text-[10px] font-normal text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#232D26] hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
+                      class="px-2.5 py-1 text-[10px] font-normal text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#232D26] hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                       Edit
                     </button>
                   </div>
@@ -392,7 +392,8 @@
         </div>
 
         <!-- Pagination Bar (row-count moved here, matching Students page) -->
-        <div v-if="applications.total > 0" class="px-5 py-3.5 bg-gray-50/50 dark:bg-[#232D26]/50 border-t border-gray-100 dark:border-[#3F4F43] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <div v-if="applications.total > 0"
+          class="px-5 py-3.5 bg-gray-50/50 dark:bg-[#232D26]/50 border-t border-gray-100 dark:border-[#3F4F43] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
           <div class="flex items-center gap-3">
             <span>
               Showing <span class="font-semibold text-gray-900 dark:text-white">{{ applications.from || 0 }}</span>
@@ -400,11 +401,8 @@
               of <span class="font-semibold text-gray-900 dark:text-white">{{ applications.total }}</span> entries
             </span>
             <div class="relative">
-              <select
-                v-model.number="filters.per_page"
-                @change="changePageSize"
-                class="appearance-none pl-2 pr-7 py-1 text-[11px] bg-white dark:bg-[#2D3A31] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none cursor-pointer"
-              >
+              <select v-model.number="filters.per_page" @change="changePageSize"
+                class="appearance-none pl-2 pr-7 py-1 text-[11px] bg-white dark:bg-[#2D3A31] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none cursor-pointer">
                 <option :value="10">10</option>
                 <option :value="20">20</option>
                 <option :value="50">50</option>
@@ -414,21 +412,16 @@
           </div>
 
           <div class="flex items-center gap-1">
-            <button
-              @click="changePage(applications.current_page - 1)"
-              :disabled="applications.current_page <= 1"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3F4F43] bg-white dark:bg-[#2D3A31] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors"
-            >
+            <button @click="changePage(applications.current_page - 1)" :disabled="applications.current_page <= 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3F4F43] bg-white dark:bg-[#2D3A31] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors">
               Previous
             </button>
             <span class="px-3 py-1.5 font-medium text-gray-900 dark:text-white">
               Page {{ applications.current_page }} of {{ applications.last_page }}
             </span>
-            <button
-              @click="changePage(applications.current_page + 1)"
+            <button @click="changePage(applications.current_page + 1)"
               :disabled="applications.current_page >= applications.last_page"
-              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3F4F43] bg-white dark:bg-[#2D3A31] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors"
-            >
+              class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3F4F43] bg-white dark:bg-[#2D3A31] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors">
               Next
             </button>
           </div>
@@ -437,38 +430,19 @@
       </div>
 
       <!-- Application Form Modal -->
-      <ApplicationModal
-        :show="showModal"
-        :application="selectedApplication"
-        :strands="strands"
-        :school-years="schoolYears"
-        @close="showModal = false"
-        @saved="fetchApplications"
-      />
+      <ApplicationModal :show="showModal" :application="selectedApplication" :strands="strands"
+        :school-years="schoolYears" @close="showModal = false" @saved="fetchApplications" />
 
       <!-- Import Modal -->
-      <ImportApplicantsModal
-        :show="showImportModal"
-        @close="showImportModal = false"
-        @imported="fetchApplications"
-      />
+      <ImportApplicantsModal :show="showImportModal" @close="showImportModal = false" @imported="fetchApplications" />
 
       <!-- Review / View Application Modal -->
-      <ViewApplicationModal
-        :show="showViewModal"
-        :application="selectedApplication"
-        @close="showViewModal = false"
-        @changed="fetchApplications"
-      />
+      <ViewApplicationModal :show="showViewModal" :application="selectedApplication" @close="showViewModal = false"
+        @changed="fetchApplications" />
 
       <!-- Enroll Modal -->
-      <EnrollModal
-        :show="showEnrollModal"
-        :application="selectedApplication"
-        :sections="sections"
-        @close="showEnrollModal = false"
-        @enrolled="fetchApplications"
-      />
+      <EnrollModal :show="showEnrollModal" :application="selectedApplication" :sections="sections"
+        @close="showEnrollModal = false" @enrolled="fetchApplications" />
 
     </div>
   </AdminLayout>
@@ -492,7 +466,7 @@ const props = defineProps({
 
 const SortIcon = (props) => {
   const active = filters.sort_by === props.field
-  const dir    = filters.sort_dir
+  const dir = filters.sort_dir
 
   return h('svg', {
     class: [
@@ -580,10 +554,10 @@ const hasActiveFilters = computed(() => {
 const totalApplicationsCount = computed(() => {
   if (!counts.value) return 0
   return (counts.value.pending || 0) +
-         (counts.value.under_review || 0) +
-         (counts.value.approved || 0) +
-         (counts.value.enrolled || 0) +
-         (counts.value.needs_resubmission || 0)
+    (counts.value.under_review || 0) +
+    (counts.value.approved || 0) +
+    (counts.value.enrolled || 0) +
+    (counts.value.needs_resubmission || 0)
 })
 
 // ─── Lock helper — true if under_review by a *different* admin ──
@@ -696,7 +670,7 @@ const openEditModal = async (item) => {
     const { data } = await axios.get(`/admin/applicants/${item.id}`)
     selectedApplication.value = {
       ...data.applicant,
-      contacts:  data.contacts  || [],
+      contacts: data.contacts || [],
       documents: data.documents || [],
     }
     showModal.value = true
@@ -726,11 +700,11 @@ const exportApplicants = () => {
   // Build query string from current filters
   const params = new URLSearchParams()
 
-  if (filters.status)         params.set('status', filters.status)
-  if (filters.strand_id)      params.set('strand_id', filters.strand_id)
-  if (filters.grade_level)    params.set('grade_level', filters.grade_level)
+  if (filters.status) params.set('status', filters.status)
+  if (filters.strand_id) params.set('strand_id', filters.strand_id)
+  if (filters.grade_level) params.set('grade_level', filters.grade_level)
   if (filters.school_year_id) params.set('school_year_id', filters.school_year_id)
-  if (filters.search)         params.set('search', filters.search)
+  if (filters.search) params.set('search', filters.search)
 
   const qs = params.toString()
   const url = `/admin/applicants/export${qs ? '?' + qs : ''}`
