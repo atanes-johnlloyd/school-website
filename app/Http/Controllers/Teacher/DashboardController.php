@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
+use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
-use App\Models\ClassSchedule;
 use App\Models\ClassRoom;
+use App\Models\ClassSchedule;
+use App\Models\Quiz;
 use App\Models\Term;
 use Illuminate\Http\Request;
 
@@ -14,33 +17,65 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $teacher = $request->user()->teacher;
-
-        if (! $teacher) {
-            abort(403, 'No teacher profile linked to this account.');
-        }
+        abort_unless($teacher, 403, 'No teacher profile linked to this account.');
 
         $activeTerm = Term::where('is_active', true)->first();
 
-        // ─── Class scope (teacher's classes for the active term) ───
+        // ─── Base class scope ────────────────────────────
         $classQuery = ClassRoom::query()
             ->where('teacher_id', $teacher->id)
             ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id));
 
         $classroomIds = $classQuery->pluck('id');
 
-        // ─── Counts ───
+        // ─── Stats ───────────────────────────────────────
+        $studentCount = \App\Models\Student::whereHas('classroom', function ($q) use ($classroomIds) {
+            $q->whereIn('classes.id', $classroomIds);
+        })->count();
+
+        $pendingGrading = AssignmentSubmission::query()
+            ->whereHas('assignment', fn ($q) => $q->whereIn('class_id', $classroomIds))
+            ->whereIn('status', ['submitted', 'late'])
+            ->count();
+
+        $activeTasks = Assignment::query()
+            ->whereIn('class_id', $classroomIds)
+            ->where('is_published', true)
+            ->where(fn ($q) => $q->whereNull('due_at')->orWhere('due_at', '>', now()))
+            ->count()
+            +
+            Quiz::query()
+            ->whereIn('class_id', $classroomIds)
+            ->where('is_published', true)
+            ->where(fn ($q) => $q->whereNull('available_until')->orWhere('available_until', '>', now()))
+            ->count();
+
         $stats = [
-            'classes'         => $classroomIds->count(),   // keep the API key as "classes"
-            'students'        => \App\Models\Student::whereHas('classroom', function ($q) use ($classroomIds) {
-                $q->whereIn('classes.id', $classroomIds);
-            })->count(),
-            'pending_grading' => AssignmentSubmission::query()
-                ->whereHas('assignment', fn ($q) => $q->whereIn('class_id', $classroomIds))
-                ->whereIn('status', ['submitted', 'late'])
-                ->count(),
+            'classes'         => $classroomIds->count(),
+            'students'        => $studentCount,
+            'pending_grading' => $pendingGrading,
+            'active_tasks'    => $activeTasks,
         ];
 
-        // ─── Needs grading queue (top 10, oldest submissions first) ───
+        // ─── Class cards (for "Assigned Classes" section) ────
+        $classes = ClassRoom::query()
+            ->whereIn('id', $classroomIds)
+            ->with(['subject:id,code,name', 'section:id,name,grade_level'])
+            ->withCount('students')
+            ->get()
+            ->map(fn (ClassRoom $c) => [
+                'id'                 => $c->id,
+                'subject'            => $c->subject?->name,
+                'subject_code'       => $c->subject?->code,
+                'section'            => $c->section?->name,
+                'grade_level'        => $c->section?->grade_level,
+                'students_count'     => $c->students_count,
+                'weight_written_work'     => (float) $c->weight_written_work,
+                'weight_performance_task' => (float) $c->weight_performance_task,
+                'weight_quarterly_exam'   => (float) $c->weight_quarterly_exam,
+            ]);
+
+        // ─── Needs grading queue (top 10, oldest first) ──────
         $needsGrading = AssignmentSubmission::query()
             ->with([
                 'student.user:id,name',
@@ -62,11 +97,12 @@ class DashboardController extends Controller
                 'subject'       => $s->assignment?->classroom?->subject?->name,
                 'section'       => $s->assignment?->classroom?->section?->name,
                 'submitted_at'  => $s->submitted_at?->toIso8601String(),
+                'submitted_human' => $s->submitted_at?->diffForHumans(),
                 'is_late'       => $s->status === 'late',
             ]);
 
-        // ─── Today's schedule ───
-        $today = strtolower(now()->format('l')); // 'monday', 'tuesday', etc.
+        // ─── Today's schedule ────────────────────────────────
+        $today = strtolower(now()->format('l'));
 
         $todaySchedule = ClassSchedule::query()
             ->with([
@@ -80,35 +116,47 @@ class DashboardController extends Controller
             ->orderBy('time_start')
             ->get()
             ->map(fn (ClassSchedule $s) => [
-                'id'         => $s->id,
-                'subject'    => $s->classroom?->subject?->name,
+                'id'           => $s->id,
+                'subject'      => $s->classroom?->subject?->name,
                 'subject_code' => $s->classroom?->subject?->code,
-                'section'    => $s->classroom?->section?->name,
-                'room'       => $s->room?->name,
-                'time_start' => $s->time_start,
-                'time_end'   => $s->time_end,
+                'section'      => $s->classroom?->section?->name,
+                'room'         => $s->room?->name,
+                'time_start'   => substr($s->time_start, 0, 5),
+                'time_end'     => substr($s->time_end, 0, 5),
+            ]);
+
+        // ─── Recent announcements from my classes ────────────
+        $recentAnnouncements = Announcement::query()
+            ->whereIn('class_id', $classroomIds)
+            ->published()
+            ->active()
+            ->with(['classroom.subject:id,name', 'classroom.section:id,name'])
+            ->ordered()
+            ->limit(5)
+            ->get()
+            ->map(fn (Announcement $a) => [
+                'id'              => $a->id,
+                'title'           => $a->title,
+                'body_preview'    => \Str::limit(strip_tags($a->body), 140),
+                'is_pinned'       => (bool) $a->is_pinned,
+                'subject'         => $a->classroom?->subject?->name,
+                'section'         => $a->classroom?->section?->name,
+                'published_human' => $a->published_at?->diffForHumans(),
+                'published_at'    => $a->published_at?->toIso8601String(),
             ]);
 
         $payload = [
-            'stats'          => $stats,
-            'needs_grading'  => $needsGrading,
-            'today_schedule' => $todaySchedule,
-            'active_term'    => $activeTerm?->name,
-            'today'          => now()->format('l, F j, Y'),
+            'stats'                => $stats,
+            'classes'              => $classes,
+            'needs_grading'        => $needsGrading,
+            'today_schedule'       => $todaySchedule,
+            'recent_announcements' => $recentAnnouncements,
+            'active_term'          => $activeTerm?->name,
+            'today'                => now()->format('l, F j, Y'),
         ];
 
-        if ($request->wantsJson()) {
-            return response()->json($payload);
-        }
-
-        return \Inertia\Inertia::render('Teacher/Dashboard', $payload);
-
-        return response()->json([
-            'stats'          => $stats,
-            'needs_grading'  => $needsGrading,
-            'today_schedule' => $todaySchedule,
-            'active_term'    => $activeTerm?->name,
-            'today'          => now()->format('l, F j, Y'),
-        ]);
+        return $request->wantsJson()
+            ? response()->json($payload)
+            : \Inertia\Inertia::render('Teacher/Dashboard', $payload);
     }
 }

@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Term;
+
 class LessonController extends Controller
 {
     public function index(Request $request, ClassRoom $classroom)
@@ -110,6 +112,12 @@ class LessonController extends Controller
                 'is_published' => $lesson->is_published,
                 'created_at'   => $lesson->created_at?->toIso8601String(),
             ],
+            'attachments' => $lesson->attachments->map(fn ($a) => [
+                'id'        => $a->id,
+                'file_name' => $a->file_name,
+                'file_size' => $a->file_size,
+                'mime_type' => $a->mime_type,
+            ]),
         ];
 
         return $request->wantsJson()
@@ -134,6 +142,12 @@ class LessonController extends Controller
                 'position'     => $lesson->position,
                 'is_published' => $lesson->is_published,
             ],
+            'attachments' => $lesson->attachments->map(fn ($a) => [
+                'id'        => $a->id,
+                'file_name' => $a->file_name,
+                'file_size' => $a->file_size,
+                'mime_type' => $a->mime_type,
+            ]),
         ]);
     }
 
@@ -153,12 +167,11 @@ class LessonController extends Controller
     {
         abort_unless($lesson->classroom->isTaughtBy($request->user()), 403);
 
-        $classroomId = $lesson->class_id;
         $lesson->delete();
 
         return $request->wantsJson()
             ? response()->json(['message' => 'Material deleted.'])
-            : redirect()->route('teacher.classes.lessons.index', $classroomId)
+            : redirect()->route('teacher.resources.index')
                         ->with('success', 'Material deleted.');
     }
 
@@ -168,5 +181,68 @@ class LessonController extends Controller
         abort_unless(Storage::exists($attachment->file_path), 404);
 
         return Storage::download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
+     * Cross-class lessons hub — every learning material the teacher owns.
+     */
+    public function allResources(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $classrooms = ClassRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->with(['subject:id,code,name', 'section:id,name'])
+            ->withCount('lessons')
+            ->orderBy('section_id')
+            ->get();
+
+        $classroomIds = $classrooms->pluck('id');
+
+        $lessons = Lesson::query()
+            ->whereIn('class_id', $classroomIds)
+            ->with([
+                'classroom:id,subject_id,section_id',
+                'classroom.subject:id,name,code',
+                'classroom.section:id,name',
+                'attachments',
+            ])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($l) => [
+                'id'                => $l->id,
+                'class_id'          => $l->class_id,
+                'title'             => $l->title,
+                'body_preview'      => \Str::limit(strip_tags($l->body), 140),
+                'position'          => $l->position,
+                'is_published'      => (bool) $l->is_published,
+                'created_at'        => $l->created_at?->toIso8601String(),
+                'attachments_count' => $l->attachments->count(),
+                'subject'           => $l->classroom?->subject?->name,
+                'subject_code'      => $l->classroom?->subject?->code,
+                'section'           => $l->classroom?->section?->name,
+            ]);
+
+        return Inertia::render('Teacher/Lessons/Index', [
+            'lessons' => $lessons,
+            'classrooms' => $classrooms->map(fn ($c) => [
+                'id'            => $c->id,
+                'subject'       => $c->subject?->name,
+                'subject_code'  => $c->subject?->code,
+                'section'       => $c->section?->name,
+                'lessons_count' => $c->lessons_count,
+            ]),
+            'stats' => [
+                'total'       => $lessons->count(),
+                'published'   => $lessons->where('is_published', true)->count(),
+                'draft'       => $lessons->where('is_published', false)->count(),
+                'attachments' => $lessons->sum('attachments_count'),
+            ],
+            'active_term' => $activeTerm?->name,
+        ]);
     }
 }

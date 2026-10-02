@@ -1,14 +1,14 @@
 <template>
-  <Head :title="`Edit ${assignment.title} - Salawag LMS`" />
+  <Head :title="`Edit ${lesson.title} - Salawag LMS`" />
 
-  <AuthenticatedLayout searchPlaceholder="Search assignments, tasks, rubric..">
+  <AuthenticatedLayout searchPlaceholder="Search lessons, resources..">
 
     <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
 
       <!-- HERO -->
       <div v-observe
         class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[220px] flex flex-col justify-center anim-fade-down">
-        <img :src="heroImage" alt="Edit Assignment Background"
+        <img :src="heroImage" alt="Edit Lesson Background"
           class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
         <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply"></div>
 
@@ -19,32 +19,32 @@
               Edit Mode
             </span>
             <span class="bg-white/20 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-[11px] md:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
-              <Icon icon="book-open" size="xs" />
+              <Icon icon="academic-cap" size="xs" />
               {{ classroom?.subject || '—' }}
               <span v-if="classroom?.section"> • {{ classroom.section }}</span>
             </span>
-            <span :class="assignment.is_published
+            <span :class="lesson.is_published
               ? 'bg-emerald-500/90 text-white'
               : 'bg-slate-200/90 text-slate-800'"
               class="text-[10px] sm:text-[11px] md:text-xs font-black uppercase tracking-wider px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
-              <Icon :icon="assignment.is_published ? 'check-circle' : 'edit'" size="xs" />
-              {{ assignment.is_published ? 'Published' : 'Draft' }}
+              <Icon :icon="lesson.is_published ? 'check-circle' : 'edit'" size="xs" />
+              {{ lesson.is_published ? 'Published' : 'Draft' }}
             </span>
           </div>
 
           <div class="space-y-1.5 sm:space-y-2 max-w-3xl">
             <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              {{ assignment.title || 'Edit Assignment' }}
+              {{ lesson.title || 'Edit Lesson' }}
             </h2>
             <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
-              Update the task brief, category, due date, or publication status.
+              Update the lesson content, order, or publication status.
             </p>
           </div>
 
           <div class="flex flex-wrap gap-2 pt-2">
-            <BackButton fallback="teacher.tasks.index"
+            <BackButton fallback="teacher.resources.index"
               class="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white border border-white/20 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all">
-              Back
+              Back to Resources
             </BackButton>
           </div>
         </div>
@@ -58,7 +58,7 @@
 
         <div class="space-y-1">
           <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Assignment Title <span class="text-rose-500">*</span>
+            Lesson Title <span class="text-rose-500">*</span>
           </label>
           <input v-model="form.title" type="text"
             class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] transition-all" />
@@ -67,54 +67,55 @@
 
         <div class="space-y-1">
           <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Category <span class="text-rose-500">*</span>
+            Lesson Body <span class="text-rose-500">*</span>
           </label>
-          <select v-model="form.category"
-            class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] appearance-none cursor-pointer transition-all">
-            <option value="written_work">Written Work (WW)</option>
-            <option value="performance_task">Performance Task (PT)</option>
-            <option value="quarterly_exam">Quarterly Exam (QE)</option>
-          </select>
-          <p v-if="form.errors.category" class="text-rose-600 dark:text-rose-400 text-xs font-semibold mt-1">{{ form.errors.category }}</p>
-        </div>
-
-        <div class="space-y-1">
-          <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Instructions
-          </label>
-          <textarea v-model="form.instructions" rows="5"
-            class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl p-4 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] transition-all"></textarea>
+          <textarea v-model="form.body" rows="10"
+            class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl p-4 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] transition-all resize-y"></textarea>
+          <p v-if="form.errors.body" class="text-rose-600 dark:text-rose-400 text-xs font-semibold mt-1">{{ form.errors.body }}</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Due Date & Time <span class="text-rose-500">*</span>
+              Position (order)
             </label>
-            <input v-model="form.due_at" type="datetime-local"
+            <input v-model.number="form.position" type="number" min="0"
               class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] transition-all" />
-            <p v-if="form.errors.due_at" class="text-rose-600 dark:text-rose-400 text-xs font-semibold mt-1">{{ form.errors.due_at }}</p>
           </div>
 
           <div class="space-y-1">
             <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Max Points <span class="text-rose-500">*</span>
+              Publish Status
             </label>
-            <input v-model="form.points" type="number" min="1"
-              class="w-full bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#005506] dark:focus:ring-[#86EFAC] transition-all" />
-            <p v-if="form.errors.points" class="text-rose-600 dark:text-rose-400 text-xs font-semibold mt-1">{{ form.errors.points }}</p>
+            <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-4 py-3 w-full">
+              <input type="checkbox" v-model="form.is_published" class="rounded border-slate-300 text-[#005506] focus:ring-[#005506]" />
+              Published (visible to students)
+            </label>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-4 pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
-          <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
-            <input type="checkbox" v-model="form.allow_late" class="rounded border-slate-300 text-[#005506] focus:ring-[#005506]" />
-            Allow late submissions
+        <!-- Existing attachments (read-only summary) -->
+        <div v-if="attachments.length" class="space-y-2 pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
+          <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Existing Attachments ({{ attachments.length }})
           </label>
-          <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
-            <input type="checkbox" v-model="form.is_published" class="rounded border-slate-300 text-[#005506] focus:ring-[#005506]" />
-            Published (visible to students)
-          </label>
+          <ul class="space-y-1.5">
+            <li v-for="a in attachments" :key="a.id"
+              class="flex items-center justify-between gap-2 bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl px-3 py-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <Icon icon="paper-clip" size="xs" class="text-emerald-700 dark:text-[#86EFAC] shrink-0" />
+                <span class="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                  {{ a.file_name || 'Attachment' }}
+                </span>
+              </div>
+              <span class="text-[10px] font-semibold text-slate-400 shrink-0">
+                {{ formatBytes(a.file_size) }}
+              </span>
+            </li>
+          </ul>
+          <p class="text-[10px] text-slate-400 font-medium">
+            To add or remove attachments, edit the lesson via the material manager.
+          </p>
         </div>
 
         <!-- Actions + Danger -->
@@ -122,12 +123,12 @@
           <button type="button" @click="destroy" :disabled="form.processing"
             class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 transition-colors self-start sm:self-auto flex items-center gap-1.5 disabled:opacity-60">
             <Icon icon="trash" size="xs" />
-            Delete Assignment
+            Delete Lesson
           </button>
 
           <div class="flex items-center gap-2">
-            <BackButton fallback="teacher.tasks.index"
-              class="px-5 py-2.5 text-slate-600 hover:text-slate-800 text-xs font-bold transition-colors inline-flex items-center gap-1.5">
+            <BackButton fallback="teacher.resources.index"
+              class="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5">
               Cancel
             </BackButton>
             <button type="submit" :disabled="form.processing"
@@ -144,34 +145,39 @@
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
-import heroImage from '../../../../assets/img/local/assignment.png'
 import BackButton from '@/Components/BackButton.vue'
+import heroImage from '../../../../assets/img/local/lessons-hero.jpg'
 
 const props = defineProps({
-  classroom:  { type: Object, default: () => ({}) },
-  assignment: { type: Object, default: () => ({}) },
+  classroom: { type: Object, default: () => ({}) },
+  lesson:    { type: Object, default: () => ({}) },
+  attachments: { type: Array, default: () => [] },
 })
 
 const form = useForm({
-  title:        props.assignment.title ?? '',
-  category:     props.assignment.category ?? 'written_work',
-  instructions: props.assignment.instructions ?? '',
-  due_at:       props.assignment.due_at ?? '',
-  points:       props.assignment.points ?? 100,
-  allow_late:   props.assignment.allow_late ?? true,
-  is_published: props.assignment.is_published ?? false,
+  title:        props.lesson.title ?? '',
+  body:         props.lesson.body ?? '',
+  position:     props.lesson.position ?? 0,
+  is_published: props.lesson.is_published ?? false,
 })
 
 function submit() {
-  form.put(route('teacher.assignments.update', props.assignment.id))
+  form.put(route('teacher.lessons.update', props.lesson.id))
 }
 
 function destroy() {
-  if (!confirm('Delete this assignment? This action cannot be undone.')) return
-  form.delete(route('teacher.assignments.destroy', props.assignment.id))
+  if (!confirm('Delete this lesson? This cannot be undone.')) return
+  form.delete(route('teacher.lessons.destroy', props.lesson.id))
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '—'
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i]
 }
 
 const vObserve = {

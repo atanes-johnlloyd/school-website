@@ -38,7 +38,7 @@
             </p>
           </div>
 
-          <!-- New Assignment picker -->
+          <!-- New Assignment class picker -->
           <div class="flex flex-wrap gap-2 pt-2">
             <div class="relative">
               <button @click="showClassPicker = !showClassPicker"
@@ -133,7 +133,9 @@
         class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-3"
         style="animation-delay: 300ms;">
 
+        <!-- Row 1: Class + status -->
         <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+          <!-- Class selector -->
           <div class="relative w-full lg:w-72 shrink-0">
             <select v-model="classFilter"
               class="w-full bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-100 text-xs font-extrabold px-3.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] appearance-none cursor-pointer pr-8 truncate">
@@ -145,6 +147,7 @@
             <Icon icon="chevron-down" size="xs" class="absolute right-3 top-3.5 text-slate-400 pointer-events-none" />
           </div>
 
+          <!-- Status pills -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
             <button v-for="f in statusFilters" :key="f.id" @click="statusFilter = f.id"
               :class="[
@@ -158,6 +161,7 @@
           </div>
         </div>
 
+        <!-- Row 2: Category -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 border-t border-slate-100 dark:border-[#3F4F43]">
           <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0 pr-1">Category</span>
           <button v-for="f in categoryFilters" :key="f.id" @click="categoryFilter = f.id"
@@ -175,7 +179,7 @@
       <!-- MAIN LAYOUT: LIST + DRAWER -->
       <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start">
 
-        <!-- LEFT: LIST -->
+        <!-- LEFT: ASSIGNMENT LIST -->
         <div class="flex-1 min-w-0 space-y-4 w-full">
 
           <div v-if="filteredAssignments.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,6 +194,7 @@
               ]">
 
               <div class="space-y-3">
+                <!-- Tags -->
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span :class="categoryBadgeClass(a.category)">
@@ -207,15 +212,18 @@
                   </span>
                 </div>
 
+                <!-- Class context -->
                 <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                   <Icon icon="academic-cap" size="xs" />
                   <span class="truncate">{{ a.subject }} • {{ a.section }}</span>
                 </div>
 
+                <!-- Title -->
                 <h4 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-snug line-clamp-2">
                   {{ a.title }}
                 </h4>
 
+                <!-- Meta -->
                 <div class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2 text-xs">
                   <div class="flex items-center justify-between text-slate-600 dark:text-slate-300 font-semibold">
                     <span class="flex items-center gap-1.5">
@@ -232,7 +240,9 @@
                       <Icon icon="users" size="xs" class="text-slate-400" />
                       Turn-ins
                     </span>
-                    <span class="text-slate-800 dark:text-slate-200 font-bold">{{ a.submissions_count }}</span>
+                    <span class="text-slate-800 dark:text-slate-200 font-bold">
+                      {{ a.submissions_count }}
+                    </span>
                   </div>
 
                   <div v-if="a.pending_count > 0" class="flex items-center justify-between font-bold">
@@ -240,7 +250,9 @@
                       <Icon icon="alert-triangle" size="xs" />
                       Pending grading
                     </span>
-                    <span class="text-rose-700 dark:text-rose-400 font-black">{{ a.pending_count }}</span>
+                    <span class="text-rose-700 dark:text-rose-400 font-black">
+                      {{ a.pending_count }}
+                    </span>
                   </div>
 
                   <div v-else-if="a.graded_count > 0" class="flex items-center justify-between font-bold">
@@ -248,11 +260,14 @@
                       <Icon icon="check-circle" size="xs" />
                       All graded
                     </span>
-                    <span class="text-emerald-700 dark:text-[#86EFAC] font-black">{{ a.graded_count }}</span>
+                    <span class="text-emerald-700 dark:text-[#86EFAC] font-black">
+                      {{ a.graded_count }}
+                    </span>
                   </div>
                 </div>
               </div>
 
+              <!-- Actions -->
               <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
                 <button v-if="a.pending_count > 0"
                   @click="openDrawer(a)"
@@ -283,6 +298,7 @@
             </div>
           </div>
 
+          <!-- EMPTY -->
           <div v-else
             class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-12 shadow-sm border border-dashed border-slate-300 dark:border-[#3F4F43] text-center space-y-3">
             <Icon icon="clipboard-list" size="xl" class="text-slate-400 mx-auto" />
@@ -302,6 +318,7 @@
 
             <div class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200 dark:border-[#3F4F43] space-y-4">
 
+              <!-- Header -->
               <div class="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#3F4F43]">
                 <div class="min-w-0">
                   <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">GRADING QUEUE</span>
@@ -318,11 +335,13 @@
                 </button>
               </div>
 
+              <!-- Loading -->
               <div v-if="drawerLoading" class="flex flex-col items-center justify-center py-12 space-y-3">
                 <div class="w-8 h-8 border-4 border-emerald-200 dark:border-emerald-900/60 border-t-[#005506] dark:border-t-[#86EFAC] rounded-full animate-spin"></div>
                 <p class="text-xs font-bold text-slate-500 dark:text-slate-400">Loading submissions…</p>
               </div>
 
+              <!-- Empty -->
               <div v-else-if="!drawerSubmissions.length"
                 class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-8 text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-2">
                 <Icon icon="users" size="lg" class="text-slate-400 mx-auto" />
@@ -330,7 +349,9 @@
                 <p class="text-[11px] text-slate-500 dark:text-slate-400">Students haven't turned anything in yet.</p>
               </div>
 
+              <!-- Submission -->
               <template v-else>
+                <!-- Queue nav -->
                 <div class="flex items-center justify-between bg-[#F9F7F1] dark:bg-[#232D26] p-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43]">
                   <button @click="prevInQueue" :disabled="drawerIndex === 0"
                     class="w-8 h-8 rounded-lg bg-white dark:bg-[#2D3A31] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
@@ -350,6 +371,7 @@
                   </button>
                 </div>
 
+                <!-- Student -->
                 <div v-if="currentSubmission"
                   class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between gap-2">
                   <div class="flex items-center gap-2.5 min-w-0">
@@ -372,6 +394,7 @@
                   </span>
                 </div>
 
+                <!-- Submission content -->
                 <div class="space-y-2">
                   <div v-if="currentSubmission?.text_content"
                     class="bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 max-h-32 overflow-auto space-y-1">
@@ -397,6 +420,7 @@
                   </div>
                 </div>
 
+                <!-- Grade form -->
                 <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
                   <div class="space-y-1">
                     <label class="block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -434,6 +458,7 @@
                   </div>
                 </div>
 
+                <!-- Footer -->
                 <div class="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-semibold pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
                   <span>{{ pendingInQueue }} pending in queue</span>
                   <Link :href="route('teacher.assignments.show', drawerAssignment.id)"
@@ -461,6 +486,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
 
+/* ═══════════════════════════════════════════════════════ */
 const props = defineProps({
   assignments: { type: Array,  default: () => [] },
   classrooms:  { type: Array,  default: () => [] },
@@ -468,6 +494,7 @@ const props = defineProps({
   active_term: { type: String, default: null },
 })
 
+/* ─── Filters ─────────────────────────────────────────── */
 const classFilter    = ref('all')
 const statusFilter   = ref('all')
 const categoryFilter = ref('all')
@@ -497,8 +524,10 @@ const filteredAssignments = computed(() => {
   })
 })
 
+/* ─── New Assignment picker ───────────────────────────── */
 const showClassPicker = ref(false)
 
+/* ─── Drawer state ────────────────────────────────────── */
 const drawerAssignment  = ref(null)
 const drawerSubmissions = ref([])
 const drawerIndex       = ref(0)
@@ -526,6 +555,7 @@ async function openDrawer(assignment) {
       { headers: { Accept: 'application/json' } }
     )
 
+    // Filter out students with no submission and sort ungraded first
     const list = (data.submissions || [])
       .filter(s => s.status && s.status !== 'not_submitted')
       .sort((a, b) => {
@@ -581,6 +611,7 @@ async function saveGrade(advance = false) {
   gradeForm.put(route('teacher.submissions.grade', submission.id), {
     preserveScroll: true,
     onSuccess: () => {
+      // Update local copy so the UI reflects the grade immediately
       const idx = drawerSubmissions.value.findIndex(s => s.id === submission.id)
       if (idx !== -1) {
         drawerSubmissions.value[idx] = {
@@ -592,6 +623,7 @@ async function saveGrade(advance = false) {
         }
       }
       if (advance) {
+        // Advance to the next ungraded or the next item
         const nextUngraded = drawerSubmissions.value.findIndex(
           (s, i) => i > drawerIndex.value && s.graded_at === null
         )
@@ -605,6 +637,7 @@ async function saveGrade(advance = false) {
   })
 }
 
+/* ─── Helpers ─────────────────────────────────────────── */
 function categoryLabel(cat) {
   return {
     written_work:     'Written Work',
@@ -653,6 +686,7 @@ function formatShort(v) {
   } catch { return '—' }
 }
 
+/* ─── Animations ──────────────────────────────────────── */
 const vObserve = {
   mounted(el) {
     el.classList.add('not-visible')
@@ -676,6 +710,7 @@ const vObserve = {
 .is-animated.anim-fade-down { animation: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .is-animated.anim-slide-up { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+/* Drawer slide animation */
 .drawer-slide-enter-active {
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);

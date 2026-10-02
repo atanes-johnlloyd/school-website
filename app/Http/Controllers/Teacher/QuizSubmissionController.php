@@ -72,7 +72,7 @@ class QuizSubmissionController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Teacher/Quizzes/Submissions', $payload);
+            : Inertia::render('Teacher/QuizHub/Submissions', $payload);
     }
 
     /**
@@ -126,7 +126,7 @@ class QuizSubmissionController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Teacher/Quizzes/AttemptReview', $payload);
+            : Inertia::render('Teacher/QuizHub/AttemptReview', $payload);
     }
 
     /**

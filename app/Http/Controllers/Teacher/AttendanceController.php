@@ -10,6 +10,7 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\Term;
 
 class AttendanceController extends Controller
 {
@@ -218,5 +219,144 @@ class AttendanceController extends Controller
             'excused'         => $excused,
             'attendance_rate' => $rate,
         ];
+    }
+
+    /**
+     * Cross-class attendance overview — the teacher's landing hub.
+     */
+    public function overview(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $classrooms = ClassRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->with([
+                'subject:id,code,name',
+                'section:id,name',
+                'term:id,name',
+                'schedules.room:id,code,name,building',
+            ])
+            ->orderBy('section_id')
+            ->get();
+
+        if ($classrooms->isEmpty()) {
+            return Inertia::render('Teacher/DailyAttendance/Index', [
+                'classrooms'      => [],
+                'classroom'       => null,
+                'date'            => null,
+                'students'        => [],
+                'stats'           => null,
+                'weekly_sessions' => [],
+                'today'           => now()->format('l, F j, Y'),
+                'active_term'     => $activeTerm?->name,
+            ]);
+        }
+
+        $selectedId = (int) $request->input('class_id', $classrooms->first()->id);
+        $classroom  = $classrooms->firstWhere('id', $selectedId) ?? $classrooms->first();
+
+        $date = $request->input('date', now()->toDateString());
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $date = now()->toDateString();
+        }
+
+        // Existing attendance for the selected date
+        $existing = AttendanceRecord::query()
+            ->forClass($classroom->id)
+            ->forDate($date)
+            ->get()
+            ->keyBy('student_id');
+
+        $students = $classroom->students()
+            ->with('user:id,name')
+            ->orderBy('lrn')
+            ->get()
+            ->map(fn ($s) => [
+                'id'        => $s->id,
+                'name'      => $s->user?->name,
+                'lrn'       => $s->lrn,
+                'sex'       => $s->sex,
+                'status'    => $existing->get($s->id)?->status,
+                'notes'     => $existing->get($s->id)?->notes,
+                'marked_at' => $existing->get($s->id)?->updated_at?->toIso8601String(),
+            ]);
+
+        $byStatus = collect(['present', 'late', 'absent', 'excused'])
+            ->mapWithKeys(fn ($k) => [$k => $existing->where('status', $k)->count()]);
+
+        // Weekly trend (last 7 sessions with records)
+        $weeklySessions = AttendanceRecord::query()
+            ->forClass($classroom->id)
+            ->select(
+                'attendance_date',
+                DB::raw("SUM(status = 'present') as present"),
+                DB::raw("SUM(status = 'late')    as late"),
+                DB::raw("SUM(status = 'absent')  as absent"),
+                DB::raw("SUM(status = 'excused') as excused"),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('attendance_date')
+            ->orderByDesc('attendance_date')
+            ->limit(7)
+            ->get()
+            ->map(fn ($r) => [
+                'date'    => $r->attendance_date,
+                'present' => (int) $r->present,
+                'late'    => (int) $r->late,
+                'absent'  => (int) $r->absent,
+                'excused' => (int) $r->excused,
+                'total'   => (int) $r->total,
+            ])
+            ->reverse()
+            ->values();
+
+        // Sessions this month (for the SF-2 footer counter)
+        $monthlySessions = AttendanceRecord::query()
+            ->forClass($classroom->id)
+            ->whereMonth('attendance_date', now()->month)
+            ->whereYear('attendance_date', now()->year)
+            ->distinct('attendance_date')
+            ->count('attendance_date');
+
+        $firstSchedule = $classroom->schedules->first();
+
+        return Inertia::render('Teacher/DailyAttendance/Index', [
+            'classrooms' => $classrooms->map(fn ($c) => [
+                'id'      => $c->id,
+                'subject' => $c->subject?->name,
+                'section' => $c->section?->name,
+            ]),
+            'classroom' => [
+                'id'           => $classroom->id,
+                'subject'      => $classroom->subject?->name,
+                'subject_code' => $classroom->subject?->code,
+                'section'      => $classroom->section?->name,
+                'term'         => $classroom->term?->name,
+                'room'         => $firstSchedule?->room?->name,
+                'building'     => $firstSchedule?->room?->building,
+                'schedule'     => $firstSchedule
+                    ? substr($firstSchedule->time_start, 0, 5) . ' – ' . substr($firstSchedule->time_end, 0, 5)
+                    : null,
+            ],
+            'date'    => $date,
+            'students'=> $students,
+            'stats'   => [
+                'enrolled' => $students->count(),
+                'present'  => (int) ($byStatus['present'] ?? 0),
+                'late'     => (int) ($byStatus['late']    ?? 0),
+                'excused'  => (int) ($byStatus['excused'] ?? 0),
+                'absent'   => (int) ($byStatus['absent']  ?? 0),
+                'unmarked' => max(0, $students->count() - $existing->count()),
+                'marked'   => $existing->count(),
+            ],
+            'weekly_sessions'   => $weeklySessions,
+            'monthly_sessions'  => $monthlySessions,
+            'today'             => now()->format('l, F j, Y'),
+            'active_term'       => $activeTerm?->name,
+        ]);
     }
 }

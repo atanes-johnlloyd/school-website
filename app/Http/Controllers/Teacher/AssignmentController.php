@@ -44,7 +44,7 @@ class AssignmentController extends Controller
             return response()->json($payload);
         }
 
-        return Inertia::render('Teacher/Assignments/Index', $payload);
+        return redirect()->route('teacher.tasks.index');
     }
 
     public function store(StoreAssignmentRequest $request, ClassRoom $classroom)
@@ -189,6 +189,77 @@ class AssignmentController extends Controller
                 'allow_late'   => $assignment->allow_late,
                 'is_published' => $assignment->is_published,
             ],
+        ]);
+    }
+
+    /**
+     * Cross-class assignments hub — every assignment the teacher owns.
+     */
+    public function allTasks(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $activeTerm = \App\Models\Term::where('is_active', true)->first();
+
+        $classroomIds = ClassRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->pluck('id');
+
+        $assignments = \App\Models\Assignment::query()
+            ->whereIn('class_id', $classroomIds)
+            ->with([
+                'classroom:id,subject_id,section_id',
+                'classroom.subject:id,code,name',
+                'classroom.section:id,name',
+            ])
+            ->withCount([
+                'submissions',
+                'submissions as pending_count' => fn ($q) => $q->whereIn('status', ['submitted', 'late']),
+                'submissions as graded_count'  => fn ($q) => $q->whereNotNull('graded_at'),
+            ])
+            ->orderByDesc('due_at')
+            ->get()
+            ->map(fn ($a) => [
+                'id'                => $a->id,
+                'title'             => $a->title,
+                'category'          => $a->category,
+                'due_at'            => $a->due_at?->toIso8601String(),
+                'points'            => (float) $a->points,
+                'is_published'      => (bool) $a->is_published,
+                'allow_late'        => (bool) $a->allow_late,
+                'submissions_count' => (int) $a->submissions_count,
+                'pending_count'     => (int) $a->pending_count,
+                'graded_count'      => (int) $a->graded_count,
+                'classroom_id'      => $a->class_id,
+                'subject'           => $a->classroom?->subject?->name,
+                'subject_code'      => $a->classroom?->subject?->code,
+                'section'           => $a->classroom?->section?->name,
+            ]);
+
+        $classrooms = ClassRoom::query()
+            ->whereIn('id', $classroomIds)
+            ->with(['subject:id,name,code', 'section:id,name'])
+            ->get()
+            ->map(fn ($c) => [
+                'id'      => $c->id,
+                'subject' => $c->subject?->name,
+                'code'    => $c->subject?->code,
+                'section' => $c->section?->name,
+            ]);
+
+        return \Inertia\Inertia::render('Teacher/Assignments/Index', [
+            'assignments' => $assignments,
+            'classrooms'  => $classrooms,
+            'stats'       => [
+                'total'             => $assignments->count(),
+                'published'         => $assignments->where('is_published', true)->count(),
+                'draft'             => $assignments->where('is_published', false)->count(),
+                'total_submissions' => $assignments->sum('submissions_count'),
+                'pending_grading'   => $assignments->sum('pending_count'),
+            ],
+            'active_term' => $activeTerm?->name,
         ]);
     }
 }

@@ -680,30 +680,25 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:teacher'])
         Route::get('/classes', [TeacherClassController::class, 'index'])->name('classes.index');
         Route::get('/classes/{classroom}', [TeacherClassController::class, 'show'])->name('classes.show');
 
-        // Quiz Hub & Exam Bank Route
-        Route::get('/quizzes', function () {
-            return Inertia::render('Teacher/QuizHub/Index');
-        })->name('quizzes.index');
+        // Quiz Hub & Exam Bank Route (cross-class)
+        Route::get('/quizzes', [\App\Http\Controllers\Teacher\QuizController::class, 'hub'])
+            ->name('quizzes.index');
 
         // Gradebook
-        Route::get('/gradebook', function () {
-            return Inertia::render('Teacher/Gradebook/Index');
-        })->name('gradebook.index');
+        Route::get('/gradebook', [\App\Http\Controllers\Teacher\GradebookController::class, 'index'])
+            ->name('gradebook.index');
 
         // Daily Attendance
-        Route::get('/attendance', function () {
-            return Inertia::render('Teacher/DailyAttendance/Index');
-        })->name('attendance.index');
+        Route::get('/attendance', [\App\Http\Controllers\Teacher\AttendanceController::class, 'overview'])
+            ->name('attendance.index');
 
-        // Assignments & Tasks
-        Route::get('/tasks', function () {
-            return Inertia::render('Teacher/Assignments/Index');
-        })->name('tasks.index');
+        // Assignments & Tasks Hub (cross-class)
+        Route::get('/tasks', [\App\Http\Controllers\Teacher\AssignmentController::class, 'allTasks'])
+            ->name('tasks.index');
 
-        // DepEd LR Resources
-        Route::get('/resources', function () {
-            return Inertia::render('Teacher/Lessons/Index');
-        })->name('resources.index');
+        // DepEd LR Resources (cross-class)
+        Route::get('/resources', [\App\Http\Controllers\Teacher\LessonController::class, 'allResources'])
+            ->name('resources.index');
 
         // Assignments
         Route::get(

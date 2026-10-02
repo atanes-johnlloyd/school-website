@@ -50,13 +50,24 @@ class QuestionBankController extends Controller
 
         $questions = $query->paginate($validated['per_page'] ?? 20);
 
+        $subjectIds = \App\Models\ClassRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->pluck('subject_id')
+            ->unique();
+
+        $subjects = \App\Models\Subject::query()
+            ->whereIn('id', $subjectIds)
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
         $payload = [
-            'questions' => $questions,
+            'questions'  => $questions,
             'categories' => Question::where('teacher_id', $teacher->id)
                 ->whereNotNull('category')
                 ->distinct()
                 ->orderBy('category')
                 ->pluck('category'),
+            'subjects'   => $subjects,
         ];
 
         return $request->wantsJson()

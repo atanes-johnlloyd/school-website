@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\Term;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Student;
 
 class ClassController extends Controller
 {
@@ -115,6 +116,20 @@ class ClassController extends Controller
             'students_count'    => $k->students_count,
         ]);
 
+        $totals = [
+            'classes' => ClassRoom::where('teacher_id', $teacher->id)
+                ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+                ->count(),
+            'students' => Student::whereHas('classroom', function ($q) use ($teacher, $activeTerm) {
+                $q->where('classes.teacher_id', $teacher->id);
+                if ($activeTerm) $q->where('classes.term_id', $activeTerm->id);
+            })->count(),
+            'assignments' => \App\Models\Assignment::whereHas('classroom', function ($q) use ($teacher, $activeTerm) {
+                $q->where('teacher_id', $teacher->id);
+                if ($activeTerm) $q->where('term_id', $activeTerm->id);
+            })->count(),
+        ];
+
         $payload = [
             'classes'    => $classes,
             'activeTerm' => $activeTerm?->name,
@@ -132,6 +147,7 @@ class ClassController extends Controller
                 'strands' => \App\Models\Strand::select('id', 'code', 'name')->orderBy('name')->get(),
                 'terms'   => Term::select('id', 'name')->orderByDesc('start_date')->get(),
             ],
+            'totals' => $totals,
         ];
 
         return $request->wantsJson()
@@ -143,7 +159,6 @@ class ClassController extends Controller
     {
         $teacher = $request->user()->teacher;
 
-        // Authorization: teacher must own this class
         if (! $teacher || $classroom->teacher_id !== $teacher->id) {
             abort(403);
         }
@@ -161,13 +176,20 @@ class ClassController extends Controller
                 'section'      => $classroom->section?->name,
                 'grade_level'  => $classroom->section?->grade_level,
                 'term'         => $classroom->term?->name,
-                'schedule'     => null, // TODO: from class_schedules
+                'schedule'     => null,
             ],
             'students' => $classroom->students->map(fn ($s) => [
-                'id'    => $s->id,
-                'name'  => $s->user?->name,
-                'lrn'   => $s->lrn,
-                'email' => $s->user?->email,
+                'id'             => $s->id,
+                'name'           => $s->user?->name,
+                'lrn'            => $s->lrn,
+                'email'          => $s->user?->email,
+                'sex'            => $s->sex,
+                'contact_number' => $s->contact_number,
+                'barangay'       => $s->barangay,
+                'status'         => $s->pivot?->status ?? 'active',
+                'enrolled_at'    => $s->pivot?->enrolled_at
+                    ? \Carbon\Carbon::parse($s->pivot->enrolled_at)->toIso8601String()
+                    : null,
             ]),
         ]);
     }

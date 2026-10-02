@@ -8,6 +8,8 @@ use App\Http\Requests\Teacher\UpdateQuizRequest;
 use App\Models\ClassRoom;
 use App\Models\Question;
 use App\Models\Quiz;
+use App\Models\Term;
+use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -50,7 +52,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Teacher/Quizzes/Index', $payload);
+            : Inertia::render('Teacher/QuizHub/Index', $payload);
     }
 
     /**
@@ -114,6 +116,7 @@ class QuizController extends Controller
                 'is_published'           => $quiz->is_published,
                 'classroom_id'           => $quiz->class_id,
                 'subject'                => $quiz->classroom?->subject?->name,
+                'subject_id'             => $quiz->classroom?->subject?->id,
                 'section'                => $quiz->classroom?->section?->name,
                 'total_points'           => $quiz->questions->sum('points'),
             ],
@@ -136,7 +139,7 @@ class QuizController extends Controller
 
         return $request->wantsJson()
             ? response()->json($payload)
-            : Inertia::render('Teacher/Quizzes/Show', $payload);
+            : Inertia::render('Teacher/QuizHub/Show', $payload);
     }
 
     /**
@@ -280,5 +283,114 @@ class QuizController extends Controller
         });
 
         return response()->json(['message' => 'Quiz questions updated.']);
+    }
+
+    /**
+     * Cross-class Quiz Hub — every quiz the teacher owns + bank summary.
+     */
+    public function hub(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $classroomIds = ClassRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->pluck('id');
+
+        $quizzes = Quiz::query()
+            ->whereIn('class_id', $classroomIds)
+            ->with([
+                'classroom:id,subject_id,section_id',
+                'classroom.subject:id,code,name',
+                'classroom.section:id,name',
+            ])
+            ->withCount(['questions', 'attempts'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Quiz $q) => [
+                'id'                 => $q->id,
+                'title'              => $q->title,
+                'description'        => $q->description,
+                'is_published'       => (bool) $q->is_published,
+                'time_limit_minutes' => $q->time_limit_minutes,
+                'passing_score'      => $q->passing_score !== null ? (float) $q->passing_score : null,
+                'available_from'     => $q->available_from?->toIso8601String(),
+                'available_until'    => $q->available_until?->toIso8601String(),
+                'questions_count'    => (int) $q->questions_count,
+                'attempts_count'     => (int) $q->attempts_count,
+                'total_points'       => (float) $q->questions()->sum('points'),
+                'classroom_id'       => $q->class_id,
+                'subject'            => $q->classroom?->subject?->name,
+                'subject_code'       => $q->classroom?->subject?->code,
+                'section'            => $q->classroom?->section?->name,
+                'created_at'          => $q->created_at?->toIso8601String(),
+            ]);
+
+        $classrooms = ClassRoom::query()
+            ->whereIn('id', $classroomIds)
+            ->with(['subject:id,name,code', 'section:id,name'])
+            ->withCount('quizzes')
+            ->get()
+            ->map(fn ($c) => [
+                'id'            => $c->id,
+                'subject'       => $c->subject?->name,
+                'subject_code'  => $c->subject?->code,
+                'section'       => $c->section?->name,
+                'quizzes_count' => (int) $c->quizzes_count,
+            ]);
+
+        $questionBase = Question::where('teacher_id', $teacher->id);
+        $questionTotal = (clone $questionBase)->count();
+        $byType = (clone $questionBase)
+            ->select('type', DB::raw('COUNT(*) as count'))
+            ->groupBy('type')
+            ->pluck('count', 'type');
+
+        $recentAttempts = QuizAttempt::query()
+            ->whereHas('quiz', fn ($q) => $q->whereIn('class_id', $classroomIds))
+            ->whereNotNull('submitted_at')
+            ->with([
+                'student.user:id,name',
+                'quiz' => function ($q) {
+                    $q->select('id', 'title', 'class_id')
+                    ->with(['classroom:id,subject_id', 'classroom.subject:id,name'])
+                    ->withSum('questions', 'points');
+                },
+            ])
+            ->orderByDesc('submitted_at')
+            ->limit(8)
+            ->get()
+            ->map(fn (QuizAttempt $a) => [
+                'id'              => $a->id,
+                'student_name'    => $a->student?->user?->name,
+                'quiz_id'         => $a->quiz_id,
+                'quiz_title'      => $a->quiz?->title,
+                'subject'         => $a->quiz?->classroom?->subject?->name,
+                'score'           => $a->score !== null ? (float) $a->score : null,
+                'total_points'    => (float) ($a->quiz?->questions_sum_points ?? 0),
+                'status'          => $a->status,
+                'submitted_at'    => $a->submitted_at?->toIso8601String(),
+                'submitted_human' => $a->submitted_at?->diffForHumans(),
+            ]);
+
+        return Inertia::render('Teacher/QuizHub/Index', [
+            'quizzes'    => $quizzes,
+            'classrooms' => $classrooms,
+            'questionStats' => [
+                'total'   => $questionTotal,
+                'by_type' => $byType,
+            ],
+            'stats' => [
+                'total'          => $quizzes->count(),
+                'published'      => $quizzes->where('is_published', true)->count(),
+                'draft'          => $quizzes->where('is_published', false)->count(),
+                'total_attempts' => $quizzes->sum('attempts_count'),
+            ],
+            'active_term' => $activeTerm?->name,
+            'recent_attempts' => $recentAttempts,
+        ]);
     }
 }
