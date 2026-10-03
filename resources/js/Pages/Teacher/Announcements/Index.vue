@@ -117,15 +117,23 @@
         style="animation-delay: 150ms;">
 
         <div class="flex flex-col lg:flex-row lg:items-center gap-3">
-          <!-- Class picker -->
-          <div class="relative w-full lg:w-72 shrink-0">
+          <!-- Class picker — MOBILE ONLY (desktop uses the right-side panel) -->
+          <div class="relative w-full lg:hidden">
             <select v-model="classFilter"
-              class="w-full bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-100 text-xs font-extrabold px-3.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] appearance-none cursor-pointer pr-8 truncate">
+              class="w-full bg-[#F9F7F1] dark:bg-[#232D26] text-slate-800 dark:text-slate-100 text-xs font-extrabold px-3.5 py-2.5 pr-16 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] appearance-none cursor-pointer truncate">
               <option value="all">All Classes ({{ announcements.length }})</option>
               <option v-for="c in classrooms" :key="c.id" :value="c.id">
                 {{ c.subject }} — {{ c.section }} ({{ c.announcements_count }})
               </option>
             </select>
+
+            <!-- Clear button — only shows when a class is selected -->
+            <button v-if="classFilter !== 'all'" type="button" @click="clearClassFilter"
+              class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-200 dark:bg-[#3F4F43] hover:bg-slate-300 dark:hover:bg-[#4a5c50] text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
+              title="Clear class filter">
+              <Icon icon="x" size="xs" />
+            </button>
+
             <Icon icon="chevron-down" size="xs" class="absolute right-3 top-3.5 text-slate-400 pointer-events-none" />
           </div>
 
@@ -243,9 +251,9 @@
                       class="w-8 h-8 rounded-xl border flex items-center justify-center transition-colors shrink-0 disabled:opacity-50">
                       <Icon icon="star" size="xs" />
                     </button>
-                    <Link :href="route('teacher.classes.announcements.index', a.classroom_id)"
+                    <Link :href="route('teacher.announcements.show', a.id)"
                       class="w-8 h-8 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#3F4F43] transition-colors"
-                      title="Open class feed">
+                      title="View announcement">
                       <Icon icon="eye" size="xs" />
                     </Link>
                     <button @click="confirmDelete = a"
@@ -278,8 +286,8 @@
           </div>
         </div>
 
-        <!-- RIGHT: CLASSES PANEL -->
-        <div class="lg:col-span-4 space-y-5 sm:space-y-6 w-full min-w-0">
+        <!-- RIGHT: CLASSES PANEL — DESKTOP ONLY (mobile uses the top dropdown) -->
+        <div class="hidden lg:block lg:col-span-4 space-y-5 sm:space-y-6 w-full min-w-0">
 
           <!-- Class summary -->
           <div v-observe class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] space-y-4"
@@ -505,11 +513,18 @@ const classFilter  = ref('all')
 const statusFilter = ref('all')
 const search       = ref('')
 
+/* Announcements after class filter only — used to drive
+   the status pill counts so they always match what's rendered. */
+const classScoped = computed(() => {
+  if (classFilter.value === 'all') return props.announcements
+  return props.announcements.filter(a => a.classroom_id === classFilter.value)
+})
+
 const statusFilters = computed(() => [
-  { id: 'all',       label: 'All',       count: props.announcements.length },
-  { id: 'pinned',    label: 'Pinned',    count: props.announcements.filter(a => a.is_pinned).length },
-  { id: 'published', label: 'Published', count: props.announcements.filter(a => a.is_published && !a.is_pinned).length },
-  { id: 'draft',     label: 'Drafts',    count: props.announcements.filter(a => !a.is_published).length },
+  { id: 'all',       label: 'All',       count: classScoped.value.length },
+  { id: 'pinned',    label: 'Pinned',    count: classScoped.value.filter(a => a.is_pinned).length },
+  { id: 'published', label: 'Published', count: classScoped.value.filter(a => a.is_published && !a.is_pinned).length },
+  { id: 'draft',     label: 'Drafts',    count: classScoped.value.filter(a => !a.is_published).length },
 ].filter(f => f.id === 'all' || f.count > 0))
 
 const filtered = computed(() => {

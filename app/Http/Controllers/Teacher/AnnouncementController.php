@@ -21,25 +21,33 @@ class AnnouncementController extends Controller
             ->ordered()
             ->get()
             ->map(fn (Announcement $a) => [
-                'id'           => $a->id,
-                'title'        => $a->title,
-                'body_preview' => \Str::limit(strip_tags($a->body), 120),
-                'is_pinned'    => $a->is_pinned,
-                'is_published' => $a->published_at !== null,
-                'published_at' => $a->published_at?->toIso8601String(),
-                'expires_at'   => $a->expires_at?->toIso8601String(),
-                'created_at'   => $a->created_at?->toIso8601String(),
-                'image_url' => $a->image_url,
+                'id'            => $a->id,
+                'title'         => $a->title,
+                'body'          => $a->body,
+                'body_preview'  => \Str::limit(strip_tags($a->body), 140),
+                'is_pinned'     => (bool) $a->is_pinned,
+                'is_published'  => $a->published_at !== null,
+                'published_at'  => $a->published_at?->toIso8601String(),
+                'published_human' => $a->published_at?->diffForHumans(),
+                'expires_at'    => $a->expires_at?->toIso8601String(),
+                'created_at'    => $a->created_at?->toIso8601String(),
+                'image_url'     => $a->image_url,
+                'author'        => $a->author?->name,
             ]);
 
-        return response()->json([
-            'classroom'     => [
-                'id'      => $classroom->id,
-                'subject' => $classroom->subject?->name,
-                'section' => $classroom->section?->name,
+        $payload = [
+            'classroom' => [
+                'id'           => $classroom->id,
+                'subject'      => $classroom->subject?->name,
+                'subject_code' => $classroom->subject?->code,
+                'section'      => $classroom->section?->name,
             ],
             'announcements' => $announcements,
-        ]);
+        ];
+
+        return $request->wantsJson()
+            ? response()->json($payload)
+            : Inertia::render('Teacher/Announcements/Show', $payload);
     }
 
     public function store(StoreAnnouncementRequest $request, ClassRoom $classroom)
@@ -81,24 +89,31 @@ class AnnouncementController extends Controller
     {
         abort_unless($announcement->classroom->isTaughtBy($request->user()), 403);
 
-        return response()->json([
+        $payload = [
             'announcement' => [
-                'id'           => $announcement->id,
-                'title'        => $announcement->title,
-                'body'         => $announcement->body,
-                'is_pinned'    => $announcement->is_pinned,
-                'is_published' => $announcement->published_at !== null,
-                'published_at' => $announcement->published_at?->toIso8601String(),
-                'expires_at'   => $announcement->expires_at?->toIso8601String(),
-                'created_at'   => $announcement->created_at?->toIso8601String(),
-                'classroom'    => [
-                    'id'      => $announcement->classroom->id,
-                    'subject' => $announcement->classroom->subject?->name,
-                    'section' => $announcement->classroom->section?->name,
-                ],
-                'image_url' => $announcement->image_url,
+                'id'              => $announcement->id,
+                'title'           => $announcement->title,
+                'body'            => $announcement->body,           // full body, not preview
+                'is_pinned'       => (bool) $announcement->is_pinned,
+                'is_published'    => $announcement->published_at !== null,
+                'published_at'    => $announcement->published_at?->toIso8601String(),
+                'published_human' => $announcement->published_at?->diffForHumans(),
+                'expires_at'      => $announcement->expires_at?->toIso8601String(),
+                'created_at'      => $announcement->created_at?->toIso8601String(),
+                'image_url'       => $announcement->image_url,
+                'author'          => $announcement->author?->name,
             ],
-        ]);
+            'classroom' => [
+                'id'           => $announcement->classroom->id,
+                'subject'      => $announcement->classroom->subject?->name,
+                'subject_code' => $announcement->classroom->subject?->code,
+                'section'      => $announcement->classroom->section?->name,
+            ],
+        ];
+
+        return $request->wantsJson()
+            ? response()->json($payload)
+            : Inertia::render('Teacher/Announcements/Show', $payload);
     }
 
     public function update(UpdateAnnouncementRequest $request, Announcement $announcement)

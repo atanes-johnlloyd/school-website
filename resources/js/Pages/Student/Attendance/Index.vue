@@ -160,7 +160,7 @@
           </div>
 
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link v-for="c in classes" :key="c.class_id" :href="route('student.classes.attendance.show', c.class_id)"
+            <Link v-for="c in classes" :key="c.class_id" :href="route('student.attendance.show', c.class_id)"
               class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-5 border border-slate-200/80 dark:border-[#3F4F43] flex flex-col justify-between space-y-4 hover:-translate-y-1 hover:shadow-md hover:border-[#004d08] dark:hover:border-[#86EFAC] transition-all group">
 
               <div class="space-y-3">

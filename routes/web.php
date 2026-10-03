@@ -1082,11 +1082,11 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
             [\App\Http\Controllers\Student\AttendanceController::class, 'index']
         )
             ->name('attendance.index');
+        
         Route::get(
-            '/classes/{classroom}/attendance',
+            '/attendance/{classroom}',
             [\App\Http\Controllers\Student\AttendanceController::class, 'show']
-        )
-            ->name('classes.attendance.show');
+        )->name('attendance.show');
 
         // ─── Quizzes ───
         Route::get(
