@@ -190,11 +190,11 @@
                 View Details
               </Link>
               <div class="grid grid-cols-2 gap-2">
-                <Link :href="route('teacher.classes.gradebook.show', klass.id)"
+                <Link :href="route('teacher.classes.show', { classroom: klass.id, tab: 'gradebook' })"
                   class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center gap-1.5 transition-colors">
                   Gradebook
                 </Link>
-                <Link :href="route('teacher.classes.attendance.index', klass.id)"
+                <Link :href="route('teacher.classes.show', { classroom: klass.id, tab: 'attendance' })"
                   class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center gap-1.5 transition-colors">
                   Attendance
                 </Link>

@@ -12,15 +12,19 @@ use App\Models\EntranceExamResult;
 use App\Models\SchoolYear;
 use App\Models\Track;
 use App\Services\ExamAssignmentService;
+use App\Services\Notification\NotificationService;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class EntranceExamController extends Controller
 {
-    public function __construct(protected ExamAssignmentService $assigner) {}
+    public function __construct(
+        protected ExamAssignmentService $assigner,
+        protected NotificationService $notifications,
+    ) {}
 
-    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(Request $request)
     {
         return Inertia::render('Admin/EntranceExams/Index', [
@@ -29,7 +33,6 @@ class EntranceExamController extends Controller
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -59,14 +62,12 @@ class EntranceExamController extends Controller
             $query->where('exam_name', 'like', '%' . $validated['search'] . '%');
         }
 
-        // Sort at SQL level (computed_status is not a column)
         if ($sortBy === 'status') {
             $query->orderBy('status', $sortDir)->orderBy('exam_date', 'desc');
         } else {
             $query->orderBy($sortBy, $sortDir);
         }
 
-        // Fetch, apply computed-status filter in PHP, then paginate manually
         $all = $query->get()->filter(function (EntranceExam $e) use ($validated) {
             if (empty($validated['status'])) return true;
             return strtolower($e->computed_status) === $validated['status'];
@@ -112,17 +113,19 @@ class EntranceExamController extends Controller
 
     public function store(StoreEntranceExamRequest $request)
     {
-        $exam = EntranceExam::create([
-            'school_year_id' => $request->validated('school_year_id'),
-            'track_id'       => $request->validated('track_id'),
-            'exam_name'      => $request->validated('exam_name'),
-            'exam_date'      => $request->validated('exam_date'),
-            'exam_time'      => strlen($t = $request->validated('exam_time')) === 5 ? $t . ':00' : $t,
-            'venue'          => $request->validated('venue'),
-            'max_capacity'   => $request->validated('max_capacity') ?? 30,
-            'grade_level'    => $request->validated('grade_level'),
-            'status'         => 'Upcoming',
-        ]);
+        $exam = AuditContext::wrap('schedule_exam', function () use ($request) {
+            return EntranceExam::create([
+                'school_year_id' => $request->validated('school_year_id'),
+                'track_id'       => $request->validated('track_id'),
+                'exam_name'      => $request->validated('exam_name'),
+                'exam_date'      => $request->validated('exam_date'),
+                'exam_time'      => strlen($t = $request->validated('exam_time')) === 5 ? $t . ':00' : $t,
+                'venue'          => $request->validated('venue'),
+                'max_capacity'   => $request->validated('max_capacity') ?? 30,
+                'grade_level'    => $request->validated('grade_level'),
+                'status'         => 'Upcoming',
+            ]);
+        });
 
         $autoAssigned = $this->assigner->autoAssignPending($exam);
 
@@ -172,7 +175,8 @@ class EntranceExamController extends Controller
                 'remaining'       => $exam->remainingCapacity(),
                 'status'          => $exam->computed_status,
             ],
-            'applicants' => $results,
+            'applicants'    => $results,
+            'passing_grade' => \App\Models\SystemSetting::passingGrade(),
         ]);
     }
 
@@ -188,13 +192,15 @@ class EntranceExamController extends Controller
             'max_capacity' => $exam->max_capacity,
         ];
 
-        $exam->update($request->validated());
+        AuditContext::wrap('update_exam', function () use ($exam, $request) {
+            $exam->update($request->validated());
+        });
 
         $result = $this->assigner->reassignAfterEdit($exam, $original);
 
         return response()->json([
-            'message' => 'Exam updated.',
-            'exam'    => $exam->fresh(),
+            'message'      => 'Exam updated.',
+            'exam'         => $exam->fresh(),
             'reassignment' => $result,
         ]);
     }
@@ -208,7 +214,9 @@ class EntranceExamController extends Controller
             return response()->json(['message' => 'Exam is already cancelled.'], 422);
         }
 
-        $result = $this->assigner->cancel($exam);
+        $result = AuditContext::wrap('cancel_exam', function () use ($exam) {
+            return $this->assigner->cancel($exam);
+        });
 
         return response()->json([
             'message' => 'Exam cancelled.',
@@ -224,34 +232,28 @@ class EntranceExamController extends Controller
             ], 422);
         }
 
-        $exam->delete();
+        AuditContext::wrap('delete_exam', function () use ($exam) {
+            $exam->delete();
+        });
 
         return response()->json(['message' => 'Exam deleted.']);
     }
 
-    /**
-     * Eligible applicants for assignment.
-     */
     public function eligibleApplicants(Request $request, EntranceExam $exam)
     {
-        $applicants = Applicant::query()
-            ->where('status', 'approved')
-            ->whereNull('converted_student_id')
-            ->whereDoesntHave('entranceExamResults', function ($q) {
-                $q->whereIn('result', ['Passed', 'Failed', 'Absent']);
-            })
+        $applicants = $this->assigner->eligibleApplicantsQuery($exam)
             ->with(['strand:id,name,track_id', 'strand.track:id,name'])
             ->get()
             ->map(fn (Applicant $a) => [
-                'id'                => $a->id,
-                'reference_number'  => $a->reference_number,
-                'full_name'         => $a->full_name,
-                'lrn'               => $a->lrn,
-                'email'             => $a->email,
+                'id'                 => $a->id,
+                'reference_number'   => $a->reference_number,
+                'full_name'          => $a->full_name,
+                'lrn'                => $a->lrn,
+                'email'              => $a->email,
                 'desired_grade_level'=> $a->desired_grade_level,
-                'strand'            => $a->strand?->name,
-                'track'             => $a->strand?->track?->name,
-                'current_exam_id'   => $a->currentExamResult?->entrance_exam_id,
+                'strand'             => $a->strand?->name,
+                'track'              => $a->strand?->track?->name,
+                'current_exam_id'    => $a->currentExamResult?->entrance_exam_id,
             ]);
 
         return response()->json(['applicants' => $applicants]);
@@ -263,7 +265,14 @@ class EntranceExamController extends Controller
             return response()->json(['message' => 'Cannot assign to a completed exam.'], 422);
         }
 
-        $result = $this->assigner->assign($exam, $request->validated('applicant_ids'));
+        $result = AuditContext::wrap('assign_to_exam', function () use ($exam, $request) {
+            return $this->assigner->assign($exam, $request->validated('applicant_ids'));
+        }, ['exam_id' => $exam->id]);
+
+        $assignedIds = $result['assigned_ids'] ?? [];
+        foreach (Applicant::whereIn('id', $assignedIds)->get() as $a) {
+            $this->sendAssignmentEmail($a, $exam);
+        }
 
         $msg = "{$result['assigned']} new, {$result['moved']} moved, {$result['skipped']} skipped.";
         if (! empty($result['errors'])) {
@@ -282,9 +291,11 @@ class EntranceExamController extends Controller
             'applicant_id' => ['required', 'integer', 'exists:applicants,id'],
         ]);
 
-        $deleted = EntranceExamResult::where('entrance_exam_id', $exam->id)
-            ->where('applicant_id', $validated['applicant_id'])
-            ->delete();
+        $deleted = AuditContext::wrap('remove_from_exam', function () use ($exam, $validated) {
+            return EntranceExamResult::where('entrance_exam_id', $exam->id)
+                ->where('applicant_id', $validated['applicant_id'])
+                ->delete();
+        }, ['exam_id' => $exam->id]);
 
         return response()->json([
             'success' => (bool) $deleted,
@@ -303,5 +314,33 @@ class EntranceExamController extends Controller
             'completed' => $all->where('computed_status', 'Completed')->count(),
             'cancelled' => EntranceExam::where('status', 'Cancelled')->count(),
         ];
+    }
+
+    protected function sendAssignmentEmail(Applicant $applicant, EntranceExam $exam): void
+    {
+        if (! $applicant->email) return;
+
+        try {
+            $this->notifications->send(
+                $applicant->email,
+                'Entrance Exam Scheduled - Salawag Senior High School',
+                'exam-scheduled',
+                [
+                    'student_name'   => $applicant->full_name,
+                    'control_number' => $applicant->reference_number,
+                    'exam_name'      => $exam->exam_name,
+                    'exam_date'      => $exam->exam_date->format('F d, Y'),
+                    'exam_time'      => $exam->exam_time,
+                    'venue'          => $exam->venue ?: 'TBA',
+                    'grade_level'    => $applicant->desired_grade_level,
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Exam assignment email failed', [
+                'applicant_id' => $applicant->id,
+                'exam_id'      => $exam->id,
+                'error'        => $e->getMessage(),
+            ]);
+        }
     }
 }

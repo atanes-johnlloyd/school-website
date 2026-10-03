@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use App\Traits\Auditable;
 class Student extends Model
 {
     use SoftDeletes;
     use HasFactory;
+    use Auditable;
     
     protected $fillable = [
         'user_id', 'lrn', 'sex', 'date_of_birth', 'contact_number',

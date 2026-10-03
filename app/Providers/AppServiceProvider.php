@@ -7,7 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use App\Services\Notification\MailNotificationService;
 use App\Services\Notification\NotificationService;
-
+use App\Listeners\RecordUserLogin;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,7 +20,8 @@ class AppServiceProvider extends ServiceProvider
     }
 
     public function boot(): void
-    {
+    {   
+        Event::listen(Login::class, RecordUserLogin::class);
         // Force HTTPS in production
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

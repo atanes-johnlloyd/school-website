@@ -9,7 +9,8 @@
     <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
 
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop searchPlaceholder="Search enrolled subjects, codes, or faculty..." @open-sidebar="isSidebarOpen = true"
+      <navbartop searchPlaceholder="Search enrolled subjects, codes, or faculty..."
+        @open-sidebar="isSidebarOpen = true"
         @font-size-changed="(size) => fontSizeMode = size" />
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
@@ -18,17 +19,13 @@
         <div
           class="animate-fade-in-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none p-4 sm:p-6 md:p-8">
 
-          <!-- Hero Background Image -->
           <img :src="heroImage" alt="Student Subjects Hero"
             class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <!-- Animated Green Overlay -->
           <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
 
-          <!-- Content Container -->
           <div class="relative z-10 w-full space-y-3 sm:space-y-4">
 
-            <!-- Top Badge Container -->
             <div class="flex flex-wrap items-center gap-2">
               <div
                 class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 py-1 rounded-full shadow-sm tracking-wide">
@@ -42,7 +39,6 @@
               </div>
             </div>
 
-            <!-- Icon + Title Row -->
             <div class="flex items-center gap-3 sm:gap-4">
               <div
                 class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
@@ -60,10 +56,7 @@
               </div>
             </div>
 
-            <!-- Stat Cards Row — full width, horizontally stretched -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-
-              <!-- Track -->
               <div
                 class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
                 <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
@@ -75,7 +68,6 @@
                 <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">Academic Strand</span>
               </div>
 
-              <!-- Total Subjects -->
               <div
                 class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
                 <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
@@ -86,7 +78,6 @@
                 </div>
                 <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">{{ activeTerm || '—' }}</span>
               </div>
-
             </div>
 
           </div>
@@ -95,36 +86,44 @@
         <!-- SEARCH & FILTER TOOLBAR -->
         <div
           class="animate-fade-slide-left rounded-3xl bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] p-4 sm:p-5 shadow-sm">
-          <form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-center gap-3 w-full">
+          <form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-stretch gap-3 w-full">
 
+            <!-- Search -->
             <div class="relative flex-1 w-full">
               <div
                 class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <Icon icon="search" size="md" />
               </div>
-              <input v-model="searchQuery" type="text" placeholder="Search subjects, codes, or teachers..."
-                class="w-full pl-11 pr-4 py-3 bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:bg-white dark:focus:bg-[#2D3A31] transition-all shadow-xs" />
+              <input
+                v-model="searchQuery"
+                @input="debouncedSearch"
+                type="text"
+                placeholder="Search subjects, codes, or teachers..."
+                class="w-full pl-11 pr-10 py-3 bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:bg-white dark:focus:bg-[#2D3A31] transition-all shadow-xs" />
+              <button
+                v-if="searchQuery"
+                type="button"
+                @click="clearSearch"
+                class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+                <Icon icon="x" size="xs" />
+              </button>
             </div>
 
-            <div class="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-              <button type="button" @click="setStrand(null)" :class="[
-                'px-4 py-3 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-xs active:scale-95',
-                selectedStrand === null
-                  ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26]'
-                  : 'bg-[#f5f7f2] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-[#e4ede1] dark:hover:bg-[#3F4F43]'
-              ]">All</button>
-              <button v-for="s in strands" :key="s.id" type="button" @click="setStrand(s.id)" :class="[
-                'px-4 py-3 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-xs active:scale-95',
-                selectedStrand === s.id
-                  ? 'bg-[#004d08] dark:bg-[#86EFAC] text-white dark:text-[#232D26]'
-                  : 'bg-[#f5f7f2] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-[#e4ede1] dark:hover:bg-[#3F4F43]'
-              ]">{{ s.code || s.name }}</button>
+            <!-- Sort -->
+            <div class="relative w-full sm:w-56 shrink-0">
+              <select
+                v-model="sortBy"
+                @change="executeSearch"
+                class="w-full appearance-none bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl pl-4 pr-10 py-3 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] cursor-pointer shadow-xs">
+                <option value="subject">Subject (A–Z)</option>
+                <option value="teacher">Teacher (A–Z)</option>
+                <option value="created_at">Recently Added</option>
+              </select>
+              <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <Icon icon="chevron-down" size="xs" />
+              </div>
             </div>
 
-            <button type="submit"
-              class="w-full sm:w-auto px-6 py-3 bg-[#004d08] dark:bg-[#86EFAC] hover:bg-[#003805] text-white dark:text-[#232D26] text-xs font-bold rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95">
-              <span>Search</span>
-            </button>
           </form>
         </div>
 
@@ -236,37 +235,55 @@ import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/studentsubject.png'
 
 const props = defineProps({
-  classes: { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0 }) },
-  filters: { type: Object, default: () => ({}) },
-  activeTerm: { type: String, default: null },
-  filterOptions: { type: Object, default: () => ({ strands: [], terms: [] }) },
+  classes:       { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0 }) },
+  filters:       { type: Object, default: () => ({}) },
+  activeTerm:    { type: String, default: null },
+  studentStrand: { type: String, default: null },
+  filterOptions: { type: Object, default: () => ({ terms: [] }) },
 })
 
 const isSidebarOpen = ref(false)
-const fontSizeMode = ref('base')
+const fontSizeMode  = ref('base')
 
 const searchQuery = ref(props.filters?.search || '')
-const selectedStrand = ref(props.filters?.strand_id ?? null)
+const sortBy      = ref(props.filters?.sort || 'subject')
 
+/* ─── Data ────────────────────────────────────────────── */
 const classList = computed(() => props.classes?.data ?? [])
-const strands = computed(() => props.filterOptions?.strands ?? [])
+
+/**
+ * Only show strands the student actually has classes in.
+ * Scoped to the currently loaded page of the paginator — for a
+ * fully accurate list across all pages, the backend should also
+ * pass a `used_strands` prop. (See backend snippet at bottom.)
+ */
+
 
 const pagination = computed(() => ({
   current_page: props.classes?.current_page ?? 1,
-  last_page: props.classes?.last_page ?? 1,
-  total: props.classes?.total ?? 0,
-  from: props.classes?.from ?? 0,
-  to: props.classes?.to ?? 0,
-  links: props.classes?.links ?? [],
+  last_page:    props.classes?.last_page ?? 1,
+  total:        props.classes?.total ?? 0,
+  from:         props.classes?.from ?? 0,
+  to:           props.classes?.to ?? 0,
+  links:        props.classes?.links ?? [],
 }))
 
-const studentStrand = computed(() => {
-  const first = classList.value[0]
-  return first?.strand || '—'
-})
+const studentStrand = computed(() =>
+  props.studentStrand || classList.value[0]?.strand || '—'
+)
 
-function setStrand(id) {
-  selectedStrand.value = id
+/* ─── Search + Filter actions ─────────────────────────── */
+let searchTimeout = null
+
+function debouncedSearch() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    executeSearch()
+  }, 350)
+}
+
+function clearSearch() {
+  searchQuery.value = ''
   executeSearch()
 }
 
@@ -275,9 +292,13 @@ function executeSearch() {
     route('student.classes.index'),
     {
       search: searchQuery.value || undefined,
-      strand_id: selectedStrand.value ?? undefined,
+      sort:   sortBy.value,
     },
-    { preserveState: true, replace: true }
+    {
+      preserveState:  true,
+      preserveScroll: true,
+      replace:        true,
+    }
   )
 }
 

@@ -8,6 +8,7 @@ use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,7 +20,6 @@ use Inertia\Response;
 
 class StudentController extends Controller
 {
-    /* ═══════════════ INDEX — page shell with filter options ═══════════════ */
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/Students/Index', [
@@ -30,7 +30,6 @@ class StudentController extends Controller
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -54,23 +53,18 @@ class StudentController extends Controller
                 ->latest('enrolled_at'),
         ]);
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
+        if (! empty($validated['status'])) $query->where('status', $validated['status']);
 
         if (! empty($validated['grade_level'])) {
             $query->whereHas('enrollments.section', fn ($q) =>
                 $q->where('grade_level', $validated['grade_level'])
             );
         }
-
         if (! empty($validated['section_id'])) {
             $query->whereHas('enrollments', fn ($q) =>
-                $q->where('section_id', $validated['section_id'])
-                  ->where('status', 'enrolled')
+                $q->where('section_id', $validated['section_id'])->where('status', 'enrolled')
             );
         }
-
         if (! empty($validated['search'])) {
             $s = $validated['search'];
             $query->where(function ($q) use ($s) {
@@ -134,7 +128,6 @@ class StudentController extends Controller
         ]);
     }
 
-    /* ═══════════════ SHOW — full profile + applicant history ═══════════════ */
     public function show(Student $student)
     {
         $student->load([
@@ -172,7 +165,6 @@ class StudentController extends Controller
                 'guardian_name'    => $student->guardian_name,
                 'guardian_contact' => $student->guardian_contact,
                 'created_at'       => $student->created_at?->toIso8601String(),
-
                 'user' => [
                     'id'     => $student->user->id,
                     'name'   => $student->user->name,
@@ -180,7 +172,6 @@ class StudentController extends Controller
                     'avatar' => $student->user->avatar_path,
                     'status' => $student->user->status,
                 ],
-
                 'enrollments' => $student->enrollments->map(fn ($e) => [
                     'id'          => $e->id,
                     'status'      => $e->status,
@@ -191,7 +182,6 @@ class StudentController extends Controller
                     'enrolled_at' => $e->enrolled_at?->toIso8601String(),
                 ]),
             ],
-
             'applicant' => $applicant ? [
                 'id'                  => $applicant->id,
                 'reference_number'    => $applicant->reference_number,
@@ -217,7 +207,6 @@ class StudentController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -233,42 +222,43 @@ class StudentController extends Controller
             'guardian_contact' => ['nullable', 'string', 'max:20'],
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $user = User::create([
-                'name'                 => $validated['name'],
-                'email'                => $validated['email'],
-                'password'             => Hash::make($validated['password']),
-                'must_change_password' => true,
-            ]);
-            if (method_exists($user, 'assignRole')) $user->assignRole('student');
-
-            $student = Student::create([
-                'user_id'          => $user->id,
-                'lrn'              => $validated['lrn'],
-                'sex'              => $validated['sex']              ?? null,
-                'date_of_birth'    => $validated['date_of_birth']    ?? null,
-                'contact_number'   => $validated['contact_number']   ?? null,
-                'guardian_name'    => $validated['guardian_name']    ?? null,
-                'guardian_contact' => $validated['guardian_contact'] ?? null,
-                'status'           => 'active',
-            ]);
-
-            if (! empty($validated['section_id'])) {
-                $section = Section::findOrFail($validated['section_id']);
-                Enrollment::create([
-                    'student_id'     => $student->id,
-                    'school_year_id' => $section->school_year_id,
-                    'section_id'     => $section->id,
-                    'status'         => 'enrolled',
-                    'enrolled_at'    => now(),
+        AuditContext::wrap('create_student', function () use ($validated) {
+            DB::transaction(function () use ($validated) {
+                $user = User::create([
+                    'name'                 => $validated['name'],
+                    'email'                => $validated['email'],
+                    'password'             => Hash::make($validated['password']),
+                    'must_change_password' => true,
                 ]);
-            }
+                if (method_exists($user, 'assignRole')) $user->assignRole('student');
+
+                $student = Student::create([
+                    'user_id'          => $user->id,
+                    'lrn'              => $validated['lrn'],
+                    'sex'              => $validated['sex']              ?? null,
+                    'date_of_birth'    => $validated['date_of_birth']    ?? null,
+                    'contact_number'   => $validated['contact_number']   ?? null,
+                    'guardian_name'    => $validated['guardian_name']    ?? null,
+                    'guardian_contact' => $validated['guardian_contact'] ?? null,
+                    'status'           => 'active',
+                ]);
+
+                if (! empty($validated['section_id'])) {
+                    $section = Section::findOrFail($validated['section_id']);
+                    Enrollment::create([
+                        'student_id'     => $student->id,
+                        'school_year_id' => $section->school_year_id,
+                        'section_id'     => $section->id,
+                        'status'         => 'enrolled',
+                        'enrolled_at'    => now(),
+                    ]);
+                }
+            });
         });
 
         return redirect()->back()->with('success', 'Student registered successfully.');
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, Student $student)
     {
         $validated = $request->validate([
@@ -284,72 +274,75 @@ class StudentController extends Controller
             'status'           => ['nullable', 'in:active,graduated,dropped_out,transferred_out'],
         ]);
 
-        DB::transaction(function () use ($validated, $student) {
-            $student->user->update([
-                'name'  => $validated['name'],
-                'email' => $validated['email'],
-            ]);
+        AuditContext::wrap('update_student', function () use ($validated, $student) {
+            DB::transaction(function () use ($validated, $student) {
+                $student->user->update([
+                    'name'  => $validated['name'],
+                    'email' => $validated['email'],
+                ]);
 
-            $student->update([
-                'lrn'              => $validated['lrn'],
-                'sex'              => $validated['sex']              ?? null,
-                'date_of_birth'    => $validated['date_of_birth']    ?? null,
-                'contact_number'   => $validated['contact_number']   ?? null,
-                'guardian_name'    => $validated['guardian_name']    ?? null,
-                'guardian_contact' => $validated['guardian_contact'] ?? null,
-                'status'           => $validated['status']           ?? $student->status,
-            ]);
+                $student->update([
+                    'lrn'              => $validated['lrn'],
+                    'sex'              => $validated['sex']              ?? null,
+                    'date_of_birth'    => $validated['date_of_birth']    ?? null,
+                    'contact_number'   => $validated['contact_number']   ?? null,
+                    'guardian_name'    => $validated['guardian_name']    ?? null,
+                    'guardian_contact' => $validated['guardian_contact'] ?? null,
+                    'status'           => $validated['status']           ?? $student->status,
+                ]);
 
-            // Sync current enrollment if section changed
-            if (! empty($validated['section_id'])) {
-                $newSection = Section::findOrFail($validated['section_id']);
-                $current    = $student->enrollments()
-                    ->where('status', 'enrolled')
-                    ->latest('enrolled_at')
-                    ->first();
+                if (! empty($validated['section_id'])) {
+                    $newSection = Section::findOrFail($validated['section_id']);
+                    $current    = $student->enrollments()
+                        ->where('status', 'enrolled')
+                        ->latest('enrolled_at')
+                        ->first();
 
-                if ($current) {
-                    $current->update([
-                        'section_id'     => $newSection->id,
-                        'school_year_id' => $newSection->school_year_id,
-                    ]);
-                } else {
-                    Enrollment::create([
-                        'student_id'     => $student->id,
-                        'school_year_id' => $newSection->school_year_id,
-                        'section_id'     => $newSection->id,
-                        'status'         => 'enrolled',
-                        'enrolled_at'    => now(),
-                    ]);
+                    if ($current) {
+                        $current->update([
+                            'section_id'     => $newSection->id,
+                            'school_year_id' => $newSection->school_year_id,
+                        ]);
+                    } else {
+                        Enrollment::create([
+                            'student_id'     => $student->id,
+                            'school_year_id' => $newSection->school_year_id,
+                            'section_id'     => $newSection->id,
+                            'status'         => 'enrolled',
+                            'enrolled_at'    => now(),
+                        ]);
+                    }
                 }
-            }
+            });
         });
 
         return redirect()->back()->with('success', 'Student profile updated successfully.');
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(Student $student)
     {
-        $student->update(['status' => 'dropped_out']);
-        $student->delete();
+        AuditContext::wrap('deactivate_student', function () use ($student) {
+            $student->update(['status' => 'dropped_out']);
+            $student->delete();
+        });
 
         return redirect()->back()->with('success', 'Student deactivated successfully.');
     }
 
-    /* ═══════════════ RESET PASSWORD ═══════════════ */
     public function resetPassword(Student $student)
     {
         $temp = Str::random(16);
-        $student->user->update([
-            'password'             => Hash::make($temp),
-            'must_change_password' => true,
-        ]);
+
+        AuditContext::wrap('reset_student_password', function () use ($student, $temp) {
+            $student->user->update([
+                'password'             => Hash::make($temp),
+                'must_change_password' => true,
+            ]);
+        });
 
         return redirect()->back()->with('success', "Password reset to temporary key: {$temp}");
     }
 
-    /* ═══════════════ EXPORT ═══════════════ */
     public function export(Request $request)
     {
         $validated = $request->validate([
@@ -424,7 +417,6 @@ class StudentController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    /* ═══════════════ IMPORT ═══════════════ */
     public function import(Request $request)
     {
         $request->validate([
@@ -452,85 +444,85 @@ class StudentController extends Controller
             ], 422);
         }
 
-        // Cache sections by "grade-level|name" for CSV lookup
         $sections = Section::get()->keyBy(fn ($s) => $s->grade_level . '|' . strtolower($s->name));
 
         $created = 0;
         $errors  = [];
         $rowNum  = 1;
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
-            if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) continue;
+        AuditContext::wrap('bulk_import_students', function () use (&$created, &$errors, &$rowNum, $handle, $header, $required, $sections) {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNum++;
+                if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) continue;
 
-            $row  = array_pad($row, count($header), null);
-            $row  = array_slice($row, 0, count($header));
-            $data = array_combine($header, $row);
+                $row  = array_pad($row, count($header), null);
+                $row  = array_slice($row, 0, count($header));
+                $data = array_combine($header, $row);
 
-            try {
-                foreach ($required as $col) {
-                    if (empty(trim((string) ($data[$col] ?? '')))) {
-                        throw new \RuntimeException("Column '{$col}' is empty.");
-                    }
-                }
-
-                $email = trim((string) $data['email']);
-                $lrn   = trim((string) $data['lrn']);
-
-                if (User::where('email', $email)->exists()) {
-                    throw new \RuntimeException("Email '{$email}' already exists.");
-                }
-                if (Student::where('lrn', $lrn)->exists()) {
-                    throw new \RuntimeException("LRN '{$lrn}' already exists.");
-                }
-
-                DB::transaction(function () use ($data, $email, $lrn, $sections) {
-                    $user = User::create([
-                        'name'                 => trim((string) $data['name']),
-                        'email'                => $email,
-                        'password'             => Hash::make(Str::random(16)),
-                        'must_change_password' => true,
-                    ]);
-                    if (method_exists($user, 'assignRole')) $user->assignRole('student');
-
-                    $student = Student::create([
-                        'user_id'          => $user->id,
-                        'lrn'              => $lrn,
-                        'sex'              => filled($data['sex']              ?? null) ? strtolower(trim($data['sex'])) : null,
-                        'date_of_birth'    => filled($data['date_of_birth']    ?? null) ? $data['date_of_birth']          : null,
-                        'contact_number'   => filled($data['contact_number']   ?? null) ? trim($data['contact_number'])   : null,
-                        'house_street'     => filled($data['house_street']     ?? null) ? trim($data['house_street'])     : null,
-                        'barangay'         => filled($data['barangay']         ?? null) ? trim($data['barangay'])         : null,
-                        'municipality'     => filled($data['municipality']     ?? null) ? trim($data['municipality'])     : null,
-                        'province'         => filled($data['province']         ?? null) ? trim($data['province'])         : null,
-                        'zip_code'         => filled($data['zip_code']         ?? null) ? trim($data['zip_code'])         : null,
-                        'guardian_name'    => filled($data['guardian_name']    ?? null) ? trim($data['guardian_name'])    : null,
-                        'guardian_contact' => filled($data['guardian_contact'] ?? null) ? trim($data['guardian_contact']) : null,
-                        'status'           => 'active',
-                    ]);
-
-                    // Optional section lookup: CSV should contain `grade_level` + `section` matching a Section
-                    $g = trim((string) ($data['grade_level'] ?? ''));
-                    $n = strtolower(trim((string) ($data['section'] ?? '')));
-                    if ($g !== '' && $n !== '') {
-                        $section = $sections["{$g}|{$n}"] ?? null;
-                        if ($section) {
-                            Enrollment::create([
-                                'student_id'     => $student->id,
-                                'school_year_id' => $section->school_year_id,
-                                'section_id'     => $section->id,
-                                'status'         => 'enrolled',
-                                'enrolled_at'    => now(),
-                            ]);
+                try {
+                    foreach ($required as $col) {
+                        if (empty(trim((string) ($data[$col] ?? '')))) {
+                            throw new \RuntimeException("Column '{$col}' is empty.");
                         }
                     }
-                });
 
-                $created++;
-            } catch (\Throwable $e) {
-                $errors[] = "Row {$rowNum}: " . $e->getMessage();
+                    $email = trim((string) $data['email']);
+                    $lrn   = trim((string) $data['lrn']);
+
+                    if (User::where('email', $email)->exists()) {
+                        throw new \RuntimeException("Email '{$email}' already exists.");
+                    }
+                    if (Student::where('lrn', $lrn)->exists()) {
+                        throw new \RuntimeException("LRN '{$lrn}' already exists.");
+                    }
+
+                    DB::transaction(function () use ($data, $email, $lrn, $sections) {
+                        $user = User::create([
+                            'name'                 => trim((string) $data['name']),
+                            'email'                => $email,
+                            'password'             => Hash::make(Str::random(16)),
+                            'must_change_password' => true,
+                        ]);
+                        if (method_exists($user, 'assignRole')) $user->assignRole('student');
+
+                        $student = Student::create([
+                            'user_id'          => $user->id,
+                            'lrn'              => $lrn,
+                            'sex'              => filled($data['sex']              ?? null) ? strtolower(trim($data['sex'])) : null,
+                            'date_of_birth'    => filled($data['date_of_birth']    ?? null) ? $data['date_of_birth']          : null,
+                            'contact_number'   => filled($data['contact_number']   ?? null) ? trim($data['contact_number'])   : null,
+                            'house_street'     => filled($data['house_street']     ?? null) ? trim($data['house_street'])     : null,
+                            'barangay'         => filled($data['barangay']         ?? null) ? trim($data['barangay'])         : null,
+                            'municipality'     => filled($data['municipality']     ?? null) ? trim($data['municipality'])     : null,
+                            'province'         => filled($data['province']         ?? null) ? trim($data['province'])         : null,
+                            'zip_code'         => filled($data['zip_code']         ?? null) ? trim($data['zip_code'])         : null,
+                            'guardian_name'    => filled($data['guardian_name']    ?? null) ? trim($data['guardian_name'])    : null,
+                            'guardian_contact' => filled($data['guardian_contact'] ?? null) ? trim($data['guardian_contact']) : null,
+                            'status'           => 'active',
+                        ]);
+
+                        $g = trim((string) ($data['grade_level'] ?? ''));
+                        $n = strtolower(trim((string) ($data['section'] ?? '')));
+                        if ($g !== '' && $n !== '') {
+                            $section = $sections["{$g}|{$n}"] ?? null;
+                            if ($section) {
+                                Enrollment::create([
+                                    'student_id'     => $student->id,
+                                    'school_year_id' => $section->school_year_id,
+                                    'section_id'     => $section->id,
+                                    'status'         => 'enrolled',
+                                    'enrolled_at'    => now(),
+                                ]);
+                            }
+                        }
+                    });
+
+                    $created++;
+                } catch (\Throwable $e) {
+                    $errors[] = "Row {$rowNum}: " . $e->getMessage();
+                }
             }
-        }
+        });
 
         fclose($handle);
 

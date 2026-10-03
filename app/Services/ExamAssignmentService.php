@@ -6,7 +6,9 @@ use App\Models\Applicant;
 use App\Models\EntranceExam;
 use App\Models\EntranceExamResult;
 use App\Services\Notification\NotificationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ExamAssignmentService
 {
@@ -14,50 +16,93 @@ class ExamAssignmentService
 
     public function __construct(protected NotificationService $notifications) {}
 
+    /* ═══════════════════════════════════════════════════════════
+       PUBLIC API
+       ═══════════════════════════════════════════════════════════ */
+
     /**
-     * Assign a list of applicants to an exam.
-     *
-     * @param  array  $applicantIds
-     * @return array{assigned:int, moved:int, skipped:int, errors:array}
+     * Assign a list of applicants to an exam (from the picker).
      */
     public function assign(EntranceExam $exam, array $applicantIds): array
     {
-        $assigned = 0; $moved = 0; $skipped = 0; $errors = [];
+        if ($exam->status === 'Cancelled') {
+            return [
+                'assigned' => 0, 'moved' => 0, 'skipped' => 0,
+                'errors' => ['Cannot assign to a cancelled exam.'],
+                'assigned_ids' => [],
+            ];
+        }
 
-        foreach ($applicantIds as $applicantId) {
-            $applicantId = (int) $applicantId;
-            if (! $applicantId) continue;
+        $assigned = 0; $moved = 0; $skipped = 0;
+        $errors = [];
+        $assignedIds = [];
 
-            $existing = EntranceExamResult::where('applicant_id', $applicantId)->first();
+        DB::transaction(function () use (
+            $exam, $applicantIds, &$assigned, &$moved, &$skipped, &$errors, &$assignedIds
+        ) {
+            foreach ($applicantIds as $applicantId) {
+                $applicantId = (int) $applicantId;
+                if (! $applicantId) continue;
 
-            // Skip finalized results
-            if ($existing && in_array($existing->result, ['Passed', 'Failed', 'Absent'], true)) {
-                $errors[] = "Applicant #{$applicantId} already has a final result.";
-                continue;
-            }
-
-            if ($existing && $existing->entrance_exam_id === $exam->id) {
-                $skipped++;
-                continue;
-            }
-
-            if ($existing) {
-                // Move: new exam must be later than current
-                $currentExam = EntranceExam::find($existing->entrance_exam_id);
-                if ($currentExam && $exam->starts_at <= $currentExam->starts_at) {
-                    $errors[] = "Applicant #{$applicantId}: new exam must be after current exam.";
+                $applicant = Applicant::with('strand:id,track_id')->find($applicantId);
+                if (! $applicant) {
+                    $skipped++;
+                    $errors[] = "Applicant #{$applicantId} not found.";
                     continue;
                 }
 
-                $existing->update(['entrance_exam_id' => $exam->id]);
-                $moved++;
+                if ($applicant->status !== 'approved') {
+                    $skipped++;
+                    $errors[] = "{$applicant->full_name} is not approved.";
+                    continue;
+                }
 
-                $this->notifyMoved($applicantId, $exam, $currentExam);
-            } else {
-                // Capacity check
+                if ($applicant->converted_student_id) {
+                    $skipped++;
+                    $errors[] = "{$applicant->full_name} is already a student.";
+                    continue;
+                }
+
+                $existing = EntranceExamResult::where('applicant_id', $applicantId)->first();
+
+                // Terminal result → cannot reassign
+                if ($existing && in_array($existing->result, ['Passed', 'Failed', 'Absent'], true)) {
+                    $skipped++;
+                    $errors[] = "{$applicant->full_name} already has a final result.";
+                    continue;
+                }
+
+                // Already on this exam → nothing to do
+                if ($existing && (int) $existing->entrance_exam_id === (int) $exam->id) {
+                    $skipped++;
+                    continue;
+                }
+
+                // Move from another exam
+                if ($existing) {
+                    $currentExam = EntranceExam::find($existing->entrance_exam_id);
+
+                    // Only allow move if new exam is chronologically later
+                    if ($currentExam && $this->examStartsAt($exam) && $this->examStartsAt($currentExam)
+                        && $this->examStartsAt($exam)->lt($this->examStartsAt($currentExam))) {
+                        $skipped++;
+                        $errors[] = "{$applicant->full_name}: new exam must be after current exam.";
+                        continue;
+                    }
+
+                    $existing->update(['entrance_exam_id' => $exam->id]);
+                    $moved++;
+                    $assignedIds[] = $applicantId;
+
+                    $this->safeNotify(fn () => $this->notifyMoved($applicantId, $exam, $currentExam));
+                    continue;
+                }
+
+                // Fresh assignment — capacity check
                 if ($exam->remainingCapacity() <= 0) {
-                    $errors[] = "Exam is at full capacity.";
-                    break;
+                    $skipped++;
+                    $errors[] = "{$applicant->full_name} skipped — exam is at full capacity.";
+                    continue;
                 }
 
                 EntranceExamResult::create([
@@ -66,88 +111,128 @@ class ExamAssignmentService
                     'result'           => 'Pending',
                 ]);
                 $assigned++;
+                $assignedIds[] = $applicantId;
 
-                $this->notifyScheduled($applicantId, $exam);
+                $this->safeNotify(fn () => $this->notifyScheduled($applicantId, $exam));
             }
-        }
+        });
 
-        return compact('assigned', 'moved', 'skipped', 'errors');
+        return [
+            'assigned'     => $assigned,
+            'moved'        => $moved,
+            'skipped'      => $skipped,
+            'errors'       => $errors,
+            'assigned_ids' => $assignedIds,
+        ];
     }
 
     /**
-     * Auto-assign approved applicants who don't have an exam yet.
-     * Only runs if the exam is >= 7 days away.
+     * Auto-assign eligible approved applicants to an exam.
+     *
+     * Excludes only TERMINAL results. Applicants pending on another exam
+     * are MOVED here (not skipped, not duplicated).
+     *
+     * Only runs if the exam is at least MIN_DAYS_BEFORE_AUTO_ASSIGN days away.
      */
     public function autoAssignPending(EntranceExam $exam): int
     {
-        if (! $exam->starts_at) return 0;
+        if ($exam->status === 'Cancelled') {
+            return 0;
+        }
 
-        if (now()->diffInDays($exam->starts_at, false) < self::MIN_DAYS_BEFORE_AUTO_ASSIGN) {
+        $startsAt = $this->examStartsAt($exam);
+        if (! $startsAt) {
+            return 0;
+        }
+
+        if (now()->diffInDays($startsAt, false) < self::MIN_DAYS_BEFORE_AUTO_ASSIGN) {
             return 0;
         }
 
         $remaining = $exam->remainingCapacity();
-        if ($remaining <= 0) return 0;
+        if ($remaining <= 0) {
+            return 0;
+        }
 
-        $applicants = Applicant::query()
-            ->where('status', 'approved')
-            ->whereNull('converted_student_id')
-            ->whereDoesntHave('entranceExamResults')
-            ->when($exam->grade_level !== 'All',
-                fn ($q) => $q->where('desired_grade_level', $exam->grade_level))
-            ->when($exam->track_id, function ($q) use ($exam) {
-                $q->whereHas('strand', fn ($sq) => $sq->where('track_id', $exam->track_id));
-            })
+        // Applicants already on this exam → skip
+        $alreadyOnExam = EntranceExamResult::where('entrance_exam_id', $exam->id)
+            ->pluck('applicant_id')
+            ->all();
+
+        $applicants = $this->eligibleApplicantsQuery($exam)
+            ->whereNotIn('id', $alreadyOnExam)
             ->orderBy('submitted_at')
             ->limit($remaining)
             ->get();
 
+        if ($applicants->isEmpty()) {
+            return 0;
+        }
+
         $count = 0;
+
         foreach ($applicants as $applicant) {
-            EntranceExamResult::create([
-                'entrance_exam_id' => $exam->id,
-                'applicant_id'     => $applicant->id,
-                'result'           => 'Pending',
-            ]);
-            $this->notifyScheduled($applicant->id, $exam);
-            $count++;
+            DB::transaction(function () use ($exam, $applicant, &$count) {
+                // Move if pending on another exam
+                $existing = EntranceExamResult::where('applicant_id', $applicant->id)
+                    ->where('entrance_exam_id', '!=', $exam->id)
+                    ->first();
+
+                if ($existing) {
+                    $oldExam = EntranceExam::find($existing->entrance_exam_id);
+                    $existing->update(['entrance_exam_id' => $exam->id]);
+                    $this->safeNotify(fn () => $this->notifyMoved($applicant->id, $exam, $oldExam));
+                } else {
+                    EntranceExamResult::create([
+                        'entrance_exam_id' => $exam->id,
+                        'applicant_id'     => $applicant->id,
+                        'result'           => 'Pending',
+                    ]);
+                    $this->safeNotify(fn () => $this->notifyScheduled($applicant->id, $exam));
+                }
+
+                $count++;
+            });
         }
 
         return $count;
     }
 
     /**
-     * Handle edit: reassign applicants who no longer match + auto-assign new ones.
+     * Reconcile assignments after the exam's grade/track/capacity changed.
      */
     public function reassignAfterEdit(EntranceExam $exam, array $originalAttributes): array
     {
         $reassigned = [];
         $cancelled = 0;
 
-        $gradeChanged    = $originalAttributes['grade_level'] !== $exam->grade_level;
-        $trackChanged    = $originalAttributes['track_id'] !== $exam->track_id;
-        $capacityChanged = $originalAttributes['max_capacity'] !== $exam->max_capacity;
+        $gradeChanged    = ($originalAttributes['grade_level'] ?? null) !== $exam->grade_level;
+        $trackChanged    = ($originalAttributes['track_id']    ?? null) !== $exam->track_id;
+        $capacityChanged = ($originalAttributes['max_capacity']?? null) !== $exam->max_capacity;
 
         $toRemove = collect();
 
-        // Grade level / track changed → remove non-matching
+        // Grade / track scope changed → drop non-matching
         if ($gradeChanged || $trackChanged) {
-            foreach ($exam->results()->with('applicant.strand')->get() as $result) {
+            foreach ($exam->results()->with('applicant.strand:id,track_id')->get() as $result) {
                 $app = $result->applicant;
                 if (! $app) continue;
 
-                if ($exam->grade_level !== 'All' && $app->desired_grade_level !== $exam->grade_level) {
+                if ($exam->grade_level !== 'All'
+                    && (string) $app->desired_grade_level !== (string) $exam->grade_level) {
                     $toRemove->push($app->id);
                     continue;
                 }
-                if ($exam->track_id && $app->strand?->track_id !== $exam->track_id) {
+                if ($exam->track_id
+                    && (int) optional($app->strand)->track_id !== (int) $exam->track_id) {
                     $toRemove->push($app->id);
                 }
             }
         }
 
-        // Capacity reduced → remove overflow (newest first)
-        if ($capacityChanged && $exam->max_capacity < $exam->enrolledCount()) {
+        // Capacity reduced → drop overflow (newest first)
+        if ($capacityChanged && $exam->max_capacity !== null
+            && $exam->enrolledCount() > $exam->max_capacity) {
             $overflow = $exam->enrolledCount() - $exam->max_capacity;
             $ids = $exam->results()->orderByDesc('id')->limit($overflow)->pluck('applicant_id');
             $toRemove = $toRemove->merge($ids);
@@ -155,7 +240,6 @@ class ExamAssignmentService
 
         $toRemove = $toRemove->unique()->values();
 
-        // Reassign each removed applicant to the next available exam
         foreach ($toRemove as $applicantId) {
             $nextExam = $this->findNextAvailableExam($exam, $applicantId);
 
@@ -164,19 +248,18 @@ class ExamAssignmentService
                     ->where('entrance_exam_id', $exam->id)
                     ->update(['entrance_exam_id' => $nextExam->id]);
 
-                $this->notifyMoved($applicantId, $nextExam, $exam);
+                $this->safeNotify(fn () => $this->notifyMoved($applicantId, $nextExam, $exam));
                 $reassigned[] = ['applicant_id' => $applicantId, 'to_exam' => $nextExam->id];
             } else {
                 EntranceExamResult::where('applicant_id', $applicantId)
                     ->where('entrance_exam_id', $exam->id)
                     ->delete();
 
-                $this->notifyCancelled($applicantId, $exam);
+                $this->safeNotify(fn () => $this->notifyCancelled($applicantId, $exam));
                 $cancelled++;
             }
         }
 
-        // Auto-assign new eligible applicants if date >= 7 days
         $autoAssigned = $this->autoAssignPending($exam);
 
         return [
@@ -187,7 +270,7 @@ class ExamAssignmentService
     }
 
     /**
-     * Cancel exam: move all applicants to next exam, or cancel them.
+     * Cancel exam: move everyone to the next available exam, or drop them.
      */
     public function cancel(EntranceExam $exam): array
     {
@@ -199,11 +282,11 @@ class ExamAssignmentService
         foreach ($results as $result) {
             if ($nextExam) {
                 $result->update(['entrance_exam_id' => $nextExam->id]);
-                $this->notifyMoved($result->applicant_id, $nextExam, $exam);
+                $this->safeNotify(fn () => $this->notifyMoved($result->applicant_id, $nextExam, $exam));
                 $moved++;
             } else {
                 $result->delete();
-                $this->notifyCancelled($result->applicant_id, $exam);
+                $this->safeNotify(fn () => $this->notifyCancelled($result->applicant_id, $exam));
                 $cancelled++;
             }
         }
@@ -213,27 +296,135 @@ class ExamAssignmentService
         return ['moved' => $moved, 'cancelled' => $cancelled, 'next_exam_id' => $nextExam?->id];
     }
 
-    // ─── Helpers ────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════
+       CANONICAL ELIGIBILITY QUERY
+       Used by auto-assign AND the picker. Never diverge.
+       ═══════════════════════════════════════════════════════════ */
 
+    /**
+     * Applicants who can be placed on this exam:
+     *   - approved, not yet converted to a student
+     *   - no terminal result (Passed / Failed / Absent) anywhere
+     *   - matching grade level (skipped if exam is 'All')
+     *   - matching track (skipped if exam has no track)
+     *
+     * Applicants pending on another exam ARE included — the caller decides
+     * whether to move or skip them.
+     */
+    public function eligibleApplicantsQuery(EntranceExam $exam): Builder
+    {
+        return Applicant::query()
+            ->where('status', 'approved')
+            ->whereNull('converted_student_id')
+
+            // Only terminal results disqualify
+            ->whereDoesntHave('entranceExamResults', function ($q) {
+                $q->whereIn('result', ['Passed', 'Failed', 'Absent']);
+            })
+
+            // 'All' means no grade filter
+            ->when($exam->grade_level !== 'All', function ($q) use ($exam) {
+                $q->where('desired_grade_level', (string) $exam->grade_level);
+            })
+
+            // null track means no track filter
+            ->when(! is_null($exam->track_id), function ($q) use ($exam) {
+                $q->whereHas('strand', fn ($s) => $s->where('track_id', $exam->track_id));
+            });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HELPERS
+       ═══════════════════════════════════════════════════════════ */
+
+    /**
+     * Combine exam_date + exam_time into a Carbon instance.
+     * Returns null if the exam has no date.
+     */
+    protected function examStartsAt(EntranceExam $exam): ?\Carbon\Carbon
+    {
+        if (! $exam->exam_date) {
+            return null;
+        }
+
+        $startsAt = $exam->exam_date instanceof \Carbon\Carbon
+            ? $exam->exam_date->copy()
+            : \Carbon\Carbon::parse($exam->exam_date);
+
+        if ($exam->exam_time) {
+            $time = (string) $exam->exam_time;
+            // Handles both "17:46:00" and "17:46"
+            [$h, $m] = array_pad(explode(':', $time), 2, '0');
+            $startsAt->setTime((int) $h, (int) $m, 0);
+        } else {
+            $startsAt->setTime(8, 0, 0);
+        }
+
+        return $startsAt;
+    }
+
+    /**
+     * Find the earliest upcoming exam that would accept this applicant.
+     */
     protected function findNextAvailableExam(EntranceExam $source, ?int $applicantId = null): ?EntranceExam
     {
-        $applicant = $applicantId ? Applicant::find($applicantId) : null;
-        $grade     = $applicant?->desired_grade_level ?? $source->grade_level;
-        $trackId   = $applicant?->strand?->track_id ?? $source->track_id;
+        $applicant = $applicantId ? Applicant::with('strand:id,track_id')->find($applicantId) : null;
+
+        $grade   = $applicant?->desired_grade_level ?? $source->grade_level;
+        $trackId = optional($applicant?->strand)->track_id ?? $source->track_id;
+
+        $startsAt = $this->examStartsAt($source);
+        $cutoff   = $startsAt
+            ? $startsAt->copy()->addDays(self::MIN_DAYS_BEFORE_AUTO_ASSIGN)
+            : now()->addDays(self::MIN_DAYS_BEFORE_AUTO_ASSIGN);
 
         return EntranceExam::query()
             ->where('id', '!=', $source->id)
             ->where('status', '!=', 'Cancelled')
-            ->whereDate('exam_date', '>=', $source->exam_date->copy()->addDays(self::MIN_DAYS_BEFORE_AUTO_ASSIGN))
-            ->forGrade($grade)
-            ->forTrack($trackId)
+            ->whereDate('exam_date', '>=', $cutoff->toDateString())
+
+            // Exam must accept this grade
+            ->when($grade !== 'All', function ($q) use ($grade) {
+                $q->where(function ($inner) use ($grade) {
+                    $inner->where('grade_level', 'All')
+                          ->orWhere('grade_level', (string) $grade);
+                });
+            })
+
+            // Exam must accept this track (exam track = null means all tracks)
+            ->when($trackId, function ($q) use ($trackId) {
+                $q->where(function ($inner) use ($trackId) {
+                    $inner->whereNull('track_id')
+                          ->orWhere('track_id', $trackId);
+                });
+            })
+
             ->orderBy('exam_date')
+            ->orderBy('exam_time')
             ->first();
     }
 
+    /**
+     * Run a notification callback without letting failures break the caller.
+     */
+    protected function safeNotify(callable $fn): void
+    {
+        try {
+            $fn();
+        } catch (\Throwable $e) {
+            Log::warning('Exam assignment notification failed', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       NOTIFICATIONS
+       ═══════════════════════════════════════════════════════════ */
+
     protected function notifyScheduled(int $applicantId, EntranceExam $exam): void
     {
-        $applicant = Applicant::find($applicantId);
+        $applicant = Applicant::with('strand:id,name')->find($applicantId);
         if (! $applicant) return;
 
         $this->notifications->send(
@@ -246,7 +437,7 @@ class ExamAssignmentService
 
     protected function notifyMoved(int $applicantId, EntranceExam $newExam, ?EntranceExam $oldExam): void
     {
-        $applicant = Applicant::find($applicantId);
+        $applicant = Applicant::with('strand:id,name')->find($applicantId);
         if (! $applicant) return;
 
         $placeholders = $this->buildExamPlaceholders($applicant, $newExam);
@@ -264,7 +455,7 @@ class ExamAssignmentService
 
     protected function notifyCancelled(int $applicantId, EntranceExam $exam): void
     {
-        $applicant = Applicant::find($applicantId);
+        $applicant = Applicant::with('strand:id,name')->find($applicantId);
         if (! $applicant) return;
 
         $this->notifications->send(
@@ -284,22 +475,22 @@ class ExamAssignmentService
     protected function buildExamPlaceholders(Applicant $applicant, EntranceExam $exam): array
     {
         return [
-            'student_name'   => $applicant->full_name,
-            'control_number' => $applicant->reference_number,
-            'exam_name'      => $exam->exam_name,
-            'exam_id'        => $exam->id,
-            'school_year'    => $exam->schoolYear?->label ?? '',
-            'grade_level'    => $applicant->desired_grade_level,
-            'track_name'     => $exam->track?->name ?? 'All',
-            'exam_date'      => $exam->exam_date?->format('F d, Y') ?? '',
-            'exam_time'      => $exam->exam_time ?? '',
-            'venue'          => $exam->venue ?? 'TBA',
-            'applicant_count'=> $exam->enrolledCount(),
-            'status'         => $exam->computed_status,
-            'status_class'   => match ($exam->computed_status) {
-                'Ongoing'  => 'status-pending',
-                'Completed'=> 'status-approved',
-                default    => 'status-under-review',
+            'student_name'    => $applicant->full_name,
+            'control_number'  => $applicant->reference_number,
+            'exam_name'       => $exam->exam_name,
+            'exam_id'         => $exam->id,
+            'school_year'     => $exam->schoolYear?->label ?? '',
+            'grade_level'     => $applicant->desired_grade_level,
+            'track_name'      => $exam->track?->name ?? 'All',
+            'exam_date'       => $exam->exam_date?->format('F d, Y') ?? '',
+            'exam_time'       => $exam->exam_time ?? '',
+            'venue'           => $exam->venue ?? 'TBA',
+            'applicant_count' => $exam->enrolledCount(),
+            'status'          => $exam->computed_status,
+            'status_class'    => match ($exam->computed_status) {
+                'Ongoing'   => 'status-pending',
+                'Completed' => 'status-approved',
+                default     => 'status-under-review',
             },
         ];
     }

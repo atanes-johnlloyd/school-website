@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\Auditable;
 class EntranceExamResult extends Model
 {
+    use Auditable;
     protected $fillable = [
         'entrance_exam_id', 'applicant_id', 'score',
         'result', 'remarks', 'recorded_by', 'recorded_at',

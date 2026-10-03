@@ -242,9 +242,9 @@
                 <Link :href="route('teacher.classes.show', klass.id)"
                   class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center gap-1 sm:gap-1.5 flex-1 transition-all">
                   <Icon icon="users" size="xs" />
-                  Roster ({{ klass.students_count }})
+                  View Details
                 </Link>
-                <Link :href="route('teacher.classes.gradebook.show', klass.id)"
+                <Link :href="route('teacher.classes.show', { classroom: klass.id, tab: 'gradebook' })"
                   class="bg-[#EAF3EC] dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] hover:bg-emerald-100 dark:hover:bg-emerald-950 text-[11px] sm:text-xs font-extrabold px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 flex items-center justify-center gap-1 sm:gap-1.5 flex-1 transition-all">
                   <Icon icon="chart-bar" size="xs" />
                   Gradebook

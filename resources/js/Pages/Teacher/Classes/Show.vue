@@ -789,7 +789,17 @@ function selectTab(id) {
 }
 
 onMounted(() => {
-  // students tab is already populated from props
+  // Deep-link: honor ?tab=<id> from the URL (e.g. coming from a "Gradebook" button)
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab && tabs.value.some(t => t.id === tab) && tab !== activeTab.value) {
+      activeTab.value = tab
+      loadTab(tab)
+    }
+  } catch (e) {
+    // Malformed URL — stay on Students
+  }
 })
 
 /* ═════════════════════════════════════════════════════════ */

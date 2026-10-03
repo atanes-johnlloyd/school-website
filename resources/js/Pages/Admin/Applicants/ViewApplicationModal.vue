@@ -40,7 +40,7 @@
             @click="closeModal"
             class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -370,6 +370,8 @@ import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { usePage } from '@inertiajs/vue3'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm }  from '@/Composables/useConfirm'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -378,6 +380,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'changed'])
 
+const flash = useFlash()
+const confirm = useConfirm()
 const page = usePage()
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null)
 
@@ -491,8 +495,13 @@ const isLockedByAnother = computed(() => {
 
 const canAct = computed(() => !isLockedByAnother.value && !!applicant.value)
 const canApprove = computed(() => canAct.value && ['pending', 'under_review'].includes(currentStatus.value))
-const canReject  = computed(() => canAct.value && !['enrolled', 'rejected'].includes(currentStatus.value))
-const canRequestResubmission = computed(() => canAct.value && !['enrolled', 'rejected'].includes(currentStatus.value))
+const canReject = computed(() =>
+  canAct.value && !['enrolled', 'rejected', 'approved'].includes(currentStatus.value)
+)
+
+const canRequestResubmission = computed(() =>
+  canAct.value && !['enrolled', 'rejected', 'approved'].includes(currentStatus.value)
+)
 
 // ─── Field groups ─────────────────────────────────────────────
 const academicFields = computed(() => applicant.value ? [
@@ -564,16 +573,35 @@ const getDocStatusClass = (status) => ({
 
 // ─── Actions ──────────────────────────────────────────────────
 const submitSimpleAction = async (action) => {
+  if (action === 'approve') {
+    const { confirmed } = await confirm({
+      title: 'Approve Application',
+      message: `Approve ${applicant.value?.full_name}'s application?`,
+      details: [
+        'They will be auto-assigned to the next matching entrance exam (if one is scheduled).',
+        `An approval email will be sent to ${applicant.value?.email || 'the applicant'}.`,
+      ],
+      confirmLabel: 'Approve',
+      variant: 'info',
+    })
+    if (!confirmed) return
+  }
+
   isActing.value = true
   errors.value = {}
   generalError.value = ''
+  reasonMode.value = null
+  reason.value = ''
+
   try {
     await axios.put(`/admin/applicants/${applicant.value.id}/${action}`)
     actionTaken.value = true
+    flash.success('Application approved.')
     emit('changed')
     closeModal()
   } catch (error) {
     generalError.value = error.response?.data?.message || 'Action failed.'
+    flash.error(generalError.value)
   } finally {
     isActing.value = false
   }
@@ -589,8 +617,10 @@ const submitReasonAction = async () => {
   try {
     if (reasonMode.value === 'reject') {
       await axios.put(`/admin/applicants/${applicant.value.id}/reject`, { reason: trimmed })
+      flash.success('Application rejected.')           // ✅ NEW
     } else {
       await axios.put(`/admin/applicants/${applicant.value.id}/request-resubmission`, { reason: trimmed })
+      flash.success('Resubmission requested.')         // ✅ NEW
     }
     actionTaken.value = true
     emit('changed')
@@ -602,6 +632,7 @@ const submitReasonAction = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Action failed.'
     }
+    flash.error(generalError.value)          // ✅ NEW
   } finally {
     isActing.value = false
   }
@@ -615,7 +646,7 @@ const cancelReasonMode = () => {
 
 // ─── Preview ──────────────────────────────────────────────────
 const openPreview = async (doc) => {
-  previewingDoc.value = true
+  previewOpen.value = true
   previewLoading.value = true
   previewUrl.value = null
   previewName.value = doc.file_name || doc.document_type
@@ -633,7 +664,7 @@ const openPreview = async (doc) => {
 
 const closePreview = () => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-  previewingDoc.value = false
+  previewOpen.value = false
   previewUrl.value = null
   previewName.value = ''
   previewDownloadUrl.value = ''
@@ -657,7 +688,6 @@ const formatFileSize = (bytes) => {
 const closeModal = () => {
   releaseIfTransient()   // fire-and-forget
   closePreview()
-  resetState()
   emit('close')
 }
 </script>

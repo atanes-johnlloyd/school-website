@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
+use App\Traits\Auditable;
 class SchoolYear extends Model
 {
+    use Auditable;
     protected $fillable = ['label', 'start_date', 'end_date', 'is_active'];
 
     protected $casts = [

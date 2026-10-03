@@ -17,19 +17,39 @@ class ApplicantConversionService
 {
     /**
      * Convert an approved applicant into a Student + User + Enrollment.
-     * Matches the old convertToStudent() behavior.
      *
-     * @return array{success: bool, message: string, student_id?: int, section_id?: int|null, status?: string, temp_password?: string}
+     * ── IMPORTANT ──
+     * If no section with capacity is available, nothing is created. The
+     * applicant stays `approved` and the caller surfaces a warning so the
+     * registrar can place them manually. A student with no section gets no
+     * LMS account — otherwise they could log in and see an empty dashboard.
+     *
+     * @return array{
+     *   success: bool,
+     *   reason?: string,
+     *   message: string,
+     *   student_id?: int,
+     *   section_id?: int|null,
+     *   section_name?: string|null,
+     *   status?: string,
+     *   temp_password?: string,
+     *   login_url?: string
+     * }
      */
     public function convert(Applicant $applicant): array
     {
         if (! in_array($applicant->status, ['approved', 'enrolled'], true)) {
-            return ['success' => false, 'message' => 'Applicant is not approved for enrollment.'];
+            return [
+                'success' => false,
+                'reason'  => 'not_approved',
+                'message' => 'Applicant is not approved for enrollment.',
+            ];
         }
 
         if ($applicant->converted_student_id) {
             return [
                 'success'    => false,
+                'reason'     => 'already_converted',
                 'message'    => 'Applicant is already converted to a student.',
                 'student_id' => $applicant->converted_student_id,
             ];
@@ -37,11 +57,33 @@ class ApplicantConversionService
 
         $activeYear = SchoolYear::where('is_active', true)->first();
         if (! $activeYear) {
-            return ['success' => false, 'message' => 'No active school year.'];
+            return [
+                'success' => false,
+                'reason'  => 'no_active_year',
+                'message' => 'No active school year — cannot convert.',
+            ];
         }
 
-        return DB::transaction(function () use ($applicant, $activeYear) {
-            // ─── 1. Create User account ────────────────
+        // ─── Find a section FIRST. Nothing is created until we know. ───
+        $sectionId = $this->findAvailableSection(
+            $applicant->strand_id,
+            (string) $applicant->desired_grade_level,
+            $activeYear->id
+        );
+
+        if (! $sectionId) {
+            return [
+                'success'    => false,
+                'reason'     => 'no_section',
+                'message'    => 'No section with capacity for this strand/grade. Applicant remains approved pending manual placement.',
+                'section_id' => null,
+            ];
+        }
+
+        $section = Section::find($sectionId);
+
+        return DB::transaction(function () use ($applicant, $activeYear, $section) {
+            // 1. User account
             $tempPassword = Str::random(12);
 
             $user = User::create([
@@ -50,14 +92,33 @@ class ApplicantConversionService
                 'password'             => Hash::make($tempPassword),
                 'must_change_password' => true,
                 'email_verified_at'    => now(),
+                'role'                 => 'student',
+                'status'               => 'active',
             ]);
-            $user->assignRole('student');
+            if (method_exists($user, 'assignRole')) {
+                $user->assignRole('student');
+            }
 
-            // ─── 2. Create Student profile ────────────
+            $applicant->loadMissing('contacts');
+
+            $guardian = $applicant->contacts
+            ->sortBy(fn ($c) => match ($c->role) {
+                'guardian'  => 0,
+                'father'    => 1,
+                'mother'    => 2,
+                default     => 9,
+            })
+            ->first(fn ($c) => filled($c->full_name));
+
+            // 2. Student profile
             $student = Student::create([
                 'user_id'        => $user->id,
                 'lrn'            => $applicant->lrn,
-                'sex'            => strtolower($applicant->sex),
+                'first_name'     => $applicant->first_name,
+                'middle_name'    => $applicant->middle_name,
+                'last_name'      => $applicant->last_name,
+                'extension_name' => $applicant->extension_name,
+                'sex'            => strtolower((string) $applicant->sex),
                 'date_of_birth'  => $applicant->date_of_birth,
                 'contact_number' => $applicant->contact_number,
                 'house_street'   => $applicant->house_street,
@@ -65,39 +126,31 @@ class ApplicantConversionService
                 'municipality'   => $applicant->municipality,
                 'province'       => $applicant->province,
                 'zip_code'       => $applicant->zip_code,
+                'strand_id'      => $applicant->strand_id,
+                'guardian_name'    => $guardian?->full_name,        // ← new
+                'guardian_contact' => $guardian?->contact_number,
                 'status'         => 'active',
             ]);
 
-            // ─── 3. Find an available section ──────────
-            $sectionId = $this->findAvailableSection(
-                $applicant->strand_id,
-                $applicant->desired_grade_level,
-                $activeYear->id
-            );
-
-            $enrollmentStatus = $sectionId ? 'enrolled' : 'pending';
-
-            // ─── 4. Create Enrollment ──────────────────
+            // 3. Enrollment
             Enrollment::create([
                 'student_id'     => $student->id,
                 'school_year_id' => $activeYear->id,
-                'section_id'     => $sectionId,
-                'status'         => $enrollmentStatus,
-                'enrolled_at'    => $sectionId ? now() : null,
+                'section_id'     => $section->id,
+                'status'         => 'enrolled',
+                'enrolled_at'    => now(),
                 'enrolled_by'    => auth()->id(),
             ]);
 
-            // ─── 5. Auto-attach to classes if section assigned ──
-            if ($sectionId) {
-                $classrooms = ClassRoom::where('section_id', $sectionId)->get();
-                foreach ($classrooms as $classroom) {
-                    $classroom->students()->syncWithoutDetaching([
-                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                    ]);
-                }
+            // 4. Attach to every classroom under the section
+            $classrooms = ClassRoom::where('section_id', $section->id)->get();
+            foreach ($classrooms as $classroom) {
+                $classroom->students()->syncWithoutDetaching([
+                    $student->id => ['status' => 'active', 'enrolled_at' => now()],
+                ]);
             }
 
-            // ─── 6. Update applicant ───────────────────
+            // 5. Mark applicant enrolled
             $applicant->update([
                 'status'               => 'enrolled',
                 'converted_student_id' => $student->id,
@@ -105,38 +158,48 @@ class ApplicantConversionService
 
             return [
                 'success'       => true,
-                'message'       => $sectionId
-                    ? 'Applicant converted and enrolled successfully.'
-                    : 'Applicant converted. Waiting for section assignment.',
+                'message'       => 'Applicant converted and enrolled successfully.',
                 'student_id'    => $student->id,
-                'section_id'    => $sectionId,
-                'status'        => $enrollmentStatus,
+                'section_id'    => $section->id,
+                'section_name'  => $section->name,
+                'status'        => 'enrolled',
                 'temp_password' => $tempPassword,
+                'login_url'     => url('/login'),
             ];
         });
     }
 
     /**
-     * Find the least-crowded section matching strand + grade level with capacity.
+     * Least-crowded section matching strand + grade, with capacity.
+     *
+     * Uses `lockForUpdate()` to prevent two simultaneous conversions from
+     * both claiming the last slot (TOCTOU).
      */
     public function findAvailableSection(?int $strandId, string $gradeLevel, int $schoolYearId): ?int
     {
         if (! $strandId) return null;
 
-        $section = Section::where('strand_id', $strandId)
-            ->where('grade_level', $gradeLevel)
-            ->where('school_year_id', $schoolYearId)
-            ->withCount(['students' => function ($q) use ($schoolYearId) {
-                $q->whereHas('enrollments', function ($eq) use ($schoolYearId) {
-                    $eq->where('school_year_id', $schoolYearId)
-                       ->where('status', 'enrolled');
-                });
-            }])
-            ->get()
-            ->filter(fn (Section $s) => $s->students_count < $s->max_capacity)
-            ->sortBy('students_count')
-            ->first();
+        return DB::transaction(function () use ($strandId, $gradeLevel, $schoolYearId) {
+            $candidates = Section::where('strand_id', $strandId)
+                ->where('grade_level', $gradeLevel)
+                ->where('school_year_id', $schoolYearId)
+                ->lockForUpdate()
+                ->withCount(['enrollments as enrolled_count' => function ($q) use ($schoolYearId) {
+                    $q->where('school_year_id', $schoolYearId)
+                      ->where('status', 'enrolled');
+                }])
+                ->get();
 
-        return $section?->id;
+            // max_capacity === null means unlimited
+            $available = $candidates
+                ->filter(fn (Section $s) =>
+                    is_null($s->max_capacity)
+                    || $s->enrolled_count < $s->max_capacity
+                )
+                ->sortBy('enrolled_count')
+                ->first();
+
+            return $available?->id;
+        });
     }
 }

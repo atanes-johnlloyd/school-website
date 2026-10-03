@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminPosition;
 use App\Models\User;
 use App\Services\Notification\NotificationService;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -18,18 +19,14 @@ class UserController extends Controller
 {
     public function __construct(protected NotificationService $notifications) {}
 
-    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/Users/Index', [
             'positions' => AdminPosition::where('is_active', true)
-                ->select('id', 'name', 'description')
-                ->orderBy('name')
-                ->get(),
+                ->select('id', 'name', 'description')->orderBy('name')->get(),
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -44,20 +41,15 @@ class UserController extends Controller
         $sortBy  = $validated['sort_by']  ?? 'created_at';
         $sortDir = $validated['sort_dir'] ?? 'desc';
 
-        $query = User::role('admin')
-            ->with('adminPosition:id,name');
+        $query = User::role('admin')->with('adminPosition:id,name');
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
-        if (! empty($validated['position_id'])) {
-            $query->where('admin_position_id', $validated['position_id']);
-        }
+        if (! empty($validated['status']))      $query->where('status', $validated['status']);
+        if (! empty($validated['position_id'])) $query->where('admin_position_id', $validated['position_id']);
+
         if (! empty($validated['search'])) {
             $s = $validated['search'];
             $query->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('email', 'like', "%{$s}%");
+                $q->where('name', 'like', "%{$s}%")->orWhere('email', 'like', "%{$s}%");
             });
         }
 
@@ -66,26 +58,26 @@ class UserController extends Controller
         $users = $query->paginate($validated['per_page'] ?? 10);
 
         $users->getCollection()->transform(fn (User $u) => [
-            'id'              => $u->id,
-            'name'            => $u->name,
-            'email'           => $u->email,
-            'avatar_url'      => $u->avatar_url,
-            'status'          => $u->status ?? 'active',
-            'disabled_reason' => $u->disabled_reason,
-            'admin_position'  => $u->adminPosition?->name,
+            'id'                => $u->id,
+            'name'              => $u->name,
+            'email'             => $u->email,
+            'avatar_url'        => $u->avatar_url,
+            'status'            => $u->status ?? 'active',
+            'disabled_reason'   => $u->disabled_reason,
+            'admin_position'    => $u->adminPosition?->name,
             'admin_position_id' => $u->admin_position_id,
-            'is_primary'      => $u->id === 1,
-            'created_at'      => $u->created_at?->toIso8601String(),
+            'is_primary'        => $u->id === 1,
+            'created_at'        => $u->created_at?->toIso8601String(),
         ]);
 
         return response()->json([
-            'users' => $users,
+            'users'   => $users,
             'filters' => [
                 'status'      => $validated['status']      ?? null,
                 'position_id' => $validated['position_id'] ?? null,
                 'search'      => $validated['search']      ?? null,
             ],
-            'sort' => ['by' => $sortBy, 'dir' => $sortDir],
+            'sort'   => ['by' => $sortBy, 'dir' => $sortDir],
             'counts' => [
                 'total'    => User::role('admin')->count(),
                 'active'   => User::role('admin')->where('status', 'active')->count(),
@@ -94,11 +86,9 @@ class UserController extends Controller
         ]);
     }
 
-    /* ═══════════════ SHOW ═══════════════ */
     public function show(Request $request, User $user)
     {
         abort_unless($user->hasRole('admin'), 404);
-
         $user->load('adminPosition:id,name,description');
 
         return response()->json([
@@ -121,7 +111,6 @@ class UserController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -133,29 +122,30 @@ class UserController extends Controller
         $tempPassword = 'Admin@' . Str::random(8);
         $resetToken   = bin2hex(random_bytes(32));
 
-        $user = DB::transaction(function () use ($validated, $tempPassword, $resetToken) {
-            $u = User::create([
-                'name'                 => $validated['name'],
-                'email'                => $validated['email'],
-                'password'             => Hash::make($tempPassword),
-                'must_change_password' => true,
-                'email_verified_at'    => now(),
-                'admin_position_id'    => $validated['admin_position_id'],
-                'status'               => 'active',
-                'reset_token'          => $resetToken,
-                'reset_expiry'         => now()->addHours(24),
-            ]);
-            $u->assignRole('admin');
+        $user = AuditContext::wrap('create_admin', function () use ($validated, $tempPassword, $resetToken) {
+            return DB::transaction(function () use ($validated, $tempPassword, $resetToken) {
+                $u = User::create([
+                    'name'                 => $validated['name'],
+                    'email'                => $validated['email'],
+                    'password'             => Hash::make($tempPassword),
+                    'must_change_password' => true,
+                    'email_verified_at'    => now(),
+                    'admin_position_id'    => $validated['admin_position_id'],
+                    'status'               => 'active',
+                    'reset_token'          => $resetToken,
+                    'reset_expiry'         => now()->addHours(24),
+                ]);
+                $u->assignRole('admin');
 
-            $position = AdminPosition::find($validated['admin_position_id']);
-            if ($position && $position->default_permissions) {
-                $u->syncPermissions($position->default_permissions);
-            }
+                $position = AdminPosition::find($validated['admin_position_id']);
+                if ($position && $position->default_permissions) {
+                    $u->syncPermissions($position->default_permissions);
+                }
 
-            return $u;
+                return $u;
+            });
         });
 
-        // Send account-created email
         $this->notifications->send(
             $user->email,
             'Your Admin Account - Salawag Senior High School',
@@ -174,23 +164,23 @@ class UserController extends Controller
         ], 201);
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, User $user)
     {
         abort_unless($user->hasRole('admin'), 404);
 
         $validated = $request->validate([
             'name'              => ['required', 'string', 'max:255'],
-            'email'             => ['required', 'email', 'max:255',
-                                    Rule::unique('users', 'email')->ignore($user->id)],
+            'email'             => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'admin_position_id' => ['required', 'integer', 'exists:admin_positions,id'],
         ]);
 
-        DB::transaction(function () use ($validated, $user) {
-            $user->update($validated);
+        AuditContext::wrap('update_admin', function () use ($validated, $user) {
+            DB::transaction(function () use ($validated, $user) {
+                $user->update($validated);
 
-            $position = AdminPosition::find($validated['admin_position_id']);
-            $user->syncPermissions($position?->default_permissions ?? []);
+                $position = AdminPosition::find($validated['admin_position_id']);
+                $user->syncPermissions($position?->default_permissions ?? []);
+            });
         });
 
         return response()->json([
@@ -199,7 +189,6 @@ class UserController extends Controller
         ]);
     }
 
-    /* ═══════════════ TOGGLE STATUS ═══════════════ */
     public function toggleStatus(Request $request, User $user)
     {
         abort_unless($user->hasRole('admin'), 404);
@@ -218,54 +207,47 @@ class UserController extends Controller
         $isDisabling = ($user->status ?? 'active') === 'active';
         $reason      = $validated['reason'] ?? null;
 
-        $user->update([
-            'status'          => $isDisabling ? 'disabled' : 'active',
-            'disabled_reason' => $isDisabling ? $reason : null,
-        ]);
+        AuditContext::wrap('toggle_admin_status', function () use ($user, $isDisabling, $reason) {
+            $user->update([
+                'status'          => $isDisabling ? 'disabled' : 'active',
+                'disabled_reason' => $isDisabling ? $reason : null,
+            ]);
+        }, ['reason' => $reason]);
 
         $adminName = $request->user()->name;
         $date      = now()->format('F d, Y \a\t h:i A');
 
         if ($isDisabling) {
-            $this->notifications->send(
-                $user->email,
-                'Account Disabled - Salawag Senior High School',
-                'account-disabled',
-                [
-                    'full_name'  => $user->name,
-                    'admin_name' => $adminName,
-                    'date'       => $date,
-                    'reason'     => $reason ?? 'No reason provided',
-                ]
-            );
-            return response()->json(['message' => 'User disabled. Email sent.', 'status' => 'disabled']);
-        }
-
-        $this->notifications->send(
-            $user->email,
-            'Account Reactivated - Salawag Senior High School',
-            'account-reactivated',
-            [
+            $this->notifications->send($user->email, 'Account Disabled - Salawag Senior High School', 'account-disabled', [
                 'full_name'  => $user->name,
                 'admin_name' => $adminName,
                 'date'       => $date,
-            ]
-        );
+                'reason'     => $reason ?? 'No reason provided',
+            ]);
+            return response()->json(['message' => 'User disabled. Email sent.', 'status' => 'disabled']);
+        }
+
+        $this->notifications->send($user->email, 'Account Reactivated - Salawag Senior High School', 'account-reactivated', [
+            'full_name'  => $user->name,
+            'admin_name' => $adminName,
+            'date'       => $date,
+        ]);
 
         return response()->json(['message' => 'User reactivated. Email sent.', 'status' => 'active']);
     }
 
-    /* ═══════════════ RESET PASSWORD ═══════════════ */
     public function resetPassword(Request $request, User $user)
     {
         abort_unless($user->hasRole('admin'), 404);
 
         $temp = 'Admin@' . Str::random(8);
 
-        $user->update([
-            'password'             => Hash::make($temp),
-            'must_change_password' => true,
-        ]);
+        AuditContext::wrap('reset_admin_password', function () use ($user, $temp) {
+            $user->update([
+                'password'             => Hash::make($temp),
+                'must_change_password' => true,
+            ]);
+        });
 
         return response()->json([
             'message'  => 'Password reset. Share the temporary key with the user.',
@@ -273,7 +255,6 @@ class UserController extends Controller
         ]);
     }
 
-    /* ═══════════════ DESTROY (revoke admin access) ═══════════════ */
     public function destroy(Request $request, User $user)
     {
         abort_unless($user->hasRole('admin'), 404);
@@ -285,11 +266,13 @@ class UserController extends Controller
             return response()->json(['message' => 'Cannot remove the primary admin.'], 422);
         }
 
-        $user->update([
-            'status'          => 'disabled',
-            'disabled_reason' => 'Admin access revoked by ' . $request->user()->name,
-        ]);
-        $user->removeRole('admin');
+        AuditContext::wrap('revoke_admin_access', function () use ($request, $user) {
+            $user->update([
+                'status'          => 'disabled',
+                'disabled_reason' => 'Admin access revoked by ' . $request->user()->name,
+            ]);
+            $user->removeRole('admin');
+        });
 
         return response()->json(['message' => 'Admin access revoked.']);
     }

@@ -38,9 +38,12 @@
             <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(exam.status)"></span>
             {{ exam.status }}
           </span>
-          <button type="button" @click="closeModal"
-                  class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <button
+            type="button"
+            @click.stop="closeModal"
+            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -104,18 +107,34 @@
 
           <!-- Applicants header -->
           <section>
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-2 gap-3 flex-wrap">
               <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC]">
                 Assigned Applicants
+                <span v-if="dirtyCount > 0"
+                      class="ml-2 px-1.5 py-0.5 rounded-full text-[9px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  {{ dirtyCount }} unsaved
+                </span>
               </h4>
-              <button type="button" @click="openPicker"
-                      :disabled="exam.status === 'Completed' || exam.status === 'Cancelled'"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Assign Applicants
-              </button>
+
+              <div class="flex items-center gap-2">
+                <button v-if="dirtyCount > 0" type="button" @click="saveAll"
+                        :disabled="isBulkSaving"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-white bg-[#004d08] hover:bg-emerald-900 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {{ isBulkSaving ? 'Saving…' : `Save All (${dirtyCount})` }}
+                </button>
+
+                <button type="button" @click="openPicker"
+                        :disabled="exam.status === 'Completed' || exam.status === 'Cancelled'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Assign Applicants
+                </button>
+              </div>
             </div>
 
             <div v-if="!applicants.length" class="py-12 text-center text-gray-400 dark:text-gray-500">
@@ -140,22 +159,47 @@
                       <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ a.name }}</p>
                       <p class="text-[10px] text-gray-400 font-mono">{{ a.reference }}</p>
                     </td>
+
                     <td class="py-2.5 px-3 text-gray-600 dark:text-gray-300">{{ a.strand || '—' }}</td>
+
+                    <!-- Score + non-score toggles -->
                     <td class="py-2.5 px-3">
-                      <input v-model="a.draft_score" type="number" min="0" max="100" step="0.01"
-                             :disabled="!canRecord"
-                             class="w-20 px-2 py-1 text-xs text-center bg-white dark:bg-[#1C261E] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none disabled:opacity-50" />
+                      <div class="flex flex-col items-center gap-1">
+                        <input
+                          v-model="a.draft_score"
+                          type="number" min="0" max="100" step="0.01"
+                          :disabled="resultLocked(a) || !canRecord || a.draft_absent || a.draft_interview"
+                          class="w-20 px-2 py-1 text-xs text-center bg-white dark:bg-[#1C261E] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                        />
+                        <div class="flex items-center gap-2 text-[9px]">
+                          <label class="flex items-center gap-1 cursor-pointer select-none text-gray-500 dark:text-gray-400"
+                                :title="'Mark as absent — score will be cleared'">
+                            <input type="checkbox" v-model="a.draft_absent"
+                                  @change="if (a.draft_absent) { a.draft_score = ''; a.draft_interview = false }"
+                                  :disabled="!canRecord"
+                                  class="w-3 h-3 accent-red-500 cursor-pointer" />
+                            Absent
+                          </label>
+                          <label class="flex items-center gap-1 cursor-pointer select-none text-gray-500 dark:text-gray-400"
+                                :title="'Mark for interview — score will be cleared'">
+                            <input type="checkbox" v-model="a.draft_interview"
+                                  @change="if (a.draft_interview) { a.draft_score = ''; a.draft_absent = false }"
+                                  :disabled="!canRecord"
+                                  class="w-3 h-3 accent-sky-500 cursor-pointer" />
+                            Interview
+                          </label>
+                        </div>
+                      </div>
                     </td>
+
+                    <!-- Computed result badge -->
                     <td class="py-2.5 px-3 text-center">
-                      <select v-model="a.draft_result" :disabled="!canRecord"
-                              class="px-2 py-1 text-[11px] bg-white dark:bg-[#1C261E] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none disabled:opacity-50 cursor-pointer">
-                        <option value="Pending">Pending</option>
-                        <option value="Passed">Passed</option>
-                        <option value="Failed">Failed</option>
-                        <option value="Absent">Absent</option>
-                        <option value="For Interview">For Interview</option>
-                      </select>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-normal uppercase tracking-wider border inline-flex items-center gap-1"
+                            :class="resultBadgeClass(computedResult(a))">
+                        {{ computedResult(a) }}
+                      </span>
                     </td>
+
                     <td class="py-2.5 px-3 text-right">
                       <div class="flex items-center justify-end gap-1.5">
                         <button type="button" @click="saveResult(a)"
@@ -236,6 +280,8 @@
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -243,13 +289,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'changed'])
-
+const flash = useFlash()
+const confirm = useConfirm()
 const view                = ref('applicants')
 const exam                = ref(null)
 const applicants          = ref([])
 const eligible            = ref([])
 const selectedApplicantIds = ref([])
-
+const resultLocked = (a) => a.result === 'Passed' && !a.draft_unlocking
 const isLoading    = ref(false)
 const isAssigning  = ref(false)
 const generalError = ref('')
@@ -279,16 +326,20 @@ const fetchDetails = async () => {
   isLoading.value = true
   try {
     const { data } = await axios.get(`/admin/entrance-exams/${props.exam.id}`)
-    exam.value = data.exam
+    exam.value         = data.exam
+    passingGrade.value = data.passing_grade ?? 75
+
     applicants.value = (data.applicants || []).map(a => ({
       ...a,
-      draft_score:  a.score ?? '',
-      draft_result: a.result || 'Pending',
-      draft_remarks: a.remarks ?? '',
+      draft_score:     a.score ?? '',
+      draft_absent:    a.result === 'Absent',
+      draft_interview: a.result === 'For Interview',
+      draft_remarks:   a.remarks ?? '',
       saving: false,
     }))
   } catch (e) {
     generalError.value = e.response?.data?.message || 'Failed to load exam details.'
+    flash.error(generalError.value)
   } finally {
     isLoading.value = false
   }
@@ -297,45 +348,121 @@ const fetchDetails = async () => {
 const isDirty = (a) => {
   const origScore  = a.score ?? ''
   const origResult = a.result || 'Pending'
-  return String(a.draft_score) !== String(origScore) || a.draft_result !== origResult
+  return String(a.draft_score ?? '') !== String(origScore) || computedResult(a) !== origResult
 }
 
 const saveResult = async (a) => {
   a.saving = true
   generalError.value = ''
   try {
+    const result = computedResult(a)
     const { data } = await axios.put(`/admin/exam-results/${a.id}`, {
       score:   a.draft_score === '' ? null : Number(a.draft_score),
-      result:  a.draft_result,
+      result,
       remarks: a.draft_remarks || null,
     })
-    a.score = a.draft_score
-    a.result = a.draft_result
-    a.remarks = a.draft_remarks
+
+    a.score  = a.draft_score
+    a.result = result
+
     emit('changed')
+
     if (data.conversion?.message) {
-      // Non-blocking info — no toast system yet, silent
-      console.info(data.conversion.message)
+      flash.success(`Saved. ${data.conversion.message}`)
+    } else {
+      flash.success(`${a.name} — saved as ${result}.`)
     }
   } catch (e) {
     generalError.value = e.response?.data?.message || 'Failed to save result.'
+    flash.error(generalError.value)
   } finally {
     a.saving = false
   }
 }
 
+const saveAll = async () => {
+  const dirty = applicants.value.filter(a => isDirty(a))
+  if (!dirty.length) return
+
+  const passing = dirty.filter(a => computedResult(a) === 'Passed').length
+  const failing = dirty.filter(a => computedResult(a) === 'Failed').length
+  const absent  = dirty.filter(a => computedResult(a) === 'Absent').length
+
+  const details = []
+  if (passing > 0) details.push(`${passing} applicant${passing === 1 ? '' : 's'} will be converted to student accounts and emailed their exam pass.`)
+  if (failing > 0) details.push(`${failing} applicant${failing === 1 ? '' : 's'} will receive a "Failed" notification.`)
+  if (absent  > 0) details.push(`${absent} applicant${absent === 1 ? '' : 's'} will receive an absence notice.`)
+
+  const { confirmed } = await confirm({
+    title: 'Save Exam Results',
+    message: `Save ${dirty.length} result${dirty.length === 1 ? '' : 's'}?`,
+    details,
+    confirmLabel: `Save All (${dirty.length})`,
+    variant: passing > 0 ? 'info' : 'warning',
+  })
+  if (!confirmed) return
+
+  isBulkSaving.value = true
+  generalError.value = ''
+
+  const payload = {
+    results: dirty.map(a => ({
+      id:      a.id,
+      score:   a.draft_score === '' ? null : Number(a.draft_score),
+      result:  computedResult(a),
+      remarks: a.draft_remarks || null,
+    })),
+  }
+
+  try {
+    const { data } = await axios.put(`/admin/entrance-exams/${props.exam.id}/results/bulk`, payload)
+    dirty.forEach(a => {
+      a.score  = a.draft_score
+      a.result = computedResult(a)
+    })
+    emit('changed')
+    flash.success(data.message || `Saved ${dirty.length} result${dirty.length === 1 ? '' : 's'}.`)
+    if (data.errors?.length) {
+      flash.info(`${data.errors.length} row(s) reported issues — check the log.`)
+    }
+  } catch (e) {
+    generalError.value = e.response?.data?.message || 'Bulk save failed.'
+    flash.error(generalError.value)
+  } finally {
+    isBulkSaving.value = false
+  }
+}
+
 const removeApplicant = async (a) => {
-  if (!confirm(`Remove ${a.name} from this exam?`)) return
+  const { confirmed, reason } = await confirm({
+    title: 'Remove Applicant',
+    message: `Remove ${a.name} from "${exam.value?.exam_name}"?`,
+    details: [
+      'They will no longer be scheduled for this exam session.',
+      'They can be reassigned to another exam later.',
+    ],
+    confirmLabel: 'Remove',
+    variant: 'danger',
+    requireReason: true,
+    reasonLabel: 'Reason (optional)',
+    reasonPlaceholder: 'e.g. transferred to a different session',
+    reasonRequired: false,
+  })
+  if (!confirmed) return
+
   a.saving = true
   generalError.value = ''
   try {
-    await axios.post(`/admin/entrance-exams/${props.exam.id}/remove-applicant`, {
+    await axios.post(`/admin/entrance-exams/${exam.value.id}/remove-applicant`, {
       applicant_id: a.applicant_id,
+      reason: reason || null,
     })
     applicants.value = applicants.value.filter(x => x.id !== a.id)
     emit('changed')
+    flash.success(`${a.name} removed.`)
   } catch (e) {
     generalError.value = e.response?.data?.message || 'Failed to remove applicant.'
+    flash.error(generalError.value)
   } finally {
     a.saving = false
   }
@@ -347,10 +474,11 @@ const openPicker = async () => {
   eligible.value = []
   generalError.value = ''
   try {
-    const { data } = await axios.get(`/admin/entrance-exams/${props.exam.id}/eligible-applicants`)
+    const { data } = await axios.get(`/admin/entrance-exams/${exam.value.id}/eligible-applicants`)
     eligible.value = data.applicants || []
   } catch (e) {
     generalError.value = e.response?.data?.message || 'Failed to load eligible applicants.'
+    flash.error(generalError.value)
   }
 }
 
@@ -358,17 +486,19 @@ const assignSelected = async () => {
   isAssigning.value = true
   generalError.value = ''
   try {
-    const { data } = await axios.post(`/admin/entrance-exams/${props.exam.id}/assign`, {
-      applicant_ids: selectedApplicantIds.value,
-    })
-    // Reload applicants then flip back to list
+    const { data } = await axios.post(
+      `/admin/entrance-exams/${exam.value.id}/assign`,
+      { applicant_ids: selectedApplicantIds.value }
+    )
+
     await fetchDetails()
     view.value = 'applicants'
     selectedApplicantIds.value = []
     emit('changed')
-    console.info(data.message)
+    flash.success(data.message || 'Applicants assigned.')
   } catch (e) {
     generalError.value = e.response?.data?.message || 'Failed to assign applicants.'
+    flash.error(generalError.value)
   } finally {
     isAssigning.value = false
   }
@@ -391,8 +521,46 @@ const statusDotClass = (status) => ({
   Upcoming: 'bg-sky-500', Ongoing: 'bg-blue-500', Completed: 'bg-emerald-500', Cancelled: 'bg-gray-400',
 }[status] || 'bg-gray-400')
 
-const closeModal = () => {
+const closeModal = async () => {
+  if (dirtyCount.value > 0) {
+    const { confirmed } = await confirm({
+      title: 'Unsaved Changes',
+      message: `You have ${dirtyCount.value} unsaved change${dirtyCount.value === 1 ? '' : 's'}.`,
+      details: ['If you close now, your edits will be discarded.'],
+      confirmLabel: 'Discard & Close',
+      cancelLabel: 'Keep Editing',
+      variant: 'warning',
+    })
+    if (!confirmed) return
+  }
   reset()
   emit('close')
 }
+const passingGrade = ref(75)      // overwritten by show() response
+const isBulkSaving = ref(false)
+
+const dirtyCount = computed(() =>
+  applicants.value.filter(a => isDirty(a)).length
+)
+
+// Score → Passed/Failed. Absent / Interview toggles override.
+const computedResult = (a) => {
+  if (a.draft_absent)    return 'Absent'
+  if (a.draft_interview) return 'For Interview'
+
+  const raw = a.draft_score
+  if (raw === '' || raw === null || raw === undefined) return 'Pending'
+
+  const n = Number(raw)
+  if (Number.isNaN(n)) return 'Pending'
+  return n >= passingGrade.value ? 'Passed' : 'Failed'
+}
+
+const resultBadgeClass = (result) => ({
+  Passed:          'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+  Failed:          'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
+  Absent:          'bg-gray-100 dark:bg-[#232D26] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#3F4F43]',
+  'For Interview': 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+  Pending:         'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+}[result] || 'bg-gray-100 dark:bg-[#232D26] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#3F4F43]')
 </script>

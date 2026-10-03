@@ -18,9 +18,12 @@
             </p>
           </div>
         </div>
-        <button type="button" @click="closeModal"
-                class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <button
+          type="button"
+          @click.stop="closeModal"
+          class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+        >
+          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -140,6 +143,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show:        { type: Boolean, default: false },
@@ -150,6 +154,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const flash = useFlash()
 const isLoading    = ref(false)
 const generalError = ref('')
 const errors       = ref({})
@@ -208,11 +213,18 @@ const submit = async () => {
   generalError.value = ''
 
   try {
-    const url = isEditing.value
-      ? `/admin/entrance-exams/${props.exam.id}`
-      : '/admin/entrance-exams'
+    const url    = isEditing.value ? `/admin/entrance-exams/${props.exam.id}` : '/admin/entrance-exams'
     const method = isEditing.value ? 'put' : 'post'
-    await axios[method](url, form)
+    const { data } = await axios[method](url, form)
+
+    flash.success(
+      isEditing.value
+        ? 'Exam updated.'
+        : (data?.auto_assigned
+            ? `Exam scheduled — ${data.auto_assigned} applicant(s) auto-assigned.`
+            : 'Exam scheduled.')
+    )
+
     emit('saved')
     closeModal()
   } catch (error) {
@@ -222,6 +234,7 @@ const submit = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Failed to save exam.'
     }
+    flash.error(generalError.value)
   } finally {
     isLoading.value = false
   }

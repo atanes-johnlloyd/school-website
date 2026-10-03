@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolYear;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -11,7 +12,6 @@ use Inertia\Response;
 
 class SchoolYearController extends Controller
 {
-    /* ═══════════════ INDEX — page shell with nested data ═══════════════ */
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/SchoolYears/Index', [
@@ -22,7 +22,6 @@ class SchoolYearController extends Controller
         ]);
     }
 
-    /* ═══════════════ LIST — JSON endpoint (kept for API parity) ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -61,7 +60,6 @@ class SchoolYearController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -71,24 +69,24 @@ class SchoolYearController extends Controller
             'is_active'  => ['boolean'],
         ]);
 
-        if (! empty($validated['is_active'])) {
-            SchoolYear::query()->update(['is_active' => false]);
-        }
+        $year = AuditContext::wrap('create_school_year', function () use ($validated) {
+            // Deactivate siblings via per-model updates so Auditable fires on each.
+            if (! empty($validated['is_active'])) {
+                SchoolYear::where('is_active', true)->get()
+                    ->each(fn (SchoolYear $y) => $y->update(['is_active' => false]));
+            }
 
-        $year = SchoolYear::create($validated);
+            return SchoolYear::create($validated);
+        });
 
         return response()->json(['school_year' => $year], 201);
     }
 
-    /* ═══════════════ SHOW ═══════════════ */
     public function show(SchoolYear $schoolYear)
     {
-        return response()->json([
-            'school_year' => $schoolYear->load('terms'),
-        ]);
+        return response()->json(['school_year' => $schoolYear->load('terms')]);
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, SchoolYear $schoolYear)
     {
         $validated = $request->validate([
@@ -99,16 +97,20 @@ class SchoolYearController extends Controller
             'is_active'  => ['boolean'],
         ]);
 
-        if (! empty($validated['is_active'])) {
-            SchoolYear::where('id', '!=', $schoolYear->id)->update(['is_active' => false]);
-        }
+        AuditContext::wrap('update_school_year', function () use ($schoolYear, $validated) {
+            if (! empty($validated['is_active'])) {
+                SchoolYear::where('id', '!=', $schoolYear->id)
+                    ->where('is_active', true)
+                    ->get()
+                    ->each(fn (SchoolYear $y) => $y->update(['is_active' => false]));
+            }
 
-        $schoolYear->update($validated);
+            $schoolYear->update($validated);
+        });
 
         return response()->json(['school_year' => $schoolYear->fresh()]);
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(SchoolYear $schoolYear)
     {
         if ($schoolYear->terms()->exists()
@@ -119,24 +121,30 @@ class SchoolYearController extends Controller
             ], 422);
         }
 
-        $schoolYear->delete();
+        AuditContext::wrap('delete_school_year', function () use ($schoolYear) {
+            $schoolYear->delete();
+        });
 
         return response()->json(['message' => 'School year deleted.']);
     }
 
-    /* ═══════════════ ACTIVATE ═══════════════ */
     public function activate(SchoolYear $schoolYear)
     {
-        SchoolYear::query()->update(['is_active' => false]);
-        $schoolYear->update(['is_active' => true]);
+        AuditContext::wrap('activate_school_year', function () use ($schoolYear) {
+            SchoolYear::where('id', '!=', $schoolYear->id)
+                ->where('is_active', true)
+                ->get()
+                ->each(fn (SchoolYear $y) => $y->update(['is_active' => false]));
+
+            $schoolYear->update(['is_active' => true]);
+        });
 
         return response()->json([
-            'message' => 'Activated.',
+            'message'     => 'Activated.',
             'school_year' => $schoolYear,
         ]);
     }
 
-    /* ═══════════════ SET ACTIVE (legacy alias) ═══════════════ */
     public function setActive(SchoolYear $schoolYear)
     {
         return $this->activate($schoolYear);

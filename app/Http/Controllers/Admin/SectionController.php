@@ -10,6 +10,7 @@ use App\Models\Section;
 use App\Models\Strand;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -18,25 +19,20 @@ use Inertia\Response;
 
 class SectionController extends Controller
 {
-    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/Sections/Index', [
             'strands' => Strand::select('id', 'code', 'name')->orderBy('code')->get(),
             'teachers' => Teacher::with('user:id,name')
-                ->where('is_active', true)
-                ->get()
+                ->where('is_active', true)->get()
                 ->map(fn ($t) => ['id' => $t->id, 'name' => $t->user?->name])
-                ->filter(fn ($t) => $t['name'])
-                ->values(),
+                ->filter(fn ($t) => $t['name'])->values(),
             'schoolYears' => SchoolYear::select('id', 'label', 'is_active')
-                ->orderByDesc('start_date')
-                ->get(),
+                ->orderByDesc('start_date')->get(),
             'defaultMaxCapacity' => \App\Models\SystemSetting::maxClassSize(),
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -52,48 +48,26 @@ class SectionController extends Controller
         $sortBy  = $validated['sort_by']  ?? 'name';
         $sortDir = $validated['sort_dir'] ?? 'asc';
 
-        // Default to active school year if not specified
         $schoolYearId = $validated['school_year_id']
             ?? SchoolYear::where('is_active', true)->value('id');
 
         $query = Section::query()
-            ->with([
-                'schoolYear:id,label',
-                'strand:id,code,name',
-                'adviser.user:id,name',
-            ])
-            ->withCount([
-                'enrollments as enrolled_count' => fn ($q) => $q->where('status', 'enrolled'),
-            ]);
+            ->with(['schoolYear:id,label', 'strand:id,code,name', 'adviser.user:id,name'])
+            ->withCount(['enrollments as enrolled_count' => fn ($q) => $q->where('status', 'enrolled')]);
 
-        if ($schoolYearId) {
-            $query->where('school_year_id', $schoolYearId);
-        }
-        if (! empty($validated['strand_id'])) {
-            $query->where('strand_id', $validated['strand_id']);
-        }
-        if (! empty($validated['grade_level'])) {
-            $query->where('grade_level', $validated['grade_level']);
-        }
-        if (! empty($validated['search'])) {
-            $query->where('name', 'like', '%' . $validated['search'] . '%');
-        }
+        if ($schoolYearId) $query->where('school_year_id', $schoolYearId);
+        if (! empty($validated['strand_id']))   $query->where('strand_id', $validated['strand_id']);
+        if (! empty($validated['grade_level'])) $query->where('grade_level', $validated['grade_level']);
+        if (! empty($validated['search']))      $query->where('name', 'like', '%' . $validated['search'] . '%');
 
-        // Sort
         switch ($sortBy) {
             case 'strand':
                 $query->leftJoin('strands', 'strands.id', '=', 'sections.strand_id')
-                    ->orderBy('strands.code', $sortDir)
-                    ->select('sections.*');
+                    ->orderBy('strands.code', $sortDir)->select('sections.*');
                 break;
-            case 'capacity':
-                $query->orderBy('max_capacity', $sortDir);
-                break;
-            case 'enrolled':
-                $query->orderBy('enrolled_count', $sortDir);
-                break;
-            default:
-                $query->orderBy($sortBy, $sortDir);
+            case 'capacity': $query->orderBy('max_capacity', $sortDir); break;
+            case 'enrolled': $query->orderBy('enrolled_count', $sortDir); break;
+            default:         $query->orderBy($sortBy, $sortDir);
         }
 
         $sections = $query->paginate($validated['per_page'] ?? 10);
@@ -113,16 +87,12 @@ class SectionController extends Controller
             'enrolled_count' => $s->enrolled_count,
         ]);
 
-        // Aggregate counts
         $allSectionsQuery = Section::query();
-        if ($schoolYearId) {
-            $allSectionsQuery->where('school_year_id', $schoolYearId);
-        }
+        if ($schoolYearId) $allSectionsQuery->where('school_year_id', $schoolYearId);
         $allSections = $allSectionsQuery->get();
         $totalCapacity = $allSections->sum('max_capacity');
         $totalEnrolled = Enrollment::whereIn('section_id', $allSections->pluck('id'))
-            ->where('status', 'enrolled')
-            ->count();
+            ->where('status', 'enrolled')->count();
 
         return response()->json([
             'sections' => $sections,
@@ -134,24 +104,17 @@ class SectionController extends Controller
             ],
             'sort'   => ['by' => $sortBy, 'dir' => $sortDir],
             'counts' => [
-                'total_sections'  => $allSections->count(),
-                'total_capacity'  => $totalCapacity,
-                'total_enrolled'  => $totalEnrolled,
-                'occupancy_rate'  => $totalCapacity > 0
-                    ? round(($totalEnrolled / $totalCapacity) * 100, 1)
-                    : 0,
+                'total_sections' => $allSections->count(),
+                'total_capacity' => $totalCapacity,
+                'total_enrolled' => $totalEnrolled,
+                'occupancy_rate' => $totalCapacity > 0 ? round(($totalEnrolled / $totalCapacity) * 100, 1) : 0,
             ],
         ]);
     }
 
-    /* ═══════════════ SHOW — full detail with roster ═══════════════ */
     public function show(Section $section)
     {
-        $section->load([
-            'schoolYear:id,label',
-            'strand:id,code,name',
-            'adviser.user:id,name',
-        ]);
+        $section->load(['schoolYear:id,label', 'strand:id,code,name', 'adviser.user:id,name']);
 
         $enrollments = Enrollment::where('section_id', $section->id)
             ->where('status', 'enrolled')
@@ -171,10 +134,10 @@ class SectionController extends Controller
             ->with(['subject:id,code,name', 'teacher.user:id,name'])
             ->get()
             ->map(fn ($c) => [
-                'id'         => $c->id,
-                'subject'    => $c->subject?->name,
+                'id'           => $c->id,
+                'subject'      => $c->subject?->name,
                 'subject_code' => $c->subject?->code,
-                'teacher'    => $c->teacher?->user?->name,
+                'teacher'      => $c->teacher?->user?->name,
             ]);
 
         return response()->json([
@@ -196,7 +159,6 @@ class SectionController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -214,12 +176,13 @@ class SectionController extends Controller
             'max_capacity'   => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $section = Section::create($validated);
+        $section = AuditContext::wrap('create_section', function () use ($validated) {
+            return Section::create($validated);
+        });
 
         return response()->json(['section' => $section], 201);
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, Section $section)
     {
         $validated = $request->validate([
@@ -235,12 +198,13 @@ class SectionController extends Controller
             'max_capacity' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $section->update($validated);
+        AuditContext::wrap('update_section', function () use ($section, $validated) {
+            $section->update($validated);
+        });
 
         return response()->json(['section' => $section->fresh()]);
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(Section $section)
     {
         if ($section->enrollments()->where('status', 'enrolled')->exists()) {
@@ -249,12 +213,13 @@ class SectionController extends Controller
             ], 422);
         }
 
-        $section->delete();
+        AuditContext::wrap('delete_section', function () use ($section) {
+            $section->delete();
+        });
 
         return response()->json(['message' => 'Section deleted.']);
     }
 
-    /* ═══════════════ ELIGIBLE STUDENTS — for the enroll picker ═══════════════ */
     public function eligibleStudents(Request $request, Section $section)
     {
         $validated = $request->validate([
@@ -263,8 +228,7 @@ class SectionController extends Controller
 
         $query = Student::with('user:id,name,email')
             ->whereDoesntHave('enrollments', function ($q) use ($section) {
-                $q->where('school_year_id', $section->school_year_id)
-                  ->where('status', 'enrolled');
+                $q->where('school_year_id', $section->school_year_id)->where('status', 'enrolled');
             })
             ->where('status', 'active');
 
@@ -285,21 +249,19 @@ class SectionController extends Controller
             'email' => $s->user?->email,
         ]);
 
+        $currentCount = Enrollment::where('section_id', $section->id)
+            ->where('status', 'enrolled')->count();
+
         return response()->json([
             'students' => $students,
             'capacity' => [
-                'max'      => $section->max_capacity,
-                'current'  => Enrollment::where('section_id', $section->id)
-                    ->where('status', 'enrolled')
-                    ->count(),
-                'remaining' => max(0, $section->max_capacity - Enrollment::where('section_id', $section->id)
-                    ->where('status', 'enrolled')
-                    ->count()),
+                'max'       => $section->max_capacity,
+                'current'   => $currentCount,
+                'remaining' => max(0, ($section->max_capacity ?? 0) - $currentCount),
             ],
         ]);
     }
 
-    /* ═══════════════ ENROLL STUDENT ═══════════════ */
     public function enrollStudent(Request $request, Section $section)
     {
         $validated = $request->validate([
@@ -308,49 +270,44 @@ class SectionController extends Controller
 
         $student = Student::findOrFail($validated['student_id']);
 
-        // Capacity check
         $currentCount = Enrollment::where('section_id', $section->id)
-            ->where('status', 'enrolled')
-            ->count();
+            ->where('status', 'enrolled')->count();
 
         if ($section->max_capacity !== null && $currentCount >= $section->max_capacity) {
             return response()->json(['message' => 'Section is at maximum capacity.'], 422);
         }
 
-        // Already enrolled in the same school year
         $existing = Enrollment::where('student_id', $student->id)
             ->where('school_year_id', $section->school_year_id)
             ->where('status', 'enrolled')
             ->first();
 
         if ($existing) {
-            return response()->json([
-                'message' => 'Student already enrolled for this school year.',
-            ], 422);
+            return response()->json(['message' => 'Student already enrolled for this school year.'], 422);
         }
 
-        DB::transaction(function () use ($student, $section, $request) {
-            Enrollment::create([
-                'student_id'     => $student->id,
-                'school_year_id' => $section->school_year_id,
-                'section_id'     => $section->id,
-                'status'         => 'enrolled',
-                'enrolled_at'    => now(),
-                'enrolled_by'    => $request->user()?->id,
-            ]);
-
-            // Attach to all classrooms in this section
-            ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
-                $class->students()->syncWithoutDetaching([
-                    $student->id => ['status' => 'active', 'enrolled_at' => now()],
+        AuditContext::wrap('enroll_in_section', function () use ($student, $section, $request) {
+            DB::transaction(function () use ($student, $section, $request) {
+                Enrollment::create([
+                    'student_id'     => $student->id,
+                    'school_year_id' => $section->school_year_id,
+                    'section_id'     => $section->id,
+                    'status'         => 'enrolled',
+                    'enrolled_at'    => now(),
+                    'enrolled_by'    => $request->user()?->id,
                 ]);
+
+                ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
+                    $class->students()->syncWithoutDetaching([
+                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
+                    ]);
+                });
             });
-        });
+        }, ['student_id' => $student->id]);
 
         return response()->json(['message' => 'Student enrolled in section.'], 201);
     }
 
-    /* ═══════════════ REMOVE STUDENT ═══════════════ */
     public function removeStudent(Section $section, Student $student)
     {
         $enrollment = Enrollment::where('student_id', $student->id)
@@ -359,18 +316,18 @@ class SectionController extends Controller
             ->first();
 
         if (! $enrollment) {
-            return response()->json([
-                'message' => 'Student is not enrolled in this section.',
-            ], 422);
+            return response()->json(['message' => 'Student is not enrolled in this section.'], 422);
         }
 
-        DB::transaction(function () use ($section, $student, $enrollment) {
-            $enrollment->update(['status' => 'dropped']);
+        AuditContext::wrap('remove_from_section', function () use ($section, $student, $enrollment) {
+            DB::transaction(function () use ($section, $student, $enrollment) {
+                $enrollment->update(['status' => 'dropped']);
 
-            ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
-                $class->students()->detach($student->id);
+                ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
+                    $class->students()->detach($student->id);
+                });
             });
-        });
+        }, ['student_id' => $student->id]);
 
         return response()->json(['message' => 'Student removed from section.']);
     }

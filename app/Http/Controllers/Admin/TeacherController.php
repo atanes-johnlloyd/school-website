@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,6 @@ use Inertia\Response;
 
 class TeacherController extends Controller
 {
-    /* ═══════════════ INDEX — page shell with filter options ═══════════════ */
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/Teachers/Index', [
@@ -28,7 +28,6 @@ class TeacherController extends Controller
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -117,7 +116,6 @@ class TeacherController extends Controller
         ]);
     }
 
-    /* ═══════════════ SHOW — full detail ═══════════════ */
     public function show(Teacher $teacher)
     {
         $teacher->load([
@@ -137,7 +135,6 @@ class TeacherController extends Controller
                 'specialization'  => $teacher->specialization,
                 'is_active'       => (bool) $teacher->is_active,
                 'created_at'      => $teacher->created_at?->toIso8601String(),
-
                 'user' => [
                     'id'             => $teacher->user->id,
                     'name'           => $teacher->user->name,
@@ -151,7 +148,6 @@ class TeacherController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -168,32 +164,33 @@ class TeacherController extends Controller
             'is_active'      => ['boolean'],
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $user = User::create([
-                'name'                 => $validated['name'],
-                'email'                => $validated['email'],
-                'password'             => Hash::make($validated['password']),
-                'must_change_password' => true,
-            ]);
-            if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
+        AuditContext::wrap('create_teacher', function () use ($validated) {
+            DB::transaction(function () use ($validated) {
+                $user = User::create([
+                    'name'                 => $validated['name'],
+                    'email'                => $validated['email'],
+                    'password'             => Hash::make($validated['password']),
+                    'must_change_password' => true,
+                ]);
+                if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
 
-            Teacher::create([
-                'user_id'        => $user->id,
-                'employee_no'    => $validated['employee_no'],
-                'sex'            => $validated['sex']            ?? null,
-                'date_of_birth'  => $validated['date_of_birth']  ?? null,
-                'contact_number' => $validated['contact_number'] ?? null,
-                'date_hired'     => $validated['date_hired']     ?? null,
-                'department'     => $validated['department']     ?? null,
-                'specialization' => $validated['specialization'] ?? null,
-                'is_active'      => $validated['is_active']      ?? true,
-            ]);
+                Teacher::create([
+                    'user_id'        => $user->id,
+                    'employee_no'    => $validated['employee_no'],
+                    'sex'            => $validated['sex']            ?? null,
+                    'date_of_birth'  => $validated['date_of_birth']  ?? null,
+                    'contact_number' => $validated['contact_number'] ?? null,
+                    'date_hired'     => $validated['date_hired']     ?? null,
+                    'department'     => $validated['department']     ?? null,
+                    'specialization' => $validated['specialization'] ?? null,
+                    'is_active'      => $validated['is_active']      ?? true,
+                ]);
+            });
         });
 
         return redirect()->back()->with('success', 'Faculty member created successfully.');
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, Teacher $teacher)
     {
         $validated = $request->validate([
@@ -209,49 +206,53 @@ class TeacherController extends Controller
             'is_active'      => ['boolean'],
         ]);
 
-        DB::transaction(function () use ($validated, $teacher) {
-            $teacher->user->update([
-                'name'  => $validated['name'],
-                'email' => $validated['email'],
-            ]);
+        AuditContext::wrap('update_teacher', function () use ($validated, $teacher) {
+            DB::transaction(function () use ($validated, $teacher) {
+                $teacher->user->update([
+                    'name'  => $validated['name'],
+                    'email' => $validated['email'],
+                ]);
 
-            $teacher->update([
-                'employee_no'    => $validated['employee_no'],
-                'sex'            => $validated['sex']            ?? null,
-                'date_of_birth'  => $validated['date_of_birth']  ?? null,
-                'contact_number' => $validated['contact_number'] ?? null,
-                'date_hired'     => $validated['date_hired']     ?? null,
-                'department'     => $validated['department']     ?? null,
-                'specialization' => $validated['specialization'] ?? null,
-                'is_active'      => $validated['is_active']      ?? $teacher->is_active,
-            ]);
+                $teacher->update([
+                    'employee_no'    => $validated['employee_no'],
+                    'sex'            => $validated['sex']            ?? null,
+                    'date_of_birth'  => $validated['date_of_birth']  ?? null,
+                    'contact_number' => $validated['contact_number'] ?? null,
+                    'date_hired'     => $validated['date_hired']     ?? null,
+                    'department'     => $validated['department']     ?? null,
+                    'specialization' => $validated['specialization'] ?? null,
+                    'is_active'      => $validated['is_active']      ?? $teacher->is_active,
+                ]);
+            });
         });
 
         return redirect()->back()->with('success', 'Faculty profile updated successfully.');
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(Teacher $teacher)
     {
-        $teacher->update(['is_active' => false]);
-        $teacher->delete();
+        AuditContext::wrap('deactivate_teacher', function () use ($teacher) {
+            $teacher->update(['is_active' => false]);
+            $teacher->delete();
+        });
 
         return redirect()->back()->with('success', 'Faculty member deactivated.');
     }
 
-    /* ═══════════════ RESET PASSWORD ═══════════════ */
     public function resetPassword(Teacher $teacher)
     {
         $temp = Str::random(16);
-        $teacher->user->update([
-            'password'             => Hash::make($temp),
-            'must_change_password' => true,
-        ]);
+
+        AuditContext::wrap('reset_teacher_password', function () use ($teacher, $temp) {
+            $teacher->user->update([
+                'password'             => Hash::make($temp),
+                'must_change_password' => true,
+            ]);
+        });
 
         return redirect()->back()->with('success', "Password reset to temporary key: {$temp}");
     }
 
-    /* ═══════════════ EXPORT ═══════════════ */
     public function export(Request $request)
     {
         $validated = $request->validate([
@@ -306,7 +307,6 @@ class TeacherController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    /* ═══════════════ IMPORT ═══════════════ */
     public function import(Request $request)
     {
         $request->validate([
@@ -338,58 +338,60 @@ class TeacherController extends Controller
         $errors  = [];
         $rowNum  = 1;
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
-            if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) continue;
+        AuditContext::wrap('bulk_import_teachers', function () use (&$created, &$errors, &$rowNum, $handle, $header, $required) {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNum++;
+                if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) continue;
 
-            $row  = array_pad($row, count($header), null);
-            $row  = array_slice($row, 0, count($header));
-            $data = array_combine($header, $row);
+                $row  = array_pad($row, count($header), null);
+                $row  = array_slice($row, 0, count($header));
+                $data = array_combine($header, $row);
 
-            try {
-                foreach ($required as $col) {
-                    if (empty(trim((string) ($data[$col] ?? '')))) {
-                        throw new \RuntimeException("Column '{$col}' is empty.");
+                try {
+                    foreach ($required as $col) {
+                        if (empty(trim((string) ($data[$col] ?? '')))) {
+                            throw new \RuntimeException("Column '{$col}' is empty.");
+                        }
                     }
+
+                    $email = trim((string) $data['email']);
+                    $empNo = trim((string) $data['employee_no']);
+
+                    if (User::where('email', $email)->exists()) {
+                        throw new \RuntimeException("Email '{$email}' already exists.");
+                    }
+                    if (Teacher::where('employee_no', $empNo)->exists()) {
+                        throw new \RuntimeException("Employee number '{$empNo}' already exists.");
+                    }
+
+                    DB::transaction(function () use ($data, $email, $empNo) {
+                        $user = User::create([
+                            'name'                 => trim((string) $data['name']),
+                            'email'                => $email,
+                            'password'             => Hash::make(Str::random(16)),
+                            'must_change_password' => true,
+                        ]);
+                        if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
+
+                        Teacher::create([
+                            'user_id'        => $user->id,
+                            'employee_no'    => $empNo,
+                            'sex'            => filled($data['sex']            ?? null) ? strtolower(trim($data['sex'])) : null,
+                            'date_of_birth'  => filled($data['date_of_birth']  ?? null) ? $data['date_of_birth']          : null,
+                            'contact_number' => filled($data['contact_number'] ?? null) ? trim($data['contact_number'])   : null,
+                            'date_hired'     => filled($data['date_hired']     ?? null) ? $data['date_hired']             : null,
+                            'department'     => filled($data['department']     ?? null) ? trim($data['department'])       : null,
+                            'specialization' => filled($data['specialization'] ?? null) ? trim($data['specialization'])   : null,
+                            'is_active'      => strtolower(trim((string) ($data['is_active'] ?? 'yes'))) !== 'no',
+                        ]);
+                    });
+
+                    $created++;
+                } catch (\Throwable $e) {
+                    $errors[] = "Row {$rowNum}: " . $e->getMessage();
                 }
-
-                $email = trim((string) $data['email']);
-                $empNo = trim((string) $data['employee_no']);
-
-                if (User::where('email', $email)->exists()) {
-                    throw new \RuntimeException("Email '{$email}' already exists.");
-                }
-                if (Teacher::where('employee_no', $empNo)->exists()) {
-                    throw new \RuntimeException("Employee number '{$empNo}' already exists.");
-                }
-
-                DB::transaction(function () use ($data, $email, $empNo) {
-                    $user = User::create([
-                        'name'                 => trim((string) $data['name']),
-                        'email'                => $email,
-                        'password'             => Hash::make(Str::random(16)),
-                        'must_change_password' => true,
-                    ]);
-                    if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
-
-                    Teacher::create([
-                        'user_id'        => $user->id,
-                        'employee_no'    => $empNo,
-                        'sex'            => filled($data['sex']            ?? null) ? strtolower(trim($data['sex'])) : null,
-                        'date_of_birth'  => filled($data['date_of_birth']  ?? null) ? $data['date_of_birth']          : null,
-                        'contact_number' => filled($data['contact_number'] ?? null) ? trim($data['contact_number'])   : null,
-                        'date_hired'     => filled($data['date_hired']     ?? null) ? $data['date_hired']             : null,
-                        'department'     => filled($data['department']     ?? null) ? trim($data['department'])       : null,
-                        'specialization' => filled($data['specialization'] ?? null) ? trim($data['specialization'])   : null,
-                        'is_active'      => strtolower(trim((string) ($data['is_active'] ?? 'yes'))) !== 'no',
-                    ]);
-                });
-
-                $created++;
-            } catch (\Throwable $e) {
-                $errors[] = "Row {$rowNum}: " . $e->getMessage();
             }
-        }
+        });
 
         fclose($handle);
 

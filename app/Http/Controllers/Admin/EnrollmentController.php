@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Section;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -20,11 +21,9 @@ class EnrollmentController extends Controller
 
         return Inertia::render('Admin/Enrollments/Index', [
             'schoolYears' => SchoolYear::select('id', 'label', 'is_active')
-                ->orderByDesc('start_date')
-                ->get(),
+                ->orderByDesc('start_date')->get(),
             'sections' => Section::with(['strand:id,code'])
-                ->orderBy('name')
-                ->get()
+                ->orderBy('name')->get()
                 ->map(fn ($s) => [
                     'id'             => $s->id,
                     'name'           => $s->name,
@@ -52,14 +51,13 @@ class EnrollmentController extends Controller
         $sortBy  = $validated['sort_by']  ?? 'enrolled_at';
         $sortDir = $validated['sort_dir'] ?? 'desc';
 
-        $query = Enrollment::query()
-            ->with([
-                'student.user:id,name,email',
-                'student:id,user_id,lrn',
-                'section.strand:id,code',
-                'schoolYear:id,label',
-                'enrolledBy:id,name',
-            ]);
+        $query = Enrollment::query()->with([
+            'student.user:id,name,email',
+            'student:id,user_id,lrn',
+            'section.strand:id,code',
+            'schoolYear:id,label',
+            'enrolledBy:id,name',
+        ]);
 
         if (! empty($validated['status']))         $query->where('status', $validated['status']);
         if (! empty($validated['school_year_id'])) $query->where('school_year_id', $validated['school_year_id']);
@@ -135,17 +133,19 @@ class EnrollmentController extends Controller
             return response()->json(['message' => 'Assign a section before approving.'], 422);
         }
 
-        DB::transaction(function () use ($enrollment, $request) {
-            $enrollment->update([
-                'status'      => 'enrolled',
-                'enrolled_at' => now(),
-                'enrolled_by' => $request->user()->id,
-            ]);
-
-            ClassRoom::where('section_id', $enrollment->section_id)->each(function ($class) use ($enrollment) {
-                $class->students()->syncWithoutDetaching([
-                    $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
+        AuditContext::wrap('approve_enrollment', function () use ($enrollment, $request) {
+            DB::transaction(function () use ($enrollment, $request) {
+                $enrollment->update([
+                    'status'      => 'enrolled',
+                    'enrolled_at' => now(),
+                    'enrolled_by' => $request->user()->id,
                 ]);
+
+                ClassRoom::where('section_id', $enrollment->section_id)->each(function ($class) use ($enrollment) {
+                    $class->students()->syncWithoutDetaching([
+                        $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
+                    ]);
+                });
             });
         });
 
@@ -158,7 +158,9 @@ class EnrollmentController extends Controller
             return response()->json(['message' => 'Only pending enrollments can be rejected.'], 422);
         }
 
-        $enrollment->update(['status' => 'dropped']);
+        AuditContext::wrap('reject_enrollment', function () use ($enrollment) {
+            $enrollment->update(['status' => 'dropped']);
+        });
 
         return response()->json(['message' => 'Enrollment rejected.']);
     }
@@ -183,28 +185,30 @@ class EnrollmentController extends Controller
             return response()->json(['message' => 'Section is at maximum capacity.'], 422);
         }
 
-        DB::transaction(function () use ($enrollment, $newSection) {
-            if ($enrollment->section_id && $enrollment->section_id !== $newSection->id) {
-                $old = Section::with('classrooms')->find($enrollment->section_id);
-                if ($old) {
-                    foreach ($old->classrooms as $class) {
-                        $class->students()->detach($enrollment->student_id);
+        AuditContext::wrap('assign_section', function () use ($enrollment, $newSection) {
+            DB::transaction(function () use ($enrollment, $newSection) {
+                if ($enrollment->section_id && $enrollment->section_id !== $newSection->id) {
+                    $old = Section::with('classrooms')->find($enrollment->section_id);
+                    if ($old) {
+                        foreach ($old->classrooms as $class) {
+                            $class->students()->detach($enrollment->student_id);
+                        }
                     }
                 }
-            }
 
-            $enrollment->update([
-                'section_id'  => $newSection->id,
-                'status'      => 'enrolled',
-                'enrolled_at' => $enrollment->enrolled_at ?? now(),
-            ]);
-
-            foreach ($newSection->classrooms as $class) {
-                $class->students()->syncWithoutDetaching([
-                    $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
+                $enrollment->update([
+                    'section_id'  => $newSection->id,
+                    'status'      => 'enrolled',
+                    'enrolled_at' => $enrollment->enrolled_at ?? now(),
                 ]);
-            }
-        });
+
+                foreach ($newSection->classrooms as $class) {
+                    $class->students()->syncWithoutDetaching([
+                        $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
+                    ]);
+                }
+            });
+        }, ['section_id' => $newSection->id]);
 
         return response()->json(['message' => 'Section assigned.']);
     }

@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use App\Traits\Auditable;
 class Section extends Model
 {
     use SoftDeletes;
     use HasFactory;
+    use Auditable;
     
     protected $fillable = [
         'school_year_id', 'strand_id', 'grade_level',

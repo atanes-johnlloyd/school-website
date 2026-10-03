@@ -77,14 +77,14 @@ class RoleSeeder extends Seeder
         $teacher = Role::firstOrCreate(['name' => 'teacher', 'guard_name' => 'web']);
         $student = Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
 
-        // The "admin" role itself holds the full permission ceiling.
-        // Which of these a specific admin user actually has is controlled
-        // per-user (see AdminPositionSeeder) — a Registrar and a System
-        // Admin are both role=admin, just with different granted permissions.
-        $admin->syncPermissions([
-            ...$permissionsByGroup['admin'],
-            ...$permissionsByGroup['shared'],
-        ]);
+        // The `admin` role is a *portal marker* only — it determines which
+        // dashboard a user lands on, not what they can do. Actual permissions
+        // come exclusively from the user's AdminPosition preset (granted as
+        // direct user permissions in TestAdminUsersSeeder / admin user
+        // management). Keeping this role empty is what makes the "ceiling"
+        // pattern in AdminPositionSeeder actually work.
+        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin->syncPermissions([]);   // ← was: the full permission list
 
         $teacher->syncPermissions([
             ...$permissionsByGroup['teacher'],

@@ -27,7 +27,7 @@
 
         <button type="button" @click="closeModal"
                 class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -92,24 +92,37 @@
                 <thead>
                   <tr class="bg-gray-50/50 dark:bg-[#232D26]/50 text-[10px] font-medium uppercase text-gray-400 tracking-wider border-b border-gray-100 dark:border-[#3F4F43]">
                     <th class="py-2.5 px-4 w-1/4">Field</th>
-                    <th class="py-2.5 px-4 w-3/8">
+                    <th class="py-2.5 px-4" :class="log.action === 'created' ? 'w-3/4' : 'w-[37.5%]'">
                       <span v-if="log.action === 'created'" class="text-emerald-600 dark:text-emerald-400">Value</span>
                       <span v-else class="text-red-600 dark:text-red-400">Before</span>
                     </th>
-                    <th class="py-2.5 px-4 w-3/8" v-if="log.action !== 'created'">
+                    <th class="py-2.5 px-4 w-[37.5%]" v-if="log.action !== 'created'">
                       <span v-if="log.action === 'deleted'" class="text-gray-400">Deleted</span>
                       <span v-else class="text-emerald-600 dark:text-emerald-400">After</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-[#3F4F43] text-xs">
+
                   <tr v-for="row in changes" :key="row.field"
                       class="hover:bg-gray-50/60 dark:hover:bg-white/5 transition-colors">
                     <td class="py-2.5 px-4 align-top">
                       <span class="font-mono text-[11px] text-gray-700 dark:text-gray-300">{{ row.field }}</span>
                     </td>
-                    <td class="py-2.5 px-4 align-top">
-                      <span v-if="row.old === undefined"
+
+                    <!-- Created: this column IS the value — show row.new -->
+                    <td v-if="log.action === 'created'" class="py-2.5 px-4 align-top">
+                      <span v-if="row.new === undefined || row.new === null"
+                            class="text-[11px] text-gray-300 dark:text-gray-600 italic">— empty —</span>
+                      <span v-else
+                            class="text-[11px] text-gray-900 dark:text-gray-100 break-all">
+                        {{ formatValue(row.new) }}
+                      </span>
+                    </td>
+
+                    <!-- Updated / Deleted: show row.old here -->
+                    <td v-else class="py-2.5 px-4 align-top">
+                      <span v-if="row.old === undefined || row.old === null"
                             class="text-[11px] text-gray-300 dark:text-gray-600 italic">— not set —</span>
                       <span v-else
                             class="text-[11px] break-all"
@@ -117,10 +130,11 @@
                         {{ formatValue(row.old) }}
                       </span>
                     </td>
+
                     <td v-if="log.action !== 'created'" class="py-2.5 px-4 align-top">
                       <span v-if="log.action === 'deleted'"
                             class="text-[11px] text-gray-400 italic">removed</span>
-                      <span v-else-if="row.new === undefined"
+                      <span v-else-if="row.new === undefined || row.new === null"
                             class="text-[11px] text-gray-300 dark:text-gray-600 italic">— cleared —</span>
                       <span v-else
                             class="text-[11px] text-emerald-700 dark:text-emerald-400 break-all">
@@ -128,6 +142,7 @@
                       </span>
                     </td>
                   </tr>
+
                 </tbody>
               </table>
             </div>
@@ -196,6 +211,7 @@ const fetchDetails = async () => {
  */
 const changes = computed(() => {
   if (!log.value) return []
+
   const oldVals = log.value.old_values || {}
   const newVals = log.value.new_values || {}
   const keys = [...new Set([...Object.keys(oldVals), ...Object.keys(newVals)])]
@@ -207,17 +223,22 @@ const changes = computed(() => {
       new:   newVals[key],
     }))
     .filter(row => {
-      // For created, show all new values
-      if (log.value.action === 'created') return row.new !== undefined
-      // For deleted, show all old values
-      if (log.value.action === 'deleted') return row.old !== undefined
-      // For updated, show only fields that actually changed
+      // Created → keep everything in new_values
+      if (log.value.action === 'created') {
+        return row.new !== undefined
+      }
+      // Deleted → keep everything in old_values
+      if (log.value.action === 'deleted') {
+        return row.old !== undefined
+      }
+      // Updated → keep only what actually changed
       return JSON.stringify(row.old) !== JSON.stringify(row.new)
     })
 })
 
 const formatValue = (v) => {
   if (v === null) return 'null'
+  if (v === undefined) return '—'
   if (v === true) return 'Yes'
   if (v === false) return 'No'
   if (typeof v === 'object') return JSON.stringify(v)

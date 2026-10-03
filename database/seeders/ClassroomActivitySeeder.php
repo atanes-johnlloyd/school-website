@@ -16,7 +16,6 @@ use App\Models\Quiz;
 use App\Models\QuizAnswer;
 use App\Models\QuizAttempt;
 use App\Models\QuizQuestion;
-use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -43,47 +42,6 @@ class ClassroomActivitySeeder extends Seeder
 
         // Broader pool for admin dashboards / reports to have variety.
         $allClasses = ClassRoom::with('subject', 'section')->get();
-
-        $rooms = Room::pluck('id')->all();
-
-        // ═══════════════════════════════════════════════════════════
-        // CLASS SCHEDULES
-        // ═══════════════════════════════════════════════════════════
-        $days  = ['monday','tuesday','wednesday','thursday','friday'];
-        $slots = [
-            ['07:30:00','08:30:00'],
-            ['08:30:00','09:30:00'],
-            ['10:00:00','11:00:00'],
-            ['13:00:00','14:00:00'],
-        ];
-
-        $today = strtolower(now()->format('l'));
-
-        foreach ($allClasses as $i => $class) {
-            DB::table('class_schedules')->updateOrInsert(
-                ['class_id' => $class->id, 'day_of_week' => $days[$i % 5], 'time_start' => $slots[$i % 4][0]],
-                [
-                    'room_id'    => $rooms[$i % count($rooms)] ?? null,
-                    'time_end'   => $slots[$i % 4][1],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        }
-
-        // Force "today" schedule for each test class so teacher dashboard's
-        // "Today's Schedule" widget is never empty.
-        foreach ($testClasses as $i => $class) {
-            DB::table('class_schedules')->updateOrInsert(
-                ['class_id' => $class->id, 'day_of_week' => $today, 'time_start' => $slots[$i % 4][0]],
-                [
-                    'room_id'    => $rooms[$i % count($rooms)] ?? null,
-                    'time_end'   => $slots[$i % 4][1],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-        }
 
         // ═══════════════════════════════════════════════════════════
         // SCHOOL-WIDE ANNOUNCEMENTS
@@ -425,7 +383,6 @@ class ClassroomActivitySeeder extends Seeder
 
         $this->command->info('✅ Classroom activity seeded:');
         $this->command->info('   ' . $testClasses->count() . ' test-teacher classes fully populated');
-        $this->command->info('   ' . $allClasses->count() . ' total classes given schedules');
         $this->command->info('   Announcements, assignments, attendance, grades, quizzes, messages');
     }
 }

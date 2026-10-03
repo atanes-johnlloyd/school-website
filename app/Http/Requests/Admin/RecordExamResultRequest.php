@@ -17,6 +17,7 @@ class RecordExamResultRequest extends FormRequest
             'score'   => ['nullable', 'numeric', 'min:0', 'max:1000'],
             'result'  => ['required', 'in:Pending,Passed,Failed,Absent,For Interview'],
             'remarks' => ['nullable', 'string', 'max:1000'],
+            'override_reason' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

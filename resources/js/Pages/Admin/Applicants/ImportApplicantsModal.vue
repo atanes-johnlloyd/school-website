@@ -148,7 +148,9 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
+const flash = useFlash()
 const props = defineProps({
   show: { type: Boolean, default: false },
 })
@@ -178,6 +180,7 @@ const onFilePicked = (e) => {
   if (!picked) return
   if (!picked.name.toLowerCase().endsWith('.csv')) {
     generalError.value = 'Please select a .csv file.'
+    flash.error(generalError.value)          // ✅ NEW
     return
   }
   generalError.value = ''
@@ -190,7 +193,7 @@ const downloadTemplate = () => {
     'lrn', 'date_of_birth', 'sex', 'religion', 'contact_number', 'email',
     'house_street', 'barangay', 'municipality', 'province', 'zip_code',
     'prev_school_name', 'prev_school_address', 'prev_school_type', 'last_school_year',
-    'applicant_type', 'desired_grade_level', 'strand', 'school_year',
+    'applicant_type', 'desired_grade_level', 'strand code (e.g. STEM)', 'school_year',
   ]
 
   const sample = [
@@ -229,6 +232,14 @@ const submitImport = async () => {
   try {
     const { data } = await axios.post('/admin/applicants/import', fd)
     result.value = { created: data.created, errors: data.errors || [] }
+
+    // ✅ NEW — the in-panel summary is nice, but toast is what you'll actually notice
+    if (data.errors?.length) {
+      flash.info(`Imported ${data.created} applicant(s). ${data.errors.length} row(s) skipped.`)
+    } else {
+      flash.success(`Imported ${data.created} applicant(s).`)
+    }
+
     emit('imported')
   } catch (error) {
     if (error.response?.status === 422) {
@@ -237,6 +248,7 @@ const submitImport = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Import failed. Please try again.'
     }
+    flash.error(generalError.value)          // ✅ NEW — covers both branches
   } finally {
     isLoading.value = false
   }

@@ -127,24 +127,23 @@
           </div>
         </button>
 
-        <!-- Under Review -->
-        <button @click="setStatusFilter('under_review')" :class="[
+        <!-- Rejected -->
+        <button @click="setStatusFilter('rejected')" :class="[
           'text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between transition-colors cursor-pointer',
-          filters.status === 'under_review'
-            ? 'bg-blue-50/60 dark:bg-blue-950/20 border-blue-300 dark:border-blue-800'
+          filters.status === 'rejected'
+            ? 'bg-red-50/60 dark:bg-red-950/20 border-red-300 dark:border-red-800'
             : 'bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43] hover:border-gray-300 dark:hover:border-gray-500'
         ]">
           <div class="space-y-1">
-            <p class="text-[10px] font-medium uppercase text-blue-500 tracking-wider">Under Review</p>
-            <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.under_review || 0 }}</p>
-            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-normal">Being Evaluated</span>
+            <p class="text-[10px] font-medium uppercase text-red-500 tracking-wider">Rejected</p>
+            <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.rejected || 0 }}</p>
+            <span class="text-[10px] text-red-600 dark:text-red-400 font-normal">Not Admitted</span>
           </div>
           <div
-            class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-[#1C261E] border border-blue-100 dark:border-[#3F4F43] flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-[#1C261E] border border-red-100 dark:border-[#3F4F43] flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         </button>
@@ -457,12 +456,14 @@ import ApplicationModal from './ApplicationModal.vue'
 import EnrollModal from './EnrollModal.vue'
 import ViewApplicationModal from './ViewApplicationModal.vue'
 import ImportApplicantsModal from './ImportApplicantsModal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   strands: { type: Array, default: () => [] },
   schoolYears: { type: Array, default: () => [] },
   sections: { type: Array, default: () => [] },
 })
+const flash = useFlash()
 
 const SortIcon = (props) => {
   const active = filters.sort_by === props.field
@@ -548,16 +549,17 @@ const hasActiveFilters = computed(() => {
     || filters.strand_id !== ''
     || filters.grade_level !== ''
     || filters.school_year_id !== ''
-    || filters.per_page !== 20
+    || filters.per_page !== 10
 })
 
 const totalApplicationsCount = computed(() => {
   if (!counts.value) return 0
-  return (counts.value.pending || 0) +
-    (counts.value.under_review || 0) +
-    (counts.value.approved || 0) +
-    (counts.value.enrolled || 0) +
-    (counts.value.needs_resubmission || 0)
+  return (counts.value.pending            || 0) +
+         (counts.value.under_review       || 0) +
+         (counts.value.approved           || 0) +
+         (counts.value.enrolled           || 0) +
+         (counts.value.needs_resubmission || 0) +
+         (counts.value.rejected           || 0)   // ← add
 })
 
 // ─── Lock helper — true if under_review by a *different* admin ──
@@ -579,10 +581,11 @@ const fetchApplications = async () => {
       : emptyPaginator()
 
     counts.value = response.data?.counts ?? {}
-  } catch (error) {
+    } catch (error) {
     console.error('Failed to load applications:', error)
     applications.value = emptyPaginator()
     counts.value = {}
+    flash.error('Failed to load applications. Please refresh.')   // ✅ NEW
   }
 }
 
@@ -629,7 +632,7 @@ const clearFilters = () => {
   filters.strand_id = ''
   filters.grade_level = ''
   filters.school_year_id = ''
-  filters.per_page = 20
+  filters.per_page = 10
   filters.page = 1
   fetchApplications()
 }
@@ -676,7 +679,7 @@ const openEditModal = async (item) => {
     showModal.value = true
   } catch (error) {
     console.error('Failed to load applicant details:', error)
-    alert('Failed to load applicant details. Please try again.')
+    flash.error('Failed to load applicant details. Please try again.')   // ✅ was alert()
   }
 }
 

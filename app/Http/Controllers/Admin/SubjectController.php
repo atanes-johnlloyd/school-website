@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Strand;
 use App\Models\Subject;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -12,9 +13,6 @@ use Inertia\Response;
 
 class SubjectController extends Controller
 {
-    /**
-     * Display a listing of curriculum subjects.
-     */
     public function index(Request $request): Response
     {
         $subjects = Subject::with(['strand:id,code,name', 'prerequisite:id,code,name'])
@@ -25,16 +23,12 @@ class SubjectController extends Controller
                       ->orWhere('description', 'like', "%{$search}%");
                 });
             })
-            ->when($request->strand_id, function ($query, $strandId) {
-                $query->where('strand_id', $strandId);
-            })
-            ->when($request->subject_type, function ($query, $type) {
-                $query->where('subject_type', $type);
-            })
+            ->when($request->strand_id, fn ($query, $strandId) => $query->where('strand_id', $strandId))
+            ->when($request->subject_type, fn ($query, $type) => $query->where('subject_type', $type))
             ->orderBy('code')
             ->get();
 
-        $strands = Strand::select('id', 'code', 'name')->orderBy('code')->get();
+        $strands       = Strand::select('id', 'code', 'name')->orderBy('code')->get();
         $prerequisites = Subject::select('id', 'code', 'name')->orderBy('code')->get();
 
         return Inertia::render('Admin/Subjects/Index', [
@@ -45,9 +39,6 @@ class SubjectController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created subject in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -62,7 +53,9 @@ class SubjectController extends Controller
             'is_active'               => ['boolean'],
         ]);
 
-        Subject::create($validated);
+        AuditContext::wrap('create_subject', function () use ($validated) {
+            Subject::create($validated);
+        });
 
         return redirect()->back()->with('success', 'Subject created successfully.');
     }
@@ -87,14 +80,13 @@ class SubjectController extends Controller
             ]);
         }
 
-        $subject->update($validated);
+        AuditContext::wrap('update_subject', function () use ($subject, $validated) {
+            $subject->update($validated);
+        });
 
         return redirect()->back()->with('success', 'Subject updated successfully.');
     }
 
-    /**
-     * Remove the specified subject from storage.
-     */
     public function destroy(Subject $subject)
     {
         if (method_exists($subject, 'classroom') && $subject->classroom()->exists()) {
@@ -105,7 +97,9 @@ class SubjectController extends Controller
             return redirect()->back()->with('error', 'Cannot delete subject: linked section assignments exist.');
         }
 
-        $subject->delete();
+        AuditContext::wrap('delete_subject', function () use ($subject) {
+            $subject->delete();
+        });
 
         return redirect()->back()->with('success', 'Subject deleted successfully.');
     }

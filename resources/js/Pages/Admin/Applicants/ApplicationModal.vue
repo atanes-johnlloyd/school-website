@@ -20,8 +20,12 @@
           </div>
         </div>
 
-        <button type="button" @click="closeModal" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <button
+          type="button"
+          @click.stop="closeModal"
+          class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+        >
+          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -279,24 +283,55 @@
 
         <!-- Status (edit only) -->
         <section v-if="isEditing" class="pt-3 border-t border-gray-100 dark:border-[#3F4F43]">
-          <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC] mb-2">Status Management</h4>
-          <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
-            Manual override. Prefer the View modal for approve / reject / resubmission.
-          </p>
-          <select v-model="form.status" class="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none capitalize cursor-pointer">
-            <option value="pending">Pending</option>
-            <option value="under_review">Under Review</option>
-            <option value="approved">Approved</option>
-            <option value="needs_resubmission">Needs Resubmission</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC] mb-2">
+            Status Management
+          </h4>
+
+          <!-- 🔒 Locked: pending / under_review / enrolled -->
+          <div
+            v-if="statusEditorDisabled"
+            class="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43]"
+          >
+            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
+                {{ form.status ? form.status.replace('_', ' ') : 'Locked' }}
+              </p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                {{ statusLockedReason }}
+              </p>
+            </div>
+          </div>
+
+          <!-- ✏️ Editable: approved / needs_resubmission / rejected -->
+          <template v-else>
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
+              Manual override. Prefer the View modal for approve / reject / resubmission.
+            </p>
+            <select
+              v-model="form.status"
+              class="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none capitalize cursor-pointer"
+            >
+              <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">
+              “Under Review” is reserved for the review workflow and can't be set here.
+            </p>
+          </template>
         </section>
 
       </form>
 
       <!-- Footer -->
       <div class="px-6 py-4 border-t border-gray-100 dark:border-[#3F4F43] flex justify-end gap-2.5">
-        <button type="button" @click="closeModal" class="px-4 py-2 text-xs font-normal text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all cursor-pointer">
+        <!-- Footer cancel -->
+        <button
+          type="button"
+          @click.stop="closeModal"
+          class="px-4 py-2 text-xs font-normal text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all cursor-pointer"
+        >
           Cancel
         </button>
         <button type="button" :disabled="isLoading" @click="submitForm" class="px-5 py-2 text-xs font-medium uppercase tracking-wider bg-[#004d08] text-white hover:bg-emerald-900 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer">
@@ -312,6 +347,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show:        { type: Boolean, default: false },
@@ -321,6 +357,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'saved'])
+const flash = useFlash()
 
 const formRef      = ref(null)
 const fileInput    = ref(null)
@@ -333,6 +370,35 @@ const newDocType   = ref('')
 
 const isEditing = computed(() => !!props.application?.id)
 const existingDocuments = computed(() => props.application?.documents || [])
+
+// Statuses whose value is owned by the review workflow, not the edit form
+const LOCKED_STATUSES = ['pending', 'under_review', 'enrolled']
+
+const statusEditorDisabled = computed(() => {
+  if (!isEditing.value) return false
+  return LOCKED_STATUSES.includes(props.application?.status)
+})
+
+const statusLockedReason = computed(() => {
+  switch (props.application?.status) {
+    case 'pending':
+      return 'Use the View modal to approve, reject, or request resubmission. Status changes go through the review workflow.'
+    case 'under_review':
+      return 'This application is currently being reviewed. Status changes go through the review workflow.'
+    case 'enrolled':
+      return 'This applicant has already been enrolled as a student. Status is locked.'
+    default:
+      return ''
+  }
+})
+
+// "under_review" is deliberately omitted — it's set only by the review workflow
+const statusOptions = [
+  { value: 'pending',            label: 'Pending' },
+  { value: 'approved',           label: 'Approved' },
+  { value: 'needs_resubmission', label: 'Needs Resubmission' },
+  { value: 'rejected',           label: 'Rejected' },
+]
 
 /**
  * Merged error list — combines client-side validation issues and any
@@ -383,7 +449,7 @@ const form = reactive({
 watch(() => props.show, (open) => { if (open) populateForm() })
 
 const populateForm = () => {
-  errors.value = []
+  errors.value = {}
   clientErrors.value = []
   generalError.value = ''
   newFiles.value = []
@@ -559,7 +625,9 @@ const submitForm = async () => {
     if (v !== null && v !== undefined && v !== '') fd.append(k, v)
   })
 
-  if (isEditing.value && form.status) fd.append('status', form.status)
+  if (isEditing.value && form.status && !statusEditorDisabled.value) {
+    fd.append('status', form.status)
+  }
 
   let ci = 0
   Object.entries(form.contacts).forEach(([role, c]) => {
@@ -585,14 +653,22 @@ const submitForm = async () => {
     } else {
       await axios.post('/admin/applicants', fd)
     }
+
+    // ✅ NEW
+    flash.success(isEditing.value
+      ? 'Application updated successfully.'
+      : 'Application created successfully.')
+
     emit('saved')
     closeModal()
   } catch (error) {
     if (error.response?.status === 422) {
-      errors.value = error.response.data.errors || {}
+      errors.value       = error.response.data.errors || {}
       generalError.value = error.response.data.message || 'Some fields need attention.'
+      // inline banner already covers it — no toast to avoid double-noise
     } else {
       generalError.value = error.response?.data?.message || 'Failed to save application.'
+      flash.error(generalError.value)          // ✅ NEW
     }
     formRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
   } finally {
@@ -601,9 +677,12 @@ const submitForm = async () => {
 }
 
 const closeModal = () => {
-  errors.value = {}
+  errors.value       = {}
   clientErrors.value = []
   generalError.value = ''
+  newFiles.value     = []
+  newDocType.value   = ''
+  if (fileInput.value) fileInput.value.value = ''
   emit('close')
 }
 

@@ -1,8 +1,19 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Console\Commands\PruneAuditLogs;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+| Scheduled Commands
+|--------------------------------------------------------------------------
+*/
+
+// Prune audit logs older than 365 days, on the 1st of every month at 03:00.
+Schedule::command('audit-logs:prune', ['--days' => 365])
+    ->monthlyOn(1, '03:00')
+    ->onOneServer()
+    ->withoutOverlapping();
+
+// ── Add any future scheduled commands below ──
+// e.g. Schedule::command('exam-results:mark-absent')->dailyAt('02:00');

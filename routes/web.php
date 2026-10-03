@@ -431,6 +431,11 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
                 [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'update']
             )
                 ->name('exam-results.update');
+
+            Route::put(
+                '/entrance-exams/{exam}/results/bulk',
+                [\App\Http\Controllers\Admin\EntranceExamResultController::class, 'bulkUpdate']
+            )->name('exam-results.bulk-update');
         });
 
         // ─── Exam Records ───

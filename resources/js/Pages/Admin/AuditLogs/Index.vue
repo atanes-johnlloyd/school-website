@@ -370,7 +370,9 @@ import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import ViewAuditLogModal from './ViewAuditLogModal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
+const flash = useFlash()
 const props = defineProps({
   users: { type: Array, default: () => [] },
   modelTypes: { type: Array, default: () => [] },
@@ -436,6 +438,7 @@ const fetchList = async () => {
   } catch (e) {
     console.error('Failed to load audit logs:', e)
     logs.value = emptyPaginator()
+    flash.error('Failed to load audit logs. Please refresh.')   // ✅ NEW
   }
 }
 

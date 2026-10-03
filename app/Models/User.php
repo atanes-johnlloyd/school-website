@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-
+use App\Traits\Auditable;
 #[Fillable([
     'name',
     'email',
@@ -31,6 +31,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
+    use Auditable;
 
     protected function casts(): array
     {
@@ -39,6 +40,7 @@ class User extends Authenticatable
             'password'             => 'hashed',
             'must_change_password' => 'boolean',
             'reset_expiry'         => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 

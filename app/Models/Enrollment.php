@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App\Traits\Auditable;
 class Enrollment extends Model
 {
     use SoftDeletes;
+    use Auditable;
 
     protected $fillable = [
         'student_id', 'school_year_id', 'section_id',

@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App\Traits\Auditable;
 class EntranceExam extends Model
 {
     use SoftDeletes;
-
+    use Auditable;
     protected $fillable = [
         'school_year_id', 'track_id', 'exam_name',
         'exam_date', 'exam_time', 'venue',

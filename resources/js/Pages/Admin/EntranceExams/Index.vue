@@ -364,12 +364,15 @@ import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import EntranceExamFormModal from './EntranceExamFormModal.vue'
 import ManageExamModal from './ManageExamModal.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   tracks: { type: Array, default: () => [] },
   schoolYears: { type: Array, default: () => [] },
 })
-
+const flash = useFlash()
+const confirm = useConfirm()
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
 const exams = ref(emptyPaginator())
@@ -406,6 +409,7 @@ const fetchExams = async () => {
   } catch (e) {
     console.error('Failed to load exams:', e)
     exams.value = emptyPaginator()
+    flash.error('Failed to load exam sessions. Please refresh.')   // ← add
   }
 }
 
@@ -479,13 +483,25 @@ const openEditModal = (exam) => { selectedExam.value = exam; showFormModal.value
 const openManageModal = (exam) => { selectedExam.value = exam; showManageModal.value = true }
 
 const cancelExam = async (exam) => {
-  if (!confirm(`Cancel "${exam.exam_name}"? Assigned applicants will be unassigned.`)) return
+  const { confirmed } = await confirm({
+    title: 'Cancel Exam Session',
+    message: `Cancel "${exam.exam_name}"?`,
+    details: [
+      'All assigned applicants will be unassigned from this exam.',
+      'Each assigned applicant will receive a cancellation email.',
+      'This cannot be undone.',
+    ],
+    confirmLabel: 'Cancel Exam',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     const { data } = await axios.put(`/admin/entrance-exams/${exam.id}/cancel`)
-    console.info(data.message)
+    flash.success(data.message || 'Exam cancelled.')
     fetchExams()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to cancel exam.')
+    flash.error(e.response?.data?.message || 'Failed to cancel exam.')
   }
 }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Room;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -11,18 +12,14 @@ use Inertia\Response;
 
 class RoomController extends Controller
 {
-    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(): Response
     {
         return Inertia::render('Admin/Rooms/Index', [
             'buildings' => Room::whereNotNull('building')
-                ->distinct()
-                ->orderBy('building')
-                ->pluck('building'),
+                ->distinct()->orderBy('building')->pluck('building'),
         ]);
     }
 
-    /* ═══════════════ LIST — JSON for the Vue table ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -39,12 +36,9 @@ class RoomController extends Controller
 
         $query = Room::query();
 
-        if (! empty($validated['type'])) {
-            $query->where('type', $validated['type']);
-        }
-        if (! empty($validated['building'])) {
-            $query->where('building', $validated['building']);
-        }
+        if (! empty($validated['type']))     $query->where('type', $validated['type']);
+        if (! empty($validated['building'])) $query->where('building', $validated['building']);
+
         if (! empty($validated['search'])) {
             $s = $validated['search'];
             $query->where(function ($q) use ($s) {
@@ -59,13 +53,13 @@ class RoomController extends Controller
         $rooms = $query->paginate($validated['per_page'] ?? 15);
 
         return response()->json([
-            'rooms' => $rooms,
+            'rooms'   => $rooms,
             'filters' => [
                 'type'     => $validated['type']     ?? null,
                 'building' => $validated['building'] ?? null,
                 'search'   => $validated['search']   ?? null,
             ],
-            'sort' => ['by' => $sortBy, 'dir' => $sortDir],
+            'sort'   => ['by' => $sortBy, 'dir' => $sortDir],
             'counts' => [
                 'total'    => Room::count(),
                 'active'   => Room::where('is_active', true)->count(),
@@ -74,7 +68,6 @@ class RoomController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -87,21 +80,21 @@ class RoomController extends Controller
             'is_active' => ['boolean'],
         ]);
 
-        $validated['capacity'] = $validated['capacity'] ?? 40;
+        $validated['capacity']  = $validated['capacity']  ?? 40;
         $validated['is_active'] = $validated['is_active'] ?? true;
 
-        $room = Room::create($validated);
+        $room = AuditContext::wrap('create_room', function () use ($validated) {
+            return Room::create($validated);
+        });
 
         return response()->json(['room' => $room], 201);
     }
 
-    /* ═══════════════ SHOW ═══════════════ */
     public function show(Room $room)
     {
         return response()->json(['room' => $room]);
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, Room $room)
     {
         $validated = $request->validate([
@@ -115,12 +108,13 @@ class RoomController extends Controller
             'is_active' => ['boolean'],
         ]);
 
-        $room->update($validated);
+        AuditContext::wrap('update_room', function () use ($room, $validated) {
+            $room->update($validated);
+        });
 
         return response()->json(['room' => $room->fresh()]);
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(Room $room)
     {
         if ($room->schedules()->exists()) {
@@ -129,7 +123,9 @@ class RoomController extends Controller
             ], 422);
         }
 
-        $room->delete();
+        AuditContext::wrap('delete_room', function () use ($room) {
+            $room->delete();
+        });
 
         return response()->json(['message' => 'Room deleted.']);
     }

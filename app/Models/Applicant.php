@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-
+use App\Traits\Auditable;
 class Applicant extends Model
 {
     use SoftDeletes;
-
+    use Auditable;
+    
     protected $fillable = [
         'reference_number', 'school_year_id', 'strand_id', 'applicant_type',
         'first_name', 'middle_name', 'last_name', 'extension_name',

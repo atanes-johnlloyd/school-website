@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Track;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,11 @@ class TrackController extends Controller
             'is_active'   => ['boolean'],
         ]);
 
-        return response()->json(['track' => Track::create($validated)], 201);
+        $track = AuditContext::wrap('create_track', function () use ($validated) {
+            return Track::create($validated);
+        });
+
+        return response()->json(['track' => $track], 201);
     }
 
     public function show(Track $track)
@@ -41,7 +46,9 @@ class TrackController extends Controller
             'is_active'   => ['boolean'],
         ]);
 
-        $track->update($validated);
+        AuditContext::wrap('update_track', function () use ($track, $validated) {
+            $track->update($validated);
+        });
 
         return response()->json(['track' => $track->fresh()]);
     }
@@ -54,7 +61,9 @@ class TrackController extends Controller
             ], 422);
         }
 
-        $track->delete();
+        AuditContext::wrap('delete_track', function () use ($track) {
+            $track->delete();
+        });
 
         return response()->json(['message' => 'Track deleted.']);
     }

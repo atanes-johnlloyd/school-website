@@ -7,6 +7,7 @@ use App\Models\Announcement;
 use App\Models\User;
 use App\Services\ImageUploadService;
 use App\Services\Notification\NotificationService;
+use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -19,13 +20,11 @@ class SchoolWideAnnouncementController extends Controller
         protected NotificationService $notifications,
     ) {}
 
-    /* ═══════════════ INDEX — page shell ═══════════════ */
     public function index(): Response
     {
         return Inertia::render('Admin/SchoolNews/Index');
     }
 
-    /* ═══════════════ LIST — JSON for the Vue list ═══════════════ */
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -36,18 +35,14 @@ class SchoolWideAnnouncementController extends Controller
             'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
         ]);
 
-        // Defaults — Laravel's validate() only returns keys present in the request
         $status   = $validated['status']   ?? null;
         $priority = $validated['priority'] ?? null;
         $pinned   = $validated['pinned']   ?? null;
         $search   = $validated['search']   ?? null;
         $perPage  = $validated['per_page'] ?? 12;
 
-        $query = Announcement::query()
-            ->schoolWide()
-            ->with('author:id,name');
+        $query = Announcement::query()->schoolWide()->with('author:id,name');
 
-        // ─── Status filter ───
         if ($status === 'draft') {
             $query->whereNull('published_at');
         } elseif ($status === 'published') {
@@ -59,10 +54,7 @@ class SchoolWideAnnouncementController extends Controller
                 ->where('expires_at', '<=', now());
         }
 
-        // ─── Other filters ───
-        if ($priority) {
-            $query->where('priority', $priority);
-        }
+        if ($priority) $query->where('priority', $priority);
         if ($pinned === true || $pinned === 'true' || $pinned === '1' || $pinned === 1) {
             $query->where('is_pinned', true);
         }
@@ -91,7 +83,6 @@ class SchoolWideAnnouncementController extends Controller
             'created_at'   => $a->created_at?->toIso8601String(),
         ]);
 
-        // ─── Counts ───
         $base = Announcement::query()->schoolWide();
         $counts = [
             'total'     => (clone $base)->count(),
@@ -118,15 +109,11 @@ class SchoolWideAnnouncementController extends Controller
         ]);
     }
 
-    /* ═══════════════ CREATE — page for new announcement ═══════════════ */
     public function create(): Response
     {
-        return Inertia::render('Admin/SchoolNews/Form', [
-            'announcement' => null,
-        ]);
+        return Inertia::render('Admin/SchoolNews/Form', ['announcement' => null]);
     }
 
-    /* ═══════════════ EDIT — page for existing announcement ═══════════════ */
     public function edit(Announcement $announcement): Response
     {
         abort_unless($announcement->is_school_wide, 404);
@@ -145,48 +132,44 @@ class SchoolWideAnnouncementController extends Controller
         ]);
     }
 
-    /* ═══════════════ STORE ═══════════════ */
     public function store(Request $request)
     {
         $validated = $this->validatePayload($request);
 
-        $announcement = DB::transaction(function () use ($request, $validated) {
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $this->uploader->store($request->file('image'), 'school-news', 1200);
-            }
+        $announcement = AuditContext::wrap('create_announcement', function () use ($request, $validated) {
+            return DB::transaction(function () use ($request, $validated) {
+                $imagePath = null;
+                if ($request->hasFile('image')) {
+                    $imagePath = $this->uploader->store($request->file('image'), 'school-news', 1200);
+                }
 
-            $isPublished = $request->boolean('is_published');
+                $isPublished = $request->boolean('is_published');
 
-            return Announcement::create([
-                'created_by'     => $request->user()->id,
-                'class_id'       => null,
-                'is_school_wide' => true,
-                'title'          => $validated['title'],
-                'body'           => $validated['body'],
-                'priority'       => $validated['priority'],
-                'is_pinned'      => $request->boolean('is_pinned'),
-                'image_path'     => $imagePath,
-                'published_at'   => $isPublished ? now() : null,
-                'expires_at'     => $this->resolveExpiresAt($validated, $isPublished),
-            ]);
+                return Announcement::create([
+                    'created_by'     => $request->user()->id,
+                    'class_id'       => null,
+                    'is_school_wide' => true,
+                    'title'          => $validated['title'],
+                    'body'           => $validated['body'],
+                    'priority'       => $validated['priority'],
+                    'is_pinned'      => $request->boolean('is_pinned'),
+                    'image_path'     => $imagePath,
+                    'published_at'   => $isPublished ? now() : null,
+                    'expires_at'     => $this->resolveExpiresAt($validated, $isPublished),
+                ]);
+            });
         });
 
-        // Fire urgent email if published as urgent
-        if ($announcement->priority === Announcement::PRIORITY_URGENT
-            && $announcement->published_at) {
+        if ($announcement->priority === Announcement::PRIORITY_URGENT && $announcement->published_at) {
             $this->emailAllUsers($announcement);
         }
 
         return response()->json([
-            'message'      => $announcement->is_draft
-                ? 'Draft saved.'
-                : 'Announcement published.',
+            'message'      => $announcement->is_draft ? 'Draft saved.' : 'Announcement published.',
             'announcement' => $announcement,
         ], 201);
     }
 
-    /* ═══════════════ UPDATE ═══════════════ */
     public function update(Request $request, Announcement $announcement)
     {
         abort_unless($announcement->is_school_wide, 404);
@@ -196,35 +179,31 @@ class SchoolWideAnnouncementController extends Controller
         $wasPublished = ! is_null($announcement->published_at);
         $wasUrgent    = $announcement->priority === Announcement::PRIORITY_URGENT;
 
-        DB::transaction(function () use ($request, $announcement, $validated, $wasPublished) {
-            // Replace image if new one uploaded
-            if ($request->hasFile('image')) {
-                $this->uploader->delete($announcement->image_path);
-                $announcement->image_path = $this->uploader->store($request->file('image'), 'school-news', 1200);
-            }
+        AuditContext::wrap('update_announcement', function () use ($request, $announcement, $validated) {
+            DB::transaction(function () use ($request, $announcement, $validated) {
+                if ($request->hasFile('image')) {
+                    $this->uploader->delete($announcement->image_path);
+                    $announcement->image_path = $this->uploader->store($request->file('image'), 'school-news', 1200);
+                }
 
-            $isPublished = $request->boolean('is_published');
+                $isPublished = $request->boolean('is_published');
 
-            $announcement->fill([
-                'title'        => $validated['title'],
-                'body'         => $validated['body'],
-                'priority'     => $validated['priority'],
-                'is_pinned'    => $request->boolean('is_pinned'),
-                'published_at' => $isPublished
-                    ? ($announcement->published_at ?? now())
-                    : null,
-                'expires_at'   => $this->resolveExpiresAt($validated, $isPublished),
-            ]);
+                $announcement->fill([
+                    'title'        => $validated['title'],
+                    'body'         => $validated['body'],
+                    'priority'     => $validated['priority'],
+                    'is_pinned'    => $request->boolean('is_pinned'),
+                    'published_at' => $isPublished ? ($announcement->published_at ?? now()) : null,
+                    'expires_at'   => $this->resolveExpiresAt($validated, $isPublished),
+                ]);
 
-            $announcement->save();
+                $announcement->save();
+            });
         });
 
         $announcement->refresh();
 
-        // Fire email only on transition to urgent-published
-        $isNowUrgent = $announcement->priority === Announcement::PRIORITY_URGENT
-            && $announcement->published_at;
-
+        $isNowUrgent = $announcement->priority === Announcement::PRIORITY_URGENT && $announcement->published_at;
         if ($isNowUrgent && ! ($wasPublished && $wasUrgent)) {
             $this->emailAllUsers($announcement);
         }
@@ -235,7 +214,6 @@ class SchoolWideAnnouncementController extends Controller
         ]);
     }
 
-    /* ═══════════════ SHOW — JSON for preview ═══════════════ */
     public function show(Announcement $announcement)
     {
         abort_unless($announcement->is_school_wide, 404);
@@ -245,53 +223,56 @@ class SchoolWideAnnouncementController extends Controller
         ]);
     }
 
-    /* ═══════════════ TOGGLE PUBLISH ═══════════════ */
     public function togglePublish(Request $request, Announcement $announcement)
     {
         abort_unless($announcement->is_school_wide, 404);
 
         $willPublish = is_null($announcement->published_at);
 
-        $announcement->update([
-            'published_at' => $willPublish ? now() : null,
-        ]);
+        AuditContext::wrap($willPublish ? 'publish_announcement' : 'unpublish_announcement', function () use ($announcement, $willPublish) {
+            $announcement->update([
+                'published_at' => $willPublish ? now() : null,
+            ]);
+        });
 
-        // Email if this just became an urgent published post
         if ($willPublish && $announcement->priority === Announcement::PRIORITY_URGENT) {
             $this->emailAllUsers($announcement);
         }
 
         return response()->json([
-            'message' => $willPublish ? 'Announcement published.' : 'Announcement unpublished.',
+            'message'      => $willPublish ? 'Announcement published.' : 'Announcement unpublished.',
             'is_published' => $willPublish,
         ]);
     }
 
-    /* ═══════════════ TOGGLE PIN ═══════════════ */
     public function togglePin(Request $request, Announcement $announcement)
     {
         abort_unless($announcement->is_school_wide, 404);
 
-        $announcement->update(['is_pinned' => ! $announcement->is_pinned]);
+        $willPin = ! $announcement->is_pinned;
+
+        AuditContext::wrap($willPin ? 'pin_announcement' : 'unpin_announcement', function () use ($announcement, $willPin) {
+            $announcement->update(['is_pinned' => $willPin]);
+        });
 
         return response()->json([
-            'message'   => $announcement->is_pinned ? 'Pinned.' : 'Unpinned.',
-            'is_pinned' => (bool) $announcement->is_pinned,
+            'message'   => $willPin ? 'Pinned.' : 'Unpinned.',
+            'is_pinned' => $willPin,
         ]);
     }
 
-    /* ═══════════════ DESTROY ═══════════════ */
     public function destroy(Request $request, Announcement $announcement)
     {
         abort_unless($announcement->is_school_wide, 404);
 
-        $this->uploader->delete($announcement->image_path);
-        $announcement->delete();
+        AuditContext::wrap('delete_announcement', function () use ($announcement) {
+            $this->uploader->delete($announcement->image_path);
+            $announcement->delete();
+        });
 
         return response()->json(['message' => 'Announcement deleted.']);
     }
 
-    /* ═══════════════ HELPERS ═══════════════ */
     protected function validatePayload(Request $request): array
     {
         return $request->validate([
@@ -301,7 +282,7 @@ class SchoolWideAnnouncementController extends Controller
             'is_pinned'    => ['boolean'],
             'is_published' => ['boolean'],
             'expires_at'   => ['nullable', 'date', 'after:today'],
-            'image' => ['nullable', 'file', 'image', 'max:' . \App\Models\SystemSetting::maxFileUploadKb()],
+            'image'        => ['nullable', 'file', 'image', 'max:' . \App\Models\SystemSetting::maxFileUploadKb()],
         ], [
             'title.required'    => 'Announcement title is required.',
             'body.required'     => 'Announcement body is required.',
@@ -312,17 +293,9 @@ class SchoolWideAnnouncementController extends Controller
         ]);
     }
 
-    /**
-     * Priority determines default expiry when one isn't set:
-     *   urgent    → 72 hours
-     *   important → 7 days
-     *   normal    → no expiry
-     */
     protected function resolveExpiresAt(array $validated, bool $isPublished): ?\Carbon\Carbon
     {
-        if (! $isPublished) {
-            return null;
-        }
+        if (! $isPublished) return null;
 
         if (! empty($validated['expires_at'])) {
             return \Carbon\Carbon::parse($validated['expires_at']);
@@ -331,35 +304,38 @@ class SchoolWideAnnouncementController extends Controller
         $defaultDays = \App\Models\SystemSetting::announcementDays();
 
         return match ($validated['priority']) {
-            // Urgent keeps its own window — a critical notice shouldn't linger.
             Announcement::PRIORITY_URGENT    => now()->addHours(72),
-            // Important and Normal both use the configured auto-hide window.
             Announcement::PRIORITY_IMPORTANT => now()->addDays($defaultDays),
             default                          => now()->addDays($defaultDays),
         };
     }
 
-    /**
-     * Email every active user in the system about an urgent announcement.
-     */
     protected function emailAllUsers(Announcement $announcement): void
     {
         User::where('status', 'active')
             ->select('id', 'name', 'email')
             ->chunk(200, function ($users) use ($announcement) {
                 foreach ($users as $user) {
-                    $this->notifications->send(
-                        $user->email,
-                        'Urgent: ' . $announcement->title,
-                        'urgent-announcement',
-                        [
-                            'full_name'       => $user->name,
-                            'announcement_title' => $announcement->title,
-                            'announcement_body'  => $announcement->body,
-                            'announcement_link'  => url('/dashboard'),
-                            'posted_at'          => $announcement->published_at->format('F d, Y \a\t g:i A'),
-                        ]
-                    );
+                    try {
+                        $this->notifications->send(
+                            $user->email,
+                            'Urgent: ' . $announcement->title,
+                            'urgent-announcement',
+                            [
+                                'full_name'          => $user->name,
+                                'announcement_title' => $announcement->title,
+                                'announcement_body'  => $announcement->body,
+                                'announcement_link'  => url('/dashboard'),
+                                'posted_at'          => $announcement->published_at->format('F d, Y \a\t g:i A'),
+                            ]
+                        );
+                    } catch (\Throwable $e) {
+                        \Log::error('Urgent announcement email failed', [
+                            'user_id'         => $user->id,
+                            'announcement_id' => $announcement->id,
+                            'error'           => $e->getMessage(),
+                        ]);
+                    }
                 }
             });
     }

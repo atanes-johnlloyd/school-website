@@ -26,7 +26,7 @@ class ClassController extends Controller
             'grade_level' => ['nullable', 'in:11,12'], //[cite: 22]
             'strand_id'   => ['nullable', 'integer', 'exists:strands,id'], //[cite: 22]
             'term_id'     => ['nullable', 'integer', 'exists:terms,id'], //[cite: 22]
-            'sort'        => ['nullable', 'in:subject,section,teacher,grade_level,created_at'], //[cite: 22]
+            'sort' => ['nullable', 'in:subject,teacher,created_at'],
             'direction'   => ['nullable', 'in:asc,desc'], //[cite: 22]
             'per_page'    => ['nullable', 'integer', 'min:5', 'max:100'], //[cite: 22]
         ]);
@@ -120,21 +120,25 @@ class ClassController extends Controller
             'assignments_count' => $k->assignments_count, //[cite: 22]
         ]);
 
-        $payload = [ //[cite: 22]
-            'classes'    => $classes, //[cite: 22]
-            'activeTerm' => $activeTerm?->name, //[cite: 22]
-            'filters'    => [ //[cite: 22]
-                'search'      => $search, //[cite: 22]
-                'grade_level' => $gradeLevel, //[cite: 22]
-                'strand_id'   => $strandId, //[cite: 22]
-                'term_id'     => $termId, //[cite: 22]
-                'sort'        => $sort, //[cite: 22]
-                'direction'   => $direction, //[cite: 22]
-                'per_page'    => $perPage, //[cite: 22]
+        $payload = [
+            'classes'       => $classes,
+            'activeTerm'    => $activeTerm?->name,
+            'studentStrand' => $student->strand?->name
+                ?? $classroomIds->first()
+                    ? ClassRoom::with('section.strand')->find($classroomIds->first())?->section?->strand?->name
+                    : null,
+            'filters'    => [
+                'search'      => $search,
+                'grade_level' => $gradeLevel,
+                'strand_id'   => $strandId,
+                'term_id'     => $termId,
+                'sort'        => $sort,
+                'direction'   => $direction,
+                'per_page'    => $perPage,
             ],
-            'filterOptions' => [ //[cite: 22]
-                'strands' => \App\Models\Strand::select('id', 'code', 'name')->orderBy('name')->get(), //[cite: 22]
-                'terms'   => Term::select('id', 'name')->orderByDesc('start_date')->get(), //[cite: 22]
+            'filterOptions' => [
+                'terms' => Term::select('id', 'name')->orderByDesc('start_date')->get(),
+                // 'strands' removed — no longer used
             ],
         ];
 
