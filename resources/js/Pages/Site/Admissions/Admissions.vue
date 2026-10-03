@@ -83,7 +83,7 @@
 
     </section>
 
-    <!-- THE 5-PHASE TRAIL SECTION -->
+    <!-- THE APPLICATION JOURNEY SECTION -->
     <section ref="phasesRef" class="w-full max-w-[1500px] mx-auto px-6 sm:px-12 md:px-16 lg:px-24 py-16 md:py-20">
 
       <div class="transition-all duration-1000"
@@ -92,21 +92,21 @@
         <div class="text-center space-y-4 max-w-3xl mx-auto mb-12 sm:mb-16">
           <span
             class="inline-block bg-[#eaf5ed] text-[#005506] text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#005506]/10">
-            THE 5-PHASE TRAIL
+            THE APPLICATION JOURNEY
           </span>
           <h2
             class="font-['Anton'] text-4xl sm:text-5xl lg:text-6xl text-[#005506] uppercase tracking-wide leading-tight">
-            Seamless Journey from Form to Student RFID
+            From Online Form to Student Portal
           </h2>
           <p class="text-xs sm:text-sm md:text-base text-slate-600 font-normal leading-relaxed">
-            No endless lines under the sun. Our streamlined hybrid enrollment tracks your paperwork through automated
-            checks, interview appointments, and direct section issuance.
+            Every stage is tracked end-to-end. You'll receive email notifications as your application moves forward — from
+            registrar review through entrance exam results to your LMS account and section assignment.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch">
 
-          <!-- PHASE 01 -->
+          <!-- PHASE 01: ONLINE APPLICATION -->
           <div
             class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col justify-between space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div class="space-y-4">
@@ -117,24 +117,27 @@
                   class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 01</span>
               </div>
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">Online Pre-Registration</h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">Encode your 12-digit DepEd LRN, primary
-                  strand interests, and parental guardian contacts.</p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Online Application</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">
+                  Complete the applicant form with personal details, JHS records, guardian contacts, and upload your
+                  scanned documents (PSA, Form 137, Good Moral, 2×2 Photo).
+                </p>
               </div>
             </div>
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-[#005506]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>10 Mins</span>
+                <span>~15 mins</span>
               </div>
               <span class="text-slate-400">Online Form</span>
             </div>
           </div>
 
-          <!-- PHASE 02 -->
+          <!-- PHASE 02: APPLICATION REVIEW -->
           <div
             class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col justify-between space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div class="space-y-4">
@@ -145,24 +148,27 @@
                   class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 02</span>
               </div>
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">Credential Scan & Upload</h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">Submit clear snapshots or PDFs of Form 138
-                  (G10 Card), PSA Birth Certificate, and Certificate of Good Moral.</p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Registrar Review</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">
+                  The registrar verifies your LRN, submitted documents, and eligibility. If anything is incomplete,
+                  you'll receive a resubmission request by email.
+                </p>
               </div>
             </div>
             <div
               class="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
               <div class="flex items-center gap-1.5 text-amber-700">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>24h Review</span>
+                <span>2–3 days</span>
               </div>
-              <span class="text-slate-400">Document Desk</span>
+              <span class="text-slate-400">Registrar</span>
             </div>
           </div>
 
-          <!-- PHASE 03 -->
+          <!-- PHASE 03: EXAM ASSIGNMENT -->
           <div
             class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col justify-between space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div class="space-y-4">
@@ -173,9 +179,11 @@
                   class="bg-[#eaf5ed] text-[#005506] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 03</span>
               </div>
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">Aptitude & Guidance</h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">Brief career profiling assessment or
-                  online counselor session to confirm your strand fit.</p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Entrance Exam Assignment</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">
+                  Once approved, you're automatically assigned to the next available exam session matching your strand.
+                  The date, time, and venue arrive in your email inbox.
+                </p>
               </div>
             </div>
             <div
@@ -183,15 +191,15 @@
               <div class="flex items-center gap-1 text-[#005506]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6 0 3.375 3.375 0 016 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
-                <span>On-Campus/Zoom</span>
+                <span>Auto-assigned</span>
               </div>
-              <span class="text-slate-400">Guidance Office</span>
+              <span class="text-slate-400">Admissions</span>
             </div>
           </div>
 
-          <!-- PHASE 04 -->
+          <!-- PHASE 04: ENTRANCE EXAM -->
           <div
             class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col justify-between space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div class="space-y-4">
@@ -202,9 +210,12 @@
                   class="bg-slate-100 text-slate-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 04</span>
               </div>
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">Official Section & COR</h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">Receive your digital Certificate of
-                  Registration (COR), assigned homeroom adviser, and schedule.</p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Entrance Exam</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">
+                  Take the on-campus exam. Faculty record your score and determine the result — <strong>Passed</strong>,
+                  <strong>Failed</strong>, <strong>Absent</strong>, or <strong>For Interview</strong>. You're notified
+                  by email the moment your result is entered.
+                </p>
               </div>
             </div>
             <div
@@ -213,15 +224,15 @@
                 <svg class="w-4 h-4 text-[#005506]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9.75v6.75m0 0l-3-3m3 3l3-3m-8.25 6h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 5.25v13.5A1.5 1.5 0 003.75 21z" />
+                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
                 </svg>
-                <span>PDF Granted</span>
+                <span>1 session</span>
               </div>
-              <span class="text-slate-400">Registrar Portal</span>
+              <span class="text-slate-400">On-Campus</span>
             </div>
           </div>
 
-          <!-- PHASE 05 -->
+          <!-- PHASE 05: ACCOUNT & SECTION -->
           <div
             class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/90 flex flex-col justify-between space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div class="space-y-4">
@@ -232,9 +243,11 @@
                   class="bg-amber-100/80 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">PHASE 05</span>
               </div>
               <div class="space-y-2">
-                <h3 class="font-bold text-slate-900 text-lg leading-snug">RFID & Welcome Kit</h3>
-                <p class="text-xs text-slate-500 leading-relaxed font-normal">Visit the campus media hub to capture your
-                  biometrics, pick up student manual, and receive official badge.</p>
+                <h3 class="font-bold text-slate-900 text-lg leading-snug">Student Account & Section</h3>
+                <p class="text-xs text-slate-500 leading-relaxed font-normal">
+                  Passers automatically receive an LMS account with temporary credentials, an assigned section (subject
+                  to capacity), and enrollment into all subject classrooms under that section.
+                </p>
               </div>
             </div>
             <div
@@ -243,11 +256,11 @@
                 <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
-                <span>Campus Day</span>
+                <span>Same-day</span>
               </div>
-              <span class="text-slate-400">SSHS Gate 1</span>
+              <span class="text-slate-400">Registrar</span>
             </div>
           </div>
 
@@ -900,8 +913,8 @@
             Track Your Application Progress
           </h2>
           <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Already registered? Enter your 9-digit application tracking reference code provided on your printable
-            confirmation slip.
+            Already applied? Enter your reference number (starts with <strong class="font-mono">APP-</strong>) to see
+            exactly where your application stands right now — no phone calls, no waiting.
           </p>
         </div>
 
@@ -914,7 +927,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
-              <input type="text" v-model="trackingCode" placeholder="e.g. SSHS-2026-8812"
+              <input type="text" v-model="trackingCode" placeholder="e.g. APP-2026-0042"
                 class="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#005506] focus:border-transparent transition-all" />
             </div>
             <button type="submit" :disabled="isLookingUp"
@@ -934,8 +947,9 @@
           <div v-if="searchResult"
             class="bg-[#FAF7EE] rounded-2xl p-6 sm:p-8 border border-[#EDE7D5] space-y-6 animate-fade-in-up">
 
+            <!-- Header -->
             <div
-              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/60">
+              class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-slate-200/60">
               <div>
                 <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                   APPLICANT RECORD #{{ searchResult.reference_number }}
@@ -944,7 +958,7 @@
                   {{ searchResult.full_name }}
                 </h3>
                 <p class="text-xs text-slate-600 font-medium mt-0.5">
-                  Primary Strand: <strong class="text-slate-800">{{ searchResult.strand || 'TBA' }}</strong>
+                  Preferred Strand: <strong class="text-slate-800">{{ searchResult.strand || 'TBA' }}</strong>
                 </p>
                 <p class="text-xs text-slate-600 font-medium mt-0.5">
                   School Year: <strong class="text-slate-800">{{ searchResult.school_year || '—' }}</strong>
@@ -953,87 +967,129 @@
 
               <div class="sm:text-right">
                 <span
-                  class="inline-flex items-center gap-1.5 bg-emerald-100 text-[#005506] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wide">
-                  <span class="w-2 h-2 rounded-full bg-[#005506] animate-pulse"></span>
-                  {{ searchResult.status_label }}
+                  class="inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wide border"
+                  :class="applicantStatusBadgeClass">
+                  <span class="w-2 h-2 rounded-full" :class="applicantStatusDotClass"></span>
+                  {{ searchResult.status_label || applicantStatusLabel }}
                 </span>
                 <p class="text-[11px] text-slate-400 mt-1 font-medium">
-                  Submitted on: {{ formatDate(searchResult.submitted_at) }}
+                  Submitted {{ formatDate(searchResult.submitted_at) }}
                 </p>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm space-y-1">
-                <div class="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
-                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>SUBMITTED</span>
+            <!-- REJECTED state -->
+            <div v-if="isRejected" class="bg-red-50 rounded-xl p-5 border border-red-200 space-y-2">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+                <h5 class="text-sm font-bold text-red-800">Application Unsuccessful</h5>
+              </div>
+              <p v-if="searchResult.rejection_reason" class="text-xs text-red-700 leading-relaxed">
+                <strong>Reason:</strong> {{ searchResult.rejection_reason }}
+              </p>
+              <p v-else class="text-xs text-red-700 leading-relaxed">
+                Unfortunately, this application was not accepted. Contact the registrar for details.
+              </p>
+            </div>
+
+            <!-- NEEDS RESUBMISSION state -->
+            <div v-else-if="isResubmission" class="bg-amber-50 rounded-xl p-5 border border-amber-200 space-y-2">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h5 class="text-sm font-bold text-amber-800">Action Required</h5>
+              </div>
+              <p v-if="searchResult.rejection_reason" class="text-xs text-amber-700 leading-relaxed">
+                <strong>Registrar's note:</strong> {{ searchResult.rejection_reason }}
+              </p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                Please resubmit the required documents by replying to the resubmission email or visiting the registrar's
+                office.
+              </p>
+            </div>
+
+            <!-- PROGRESS TIMELINE -->
+            <div v-else class="space-y-5">
+              <!-- Desktop labels -->
+              <div class="hidden sm:grid grid-cols-5 gap-2">
+                <div v-for="stage in statusStages" :key="stage.id" class="text-center space-y-1">
+                  <p class="text-[10px] font-black uppercase tracking-wider transition-colors"
+                    :class="stage.state === 'pending' ? 'text-slate-400' : 'text-[#005506]'">
+                    {{ stage.label }}
+                  </p>
                 </div>
-                <h4 class="font-bold text-[#005506] text-sm">Form Encoded</h4>
-                <p class="text-[11px] text-slate-500">Passed validation</p>
               </div>
 
-              <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm space-y-1">
-                <div class="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-wider">
-                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>VERIFIED</span>
+              <!-- Progress line -->
+              <div class="relative">
+                <div class="absolute left-[10%] right-[10%] top-4 h-1 bg-slate-200 rounded-full"></div>
+                <div class="absolute left-[10%] top-4 h-1 bg-[#005506] rounded-full transition-all duration-700"
+                  :style="{ width: progressBarWidth }"></div>
+
+                <div class="relative flex justify-between">
+                  <div v-for="(stage, i) in statusStages" :key="stage.id"
+                    class="flex flex-col items-center gap-2" style="width: 20%;">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all shadow-sm shrink-0 z-10"
+                      :class="{
+                        'bg-[#005506] border-[#005506] text-white': stage.state === 'done',
+                        'bg-white border-[#005506] text-[#005506] ring-4 ring-[#005506]/15': stage.state === 'current',
+                        'bg-white border-slate-300 text-slate-300': stage.state === 'pending',
+                      }">
+                      <svg v-if="stage.state === 'done'" class="w-4 h-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      <span v-else class="text-xs font-black">{{ i + 1 }}</span>
+                    </div>
+                    <div class="text-center sm:hidden">
+                      <p class="text-[10px] font-black uppercase tracking-wider"
+                        :class="stage.state === 'pending' ? 'text-slate-400' : 'text-[#005506]'">
+                        {{ stage.label }}</p>
+                    </div>
+                  </div>
                 </div>
-                <h4 class="font-bold text-[#005506] text-sm">PSA & Form 138</h4>
-                <p class="text-[11px] text-slate-500">Registrar cleared</p>
               </div>
 
-              <div class="bg-[#FFFBEA] rounded-xl p-4 border border-amber-300/80 shadow-sm space-y-1">
-                <div class="flex items-center gap-1.5 text-amber-800 text-xs font-bold uppercase tracking-wider">
-                  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>IN PROGRESS</span>
+              <!-- Stage descriptions -->
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 mt-4">
+                <div v-for="stage in statusStages" :key="`card-${stage.id}`"
+                  class="bg-white rounded-xl p-3 border shadow-sm space-y-1 transition-all"
+                  :class="{
+                    'border-emerald-200': stage.state === 'done',
+                    'border-emerald-400 ring-2 ring-emerald-500/10': stage.state === 'current',
+                    'border-slate-200 opacity-60': stage.state === 'pending',
+                  }">
+                  <p class="text-[10px] font-black uppercase tracking-wider"
+                    :class="stage.state === 'pending' ? 'text-slate-400' : 'text-[#005506]'">
+                    {{ stage.hint }}
+                  </p>
+                  <p class="text-[11px] text-slate-600 leading-snug font-medium">
+                    {{ stage.description }}
+                  </p>
                 </div>
-                <h4 class="font-bold text-[#005506] text-sm">Strand Interview</h4>
-                <p class="text-[11px] text-amber-700 font-bold">Awaiting schedule</p>
-              </div>
-
-              <div class="bg-slate-100/60 rounded-xl p-4 border border-slate-200/50 space-y-1 opacity-70">
-                <div class="flex items-center gap-1.5 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>PENDING</span>
-                </div>
-                <h4 class="font-bold text-slate-700 text-sm">COR & Section</h4>
-                <p class="text-[11px] text-slate-400">Awaiting interview</p>
               </div>
             </div>
 
-            <div v-if="searchResult.rejection_reason"
-              class="bg-red-50 rounded-xl p-4 border border-red-200">
-              <h5 class="text-xs font-bold text-red-700">Rejection Reason</h5>
-              <p class="text-xs text-red-600 leading-normal mt-0.5">{{ searchResult.rejection_reason }}</p>
-            </div>
-
-            <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-start gap-3">
+            <!-- Next step banner -->
+            <div v-if="!isRejected"
+              class="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-start gap-3">
               <div
                 class="w-8 h-8 rounded-lg bg-emerald-100 text-[#005506] flex items-center justify-center shrink-0 mt-0.5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                 </svg>
               </div>
               <div>
-                <h5 class="text-xs font-bold text-[#005506]">Next Step</h5>
-                <p class="text-xs text-slate-600 leading-normal mt-0.5">
-                  Please keep an eye on your registered email/phone for the guidance office appointment. Bring your
-                  original Form 138 hardcopy.
-                </p>
+                <h5 class="text-xs font-bold text-[#005506]">What's Next?</h5>
+                <p class="text-xs text-slate-600 leading-relaxed mt-0.5">{{ nextStepMessage }}</p>
               </div>
             </div>
 
@@ -1495,7 +1551,7 @@ const submitApplication = async () => {
     payload.append('prev_school_type', form.school_type)
     payload.append('last_school_year', form.year_graduated)
 
-    // Contacts (only those with name)
+    // Contacts
     const contacts = [
       { role: 'father', full_name: form.father_name, occupation: form.father_occupation, contact_number: form.father_contact, relationship: 'Father' },
       { role: 'mother', full_name: form.mother_name, occupation: form.mother_occupation, contact_number: form.mother_contact, relationship: 'Mother' },
@@ -1537,7 +1593,6 @@ const submitApplication = async () => {
       allowEscapeKey: false,
     })
 
-    // Set the tracker code so the user can immediately check
     trackingCode.value = data.reference_number
     resetApplication()
   } catch (err) {
@@ -1586,6 +1641,107 @@ const lookupApplication = async () => {
   }
 }
 
+/* ─── Status helpers — map the applicant status to a tracker position ─── */
+const isRejected     = computed(() => searchResult.value?.status === 'rejected')
+const isResubmission = computed(() => searchResult.value?.status === 'needs_resubmission')
+
+const applicantStatusLabel = computed(() => {
+  const s = searchResult.value?.status
+  return {
+    pending:            'Pending Review',
+    under_review:       'Under Review',
+    approved:           'Approved',
+    enrolled:           'Enrolled',
+    rejected:           'Rejected',
+    needs_resubmission: 'Action Required',
+  }[s] || 'Unknown'
+})
+
+const applicantStatusBadgeClass = computed(() => {
+  const s = searchResult.value?.status
+  return {
+    pending:            'bg-amber-100 text-amber-800 border-amber-200',
+    under_review:       'bg-blue-100 text-blue-800 border-blue-200',
+    approved:           'bg-emerald-100 text-[#005506] border-emerald-200',
+    enrolled:           'bg-[#005506] text-white border-[#005506]',
+    rejected:           'bg-red-100 text-red-800 border-red-200',
+    needs_resubmission: 'bg-orange-100 text-orange-800 border-orange-200',
+  }[s] || 'bg-slate-100 text-slate-700 border-slate-200'
+})
+
+const applicantStatusDotClass = computed(() => {
+  const s = searchResult.value?.status
+  return {
+    pending:            'bg-amber-500',
+    under_review:       'bg-blue-500',
+    approved:           'bg-emerald-500',
+    enrolled:           'bg-white',
+    rejected:           'bg-red-500',
+    needs_resubmission: 'bg-orange-500',
+  }[s] || 'bg-slate-400'
+})
+
+/**
+ * Five tracker stages matching the real workflow:
+ *   0 = Submitted (pending)
+ *   1 = Under Review (under_review / needs_resubmission)
+ *   2 = Verified (approved implies verified + exam-assigned)
+ *   3 = Entrance Exam (approved → waiting for exam session)
+ *   4 = Enrolled (enrolled → LMS account + section assigned)
+ */
+const statusStages = computed(() => {
+  const status = searchResult.value?.status || 'pending'
+
+  const stageIndex = {
+    pending:            0,
+    under_review:       1,
+    needs_resubmission: 1,
+    approved:           3,   // approved = past review, waiting on exam
+    enrolled:           4,   // fully done
+  }[status] ?? 0
+
+  const isEnrolled = status === 'enrolled'
+
+  const stages = [
+    { id: 'submitted', label: 'Submitted',      hint: 'Form Received',     description: 'Application form and documents uploaded successfully.' },
+    { id: 'review',    label: 'Under Review',   hint: 'Registrar Review',  description: 'The registrar is verifying your LRN and submitted documents.' },
+    { id: 'verified',  label: 'Verified',       hint: 'Documents Cleared', description: 'Your credentials and eligibility have been confirmed.' },
+    { id: 'exam',      label: 'Entrance Exam',  hint: 'Exam Scheduled',    description: 'Assigned to an exam session. Date and venue sent by email.' },
+    { id: 'enrolled',  label: 'Enrolled',       hint: 'Account & Section', description: 'LMS account created, section assigned, subject classrooms linked.' },
+  ]
+
+  return stages.map((s, i) => ({
+    ...s,
+    state: isEnrolled ? 'done' : i < stageIndex ? 'done' : i === stageIndex ? 'current' : 'pending',
+  }))
+})
+
+/**
+ * Progress bar fill width. The bar sits between 10% and 90% of the container,
+ * so it spans 80%. Each interval between 5 stages is 25% of that span.
+ */
+const progressBarWidth = computed(() => {
+  const stages = statusStages.value
+  if (!stages.length) return '0%'
+  const doneCount = stages.filter(s => s.state === 'done').length
+  const currentIndex = stages.findIndex(s => s.state === 'current')
+  const effectiveIndex = currentIndex >= 0 ? currentIndex : doneCount
+  const intervals = stages.length - 1
+  const pct = intervals > 0 ? (effectiveIndex / intervals) * 100 : 0
+  return `${Math.min(100, pct)}%`
+})
+
+const nextStepMessage = computed(() => {
+  const status = searchResult.value?.status
+  return {
+    pending:            'Your application is queued for review. Expect an update within 2–3 working days via the email you provided.',
+    under_review:       'Our registrar is verifying your documents. You\'ll be notified once your application is approved and an entrance exam is scheduled.',
+    needs_resubmission: 'Please review the registrar\'s note above and resubmit the required documents by replying to the resubmission email.',
+    approved:           'You\'ve been approved and assigned to an entrance exam. Check your email for the exam date, time, and venue. Keep your LRN ready on exam day.',
+    enrolled:           'Congratulations! Your student account has been created. Check your email for your temporary login credentials, then change your password on first sign-in.',
+  }[status] || 'Please check back later for updates on your application.'
+})
+
 /* -------------------- FAQS -------------------- */
 const openFaqIndex = ref(0)
 const toggleFaq = (index) => {
@@ -1608,6 +1764,14 @@ const faqs = [
   {
     question: 'Can transferees from other senior high schools in Cavite apply?',
     answer: 'Yes. Grade 11 transferees and ALS completers with certified eligibility certificates are welcome to enroll subject to available strand slots.'
+  },
+  {
+    question: 'How do I know if I passed the entrance exam?',
+    answer: 'Results are recorded by our faculty after your exam session. Passed applicants automatically receive a "Congratulations" email containing their LMS login credentials, assigned section, and adviser. Failed and absent applicants also get notified — no need to call the office.'
+  },
+  {
+    question: 'What happens if I don\'t pass the entrance exam?',
+    answer: 'You will receive an email with the exam result and next-step guidance from the admissions office. Depending on the reason, you may be scheduled for an interview or referred to another strand. Contact the registrar if you have specific questions about your result.'
   }
 ]
 
@@ -1624,7 +1788,6 @@ const isFaqVisible = ref(false)
 let observer = null
 
 onMounted(() => {
-  // Address data
   try {
     const flatData = Array.isArray(rawPsgcData) ? rawPsgcData : (rawPsgcData.default || [])
     addressData.value = buildAddressHierarchy(flatData)
@@ -1633,7 +1796,6 @@ onMounted(() => {
     console.error('PSGC data processing failed:', e)
   }
 
-  // Scroll reveal
   if (typeof IntersectionObserver !== 'undefined') {
     observer = new IntersectionObserver(
       (entries) => {
@@ -1718,7 +1880,6 @@ onUnmounted(() => {
   transform: scale(1.02);
 }
 
-/* Prevent number spinner arrows on numeric fields */
 input[inputmode="numeric"]::-webkit-outer-spin-button,
 input[inputmode="numeric"]::-webkit-inner-spin-button {
   -webkit-appearance: none;

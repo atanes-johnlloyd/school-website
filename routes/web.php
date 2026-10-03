@@ -22,6 +22,11 @@ Route::get('/', [\App\Http\Controllers\Site\HomeController::class, 'index'])->na
 
 Route::get('/academics', [\App\Http\Controllers\Site\AcademicsController::class, 'index'])->name('site.academics');
 
+Route::get(
+    '/academics/syllabus/{subject}',
+    [\App\Http\Controllers\Site\AcademicsController::class, 'syllabus']
+)->name('site.academics.syllabus');
+
 Route::get('/admission', [\App\Http\Controllers\Site\AdmissionController::class, 'index'])->name('site.admissions');
 
 Route::get('/about-us', [\App\Http\Controllers\Site\AboutController::class, 'index'])->name('about-us');

@@ -45,19 +45,19 @@
       </div>
     </section>
 
-    <!-- PATHWAYS -->
+    <!-- PATHWAYS — shows STRAND cards per track -->
     <section ref="pathwaysRef" id="pathways" class="w-full text-slate-800 py-16 sm:py-20 px-6 sm:px-12 md:px-16 lg:px-24">
       <div class="max-w-[1500px] mx-auto space-y-10 transition-all duration-1000"
         :class="isPathwaysVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
 
         <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div class="space-y-2 max-w-2xl">
-            <span class="inline-block bg-[#eaf5ed] text-[#005506] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">PATHWAY CATALOG</span>
+            <span class="inline-block bg-[#eaf5ed] text-[#005506] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">STRAND CATALOG</span>
             <h2 class="font-['Anton'] text-4xl sm:text-5xl lg:text-6xl text-[#005506] uppercase tracking-wide leading-none">
-              Explore the SHS Program Pathways
+              Explore the SHS Program Strands
             </h2>
             <p class="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-              Toggle through modernized and legacy programs to review specialized course concentrations, state-of-the-art facilities, and future career horizons.
+              Each Senior High track contains multiple specialized strands. Pick a track below to see its strand offerings, core subjects, and dedicated facilities.
             </p>
           </div>
 
@@ -70,7 +70,11 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        <div v-if="filteredPrograms.length === 0" class="text-center py-16 text-slate-500 font-medium">
+          No strands are currently listed under this track.
+        </div>
+
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           <div v-for="program in filteredPrograms" :key="program.id"
             class="bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm border border-slate-200/80 flex flex-col justify-between space-y-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
             <div class="space-y-5">
@@ -90,10 +94,15 @@
               </div>
 
               <div class="space-y-2 pt-1">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-[#005506]">Flagship Core & Specialized Subjects:</h4>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-[#005506]">
+                  {{ program.subjects.length ? 'Subject Offerings:' : 'Core Subjects:' }}
+                </h4>
                 <div class="flex flex-wrap gap-2">
                   <span v-for="(sub, i) in program.subjects" :key="i"
                     class="bg-[#f5f4ed] text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200/60">{{ sub }}</span>
+                  <span v-if="!program.subjects.length" class="text-xs text-slate-400 italic">
+                    Core curriculum applies — see Subject Finder below.
+                  </span>
                 </div>
               </div>
 
@@ -134,12 +143,12 @@
               Interactive Subject Finder & Syllabus
             </h2>
             <p class="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-              Search, filter, and review prerequisites, weekly hours, and syllabus downloads for all approved course offerings.
+              Search, filter, and download a PDF summary for every approved course offering — including prerequisites, weekly hours, and grade scope.
             </p>
           </div>
           <div class="shrink-0">
             <span class="bg-white border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-2xs">
-              Showing <span class="text-[#005506] font-extrabold">{{ filteredSubjects.length }}</span> subjects matching criteria
+              Showing <span class="text-[#005506] font-extrabold">{{ filteredSubjects.length }}</span> of {{ subjects.length }} subjects
             </span>
           </div>
         </div>
@@ -148,24 +157,27 @@
           <div class="relative w-full lg:flex-1">
             <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
             <input v-model="searchQuery" type="text"
-              placeholder="Search subject code, title, or topic..."
+              placeholder="Search subject code, title, strand, or track..."
               class="w-full bg-white text-slate-800 text-xs sm:text-sm pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#005506] transition-all" />
           </div>
           <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
-            <select v-model="selectedTrack" class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
-              <option value="All">All Tracks & Strands</option>
-              <option value="Academic">Academic Track</option>
-              <option value="TechPro">TechPro Track</option>
+            <select v-model="selectedTrack"
+              class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
+              <option value="All">All Tracks</option>
+              <option value="ACAD">Academic Track</option>
+              <option value="TECHPRO">Technical-Professional Track</option>
             </select>
-            <select v-model="selectedGrade" class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
+            <select v-model="selectedGrade"
+              class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
               <option value="All">All Grades</option>
-              <option value="Grade 11">Grade 11</option>
-              <option value="Grade 12">Grade 12</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
             </select>
-            <select v-model="selectedSem" class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
-              <option value="All">All Semesters</option>
-              <option value="1">Semester 1</option>
-              <option value="2">Semester 2</option>
+            <select v-model="selectedCategory"
+              class="bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-800 text-xs sm:text-sm font-bold px-4 py-3 rounded-2xl border-0 cursor-pointer focus:outline-none">
+              <option value="All">Core & Specialized</option>
+              <option value="Core">Core Subjects</option>
+              <option value="Specialized">Specialized Subjects</option>
             </select>
             <button @click="resetFilters" title="Reset Filters"
               class="w-11 h-11 bg-[#ebd9bd]/50 hover:bg-[#ebd9bd] text-slate-700 rounded-2xl flex items-center justify-center transition-colors cursor-pointer">
@@ -179,40 +191,53 @@
             <table class="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr class="bg-[#f5ebd7]/60 text-slate-700 uppercase text-[11px] font-extrabold tracking-wider border-b border-slate-200/80">
-                  <th class="py-4 px-6 w-[28%]">CODE & TITLE</th>
-                  <th class="py-4 px-4 w-[16%]">TRACK / STRAND</th>
-                  <th class="py-4 px-4 w-[13%]">LEVEL & SEM</th>
-                  <th class="py-4 px-4 w-[13%]">CATEGORY</th>
-                  <th class="py-4 px-4 w-[11%]">WEEKLY HOURS</th>
-                  <th class="py-4 px-4 w-[19%]">PREREQUISITES</th>
-                  <th class="py-4 px-6 text-right w-[10%]">SYLLABUS</th>
+                  <th class="py-4 px-6 w-[26%]">Code & Title</th>
+                  <th class="py-4 px-4 w-[16%]">Track / Strand</th>
+                  <th class="py-4 px-4 w-[13%]">Grade Level</th>
+                  <th class="py-4 px-4 w-[12%]">Category</th>
+                  <th class="py-4 px-4 w-[11%]">Total Hours</th>
+                  <th class="py-4 px-4 w-[16%]">Prerequisites</th>
+                  <th class="py-4 px-6 text-right w-[6%]">Syllabus</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
                 <tr v-for="item in filteredSubjects" :key="item.code" class="hover:bg-slate-50/80 transition-colors">
                   <td class="py-4 px-6">
-                    <div class="font-extrabold text-[#005506] text-xs sm:text-sm">{{ item.code }}</div>
-                    <div class="font-bold text-[#005506] text-xs sm:text-sm leading-snug">{{ item.title }}</div>
+                    <div class="font-mono font-extrabold text-[#005506] text-xs">{{ item.code }}</div>
+                    <div class="font-bold text-slate-800 text-xs sm:text-sm leading-snug mt-0.5">{{ item.title }}</div>
                   </td>
                   <td class="py-4 px-4">
-                    <span class="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-[#eaf5ed] text-[#005506]">{{ item.strand }}</span>
+                    <span class="inline-block px-3 py-1 rounded-full text-[11px] font-bold bg-[#eaf5ed] text-[#005506]">
+                      {{ item.strand }}
+                    </span>
+                    <div v-if="item.track_name" class="text-[10px] text-slate-400 font-medium mt-1">
+                      {{ item.track_name }}
+                    </div>
                   </td>
-                  <td class="py-4 px-4 text-slate-700 font-semibold">{{ item.levelSem }}</td>
+                  <td class="py-4 px-4 text-slate-700 font-semibold">{{ item.grade_label }}</td>
                   <td class="py-4 px-4">
-                    <span class="inline-block bg-[#f4ebd0] text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-md">{{ item.category }}</span>
+                    <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-md"
+                      :class="item.is_core
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-[#f4ebd0] text-slate-800'">
+                      {{ item.category }}
+                    </span>
                   </td>
-                  <td class="py-4 px-4 font-bold text-slate-800">{{ item.weeklyHours }}</td>
-                  <td class="py-4 px-4 text-slate-500 font-medium text-xs">{{ item.prerequisites }}</td>
+                  <td class="py-4 px-4 font-bold text-slate-800">{{ item.hours }}h</td>
+                  <td class="py-4 px-4 text-slate-500 font-medium text-xs">{{ item.prerequisite }}</td>
                   <td class="py-4 px-6 text-right">
-                    <a :href="item.downloadLink" download
-                      class="inline-flex items-center gap-1.5 bg-[#fbf2cf] hover:bg-[#f7e7a8] text-[#7c5b12] text-xs font-bold px-3.5 py-2 rounded-full transition-colors cursor-pointer whitespace-nowrap">
+                    <a :href="item.downloadLink"
+                      class="inline-flex items-center gap-1.5 bg-[#fbf2cf] hover:bg-[#f7e7a8] text-[#7c5b12] text-xs font-bold px-3 py-2 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                      target="_blank" rel="noopener">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                      <span>PDF ({{ item.fileSize }})</span>
+                      <span>PDF</span>
                     </a>
                   </td>
                 </tr>
                 <tr v-if="filteredSubjects.length === 0">
-                  <td colspan="7" class="py-12 text-center text-slate-500 font-medium">No subjects found matching your criteria.</td>
+                  <td colspan="7" class="py-16 text-center text-slate-500 font-medium">
+                    No subjects found matching your criteria. Try adjusting your filters.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -232,22 +257,21 @@ import Navbar from '@/Components/Navbar.vue'
 import Footer from '@/Components/Footer.vue'
 
 const props = defineProps({
-  school: { type: Object, required: true },
-  tracks: { type: Array, default: () => [] },
+  school:   { type: Object, required: true },
+  tracks:   { type: Array, default: () => [] },
   subjects: { type: Array, default: () => [] },
 })
 
 const tabs = [
   { key: 'academic', label: 'Academic Track' },
-  { key: 'techpro', label: 'TechPro Track' },
-  { key: 'legacy', label: 'Legacy Strands (Gr. 12)' },
+  { key: 'techpro',  label: 'Technical-Professional Track' },
 ]
 
-const activeTrack = ref('academic')
-const searchQuery = ref('')
-const selectedTrack = ref('All')
-const selectedGrade = ref('All')
-const selectedSem = ref('All')
+const activeTrack      = ref('academic')
+const searchQuery      = ref('')
+const selectedTrack    = ref('All')     // 'All' | 'ACAD' | 'TECHPRO'
+const selectedGrade    = ref('All')     // 'All' | '11' | '12'
+const selectedCategory = ref('All')     // 'All' | 'Core' | 'Specialized'
 
 const pathwaysRef = ref(null)
 const syllabusRef = ref(null)
@@ -272,63 +296,79 @@ function resetFilters() {
   searchQuery.value = ''
   selectedTrack.value = 'All'
   selectedGrade.value = 'All'
-  selectedSem.value = 'All'
+  selectedCategory.value = 'All'
 }
 
-// Build program "cards" from props.tracks
+/**
+ * Pathway cards — one per STRAND under the active track.
+ * Subjects for each strand are pulled from props.subjects (already loaded).
+ */
 const filteredPrograms = computed(() => {
-  const trackMap = {
-    academic: props.tracks.find(t => t.code === 'ACADEMIC' || t.name?.toLowerCase().includes('academic')),
-    techpro: props.tracks.find(t => t.code === 'TECHPRO' || t.name?.toLowerCase().includes('technical') || t.name?.toLowerCase().includes('techpro')),
-    legacy: props.tracks[0],
-  }
-
-  const buildCard = (track, idx, badgeTag = 'DepEd Aligned') => {
-    if (!track) return null
-    return {
-      id: `${activeTrack.value}-${idx}`,
-      alphaBadge: `Concentration ${String.fromCharCode(65 + idx)}`,
-      alignedTag: badgeTag,
-      title: track.name,
-      description: track.description,
-      subjects: (track.strands || []).map(s => s.name),
-      facilityTitle: `${track.name} Laboratory`,
-      facilityDesc: 'Dedicated, industry-standard facility for hands-on learning.',
-      targetDegrees: 'College & Industry Ready',
+  const findTrack = () => {
+    if (activeTrack.value === 'academic') {
+      return props.tracks.find(t => t.code === 'ACAD')
+          || props.tracks.find(t => t.name?.toLowerCase().includes('academic'))
     }
+    if (activeTrack.value === 'techpro') {
+      return props.tracks.find(t => t.code === 'TECHPRO')
+          || props.tracks.find(t => /technical|techpro/i.test(t.name || ''))
+    }
+    return null
   }
 
-  if (activeTrack.value === 'academic') {
-    return trackMap.academic ? [buildCard(trackMap.academic, 0, 'DOST Aligned')] : []
-  }
-  if (activeTrack.value === 'techpro') {
-    return trackMap.techpro ? [buildCard(trackMap.techpro, 0, 'TESDA NC II Certified')] : []
-  }
-  // Legacy: show academic strands as individual cards
-  if (trackMap.legacy?.strands) {
-    return trackMap.legacy.strands.slice(0, 4).map((s, i) => ({
-      id: `legacy-${s.id}`,
-      alphaBadge: s.code,
-      alignedTag: 'Legacy Curriculum',
-      title: s.name,
-      description: s.description || `${s.name} — legacy curriculum for continuing Grade 12 cohorts.`,
-      subjects: [s.name],
-      facilityTitle: `${s.code} Learning Space`,
-      facilityDesc: 'Existing facilities maintained for continuing cohorts.',
-      targetDegrees: 'College & Industry Ready',
-    }))
-  }
-  return []
+  const track = findTrack()
+  if (!track) return []
+
+  const badgeTag = track.code === 'TECHPRO' ? 'TESDA NC II Aligned' : 'DepEd Aligned'
+
+  return (track.strands || []).map((strand, idx) => {
+    // Pull the top subject names tied to this strand
+    const strandSubjects = props.subjects
+      .filter(s => s.strand_id === strand.id)
+      .slice(0, 6)
+      .map(s => s.title)
+
+    return {
+      id:           `${activeTrack.value}-${strand.id}`,
+      alphaBadge:   strand.code || `Strand ${String.fromCharCode(65 + idx)}`,
+      alignedTag:   badgeTag,
+      title:        strand.name,
+      description:  strand.description || `${strand.name} — a specialized cluster under the ${track.name}.`,
+      subjects:     strandSubjects,
+      facilityTitle: `${strand.name} Learning Space`,
+      facilityDesc:  'Dedicated, industry-standard facility with hands-on equipment and specialist faculty.',
+      targetDegrees: track.code === 'TECHPRO'
+        ? 'TESDA Certification • Industry Employment'
+        : 'College Degree Programs',
+    }
+  })
 })
 
+/**
+ * Subject finder — real filtering against real backend fields.
+ */
 const filteredSubjects = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+
   return props.subjects.filter(item => {
-    const q = searchQuery.value.toLowerCase()
-    const matchesSearch = !q || item.code.toLowerCase().includes(q) || item.title.toLowerCase().includes(q) || item.strand.toLowerCase().includes(q)
-    const matchesTrack = selectedTrack.value === 'All' || item.strand.includes(selectedTrack.value)
-    const matchesGrade = selectedGrade.value === 'All' || item.levelSem.includes(selectedGrade.value)
-    const matchesSem = selectedSem.value === 'All' || item.levelSem.includes(selectedSem.value)
-    return matchesSearch && matchesTrack && matchesGrade && matchesSem
+    const matchesSearch = !q
+      || item.code.toLowerCase().includes(q)
+      || item.title.toLowerCase().includes(q)
+      || (item.strand || '').toLowerCase().includes(q)
+      || (item.track_name || '').toLowerCase().includes(q)
+
+    const matchesTrack = selectedTrack.value === 'All'
+      || item.track_code === selectedTrack.value
+
+    // "both" subjects match either grade filter
+    const matchesGrade = selectedGrade.value === 'All'
+      || item.grade_level === selectedGrade.value
+      || item.grade_level === 'both'
+
+    const matchesCategory = selectedCategory.value === 'All'
+      || item.category === selectedCategory.value
+
+    return matchesSearch && matchesTrack && matchesGrade && matchesCategory
   })
 })
 </script>
