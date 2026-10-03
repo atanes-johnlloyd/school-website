@@ -137,22 +137,43 @@ const initials = computed(() => {
 
 const notificationCount = computed(() => isAdmin.value ? unreadContactCount.value : 0)
 
+// --- DIRECT DOM FONT SCALING ---
 const fontSizeMode = ref('base')
-const decreaseFont = () => {
-  if (fontSizeMode.value === 'lg') fontSizeMode.value = 'base'
-  else if (fontSizeMode.value === 'base') fontSizeMode.value = 'sm'
-  emit('font-size-changed', fontSizeMode.value)
-}
-const increaseFont = () => {
-  if (fontSizeMode.value === 'sm') fontSizeMode.value = 'base'
-  else if (fontSizeMode.value === 'base') fontSizeMode.value = 'lg'
-  emit('font-size-changed', fontSizeMode.value)
-}
-const resetFont = () => {
-  fontSizeMode.value = 'base'
-  emit('font-size-changed', 'base')
+
+const applyFontScale = (mode) => {
+  fontSizeMode.value = mode
+  const root = document.documentElement
+
+  // Remove existing scale classes
+  root.classList.remove('font-scale-sm', 'font-scale-normal', 'font-scale-lg', 'font-scale-xl')
+
+  // Map mode to app.css class
+  const classMap = {
+    'sm': 'font-scale-sm',
+    'base': 'font-scale-normal',
+    'lg': 'font-scale-lg'
+  }
+
+  root.classList.add(classMap[mode] || 'font-scale-normal')
+  localStorage.setItem('user_font_scale', mode)
+  emit('font-size-changed', mode)
 }
 
+const decreaseFont = () => {
+  if (fontSizeMode.value === 'lg') applyFontScale('base')
+  else if (fontSizeMode.value === 'base') applyFontScale('sm')
+}
+
+const increaseFont = () => {
+  if (fontSizeMode.value === 'sm') applyFontScale('base')
+  else if (fontSizeMode.value === 'base') applyFontScale('lg')
+}
+
+const resetFont = () => {
+  applyFontScale('base')
+}
+
+// --- DROPDOWN STATE ---
 const showNotifications = ref(false)
 const showProfile = ref(false)
 const toggleNotifications = () => { showNotifications.value = !showNotifications.value; showProfile.value = false }
@@ -161,7 +182,9 @@ const closeDropdowns = () => { showNotifications.value = false; showProfile.valu
 
 const handleLogout = () => router.post(route('logout'))
 
+// --- DARK MODE TOGGLE (DEFAULT TO LIGHT MODE) ---
 const isDark = ref(false)
+
 const toggleDarkMode = () => {
   isDark.value = !isDark.value
   if (isDark.value) {
@@ -174,9 +197,18 @@ const toggleDarkMode = () => {
 }
 
 onMounted(() => {
-  if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  // Restore Font Scale Choice
+  const savedScale = localStorage.getItem('user_font_scale') || 'base'
+  applyFontScale(savedScale)
+
+  // Restore Theme Choice (Only enable Dark Mode if explicitly saved)
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark') {
     isDark.value = true
     document.documentElement.classList.add('dark')
+  } else {
+    isDark.value = false;
+    document.documentElement.classList.remove('dark')
   }
 })
 </script>
