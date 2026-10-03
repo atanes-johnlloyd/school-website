@@ -5,9 +5,7 @@
 
     <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- HERO BANNER                                            -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ═══════════════ HERO BANNER ═══════════════ -->
       <div v-observe
         class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[220px] flex flex-col justify-center anim-fade-down">
         <img :src="heroImage" alt="Class Roster Background"
@@ -47,9 +45,7 @@
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- DYNAMIC SNAPSHOT CARDS (per active tab)                 -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ═══════════════ SNAPSHOT CARDS ═══════════════ -->
       <div v-observe class="anim-slide-up grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5"
         style="animation-delay: 100ms;" :key="`snapshot-${activeTab}`">
         <div v-for="(card, i) in snapshotCards" :key="i"
@@ -69,9 +65,7 @@
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- SPA TAB BAR                                             -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ═══════════════ TAB BAR ═══════════════ -->
       <div v-observe
         class="anim-slide-up bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-2 sm:p-3 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar"
         style="animation-delay: 150ms;">
@@ -95,19 +89,15 @@
         </button>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════ -->
-      <!-- MAIN CONTENT (swaps by tab w/ transition)               -->
-      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
       <div class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] overflow-hidden">
 
-        <!-- Loading overlay -->
         <div v-if="tabLoading[activeTab]"
           class="flex flex-col items-center justify-center py-20 space-y-3">
           <div class="w-10 h-10 border-4 border-emerald-200 dark:border-emerald-900/60 border-t-[#005506] dark:border-t-[#86EFAC] rounded-full animate-spin"></div>
           <p class="text-xs font-bold text-slate-500 dark:text-slate-400">Loading {{ tabLabel(activeTab) }}…</p>
         </div>
 
-        <!-- Animated tab swap -->
         <Transition v-else name="tab-swap" mode="out-in">
           <div :key="activeTab" class="space-y-4 sm:space-y-5">
 
@@ -339,11 +329,9 @@
                     </span>
                   </div>
 
-                  <div class="space-y-1">
-                    <h4 class="font-extrabold text-slate-900 dark:text-white text-sm leading-snug line-clamp-2">
-                      {{ a.title }}
-                    </h4>
-                  </div>
+                  <h4 class="font-extrabold text-slate-900 dark:text-white text-sm leading-snug line-clamp-2">
+                    {{ a.title }}
+                  </h4>
 
                   <div class="grid grid-cols-3 gap-2 text-center">
                     <div class="bg-white dark:bg-[#2D3A31] rounded-xl p-2 border border-slate-200/60 dark:border-[#3F4F43]">
@@ -572,80 +560,186 @@
 
             <!-- ─── ATTENDANCE TAB ─────────────────────────────── -->
             <div v-else-if="activeTab === 'attendance'" class="space-y-4 sm:space-y-5">
-              <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#3F4F43]">
-                <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/40">
-                    <Icon icon="clipboard-check" size="md" />
+
+              <!-- ══════════ MARKING VIEW ══════════ -->
+              <template v-if="selectedDate">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#3F4F43]">
+                  <div class="flex items-start gap-3">
+                    <button @click="closeAttendanceSession"
+                      class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-[#232D26] hover:bg-slate-200 dark:hover:bg-[#3F4F43] text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors">
+                      <Icon icon="arrow-left" size="md" />
+                    </button>
+                    <div>
+                      <h3 class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-white">
+                        Mark Attendance — {{ formatLongDate(selectedDate) }}
+                      </h3>
+                      <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {{ attendanceRoster.length }} learner{{ attendanceRoster.length === 1 ? '' : 's' }} to record
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-white">Attendance Sessions</h3>
-                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {{ tabData.attendance?.sessions?.length || 0 }} sessions recorded •
-                      {{ tabData.attendance?.enrolled_students || 0 }} learners
-                    </p>
+
+                  <div class="flex items-center gap-2">
+                    <button @click="closeAttendanceSession"
+                      class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] transition-colors">
+                      Cancel
+                    </button>
+                    <button @click="saveAttendance" :disabled="isSaving || !attendanceRoster.length"
+                      class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50">
+                      <Icon icon="check-circle" size="xs" />
+                      {{ isSaving ? 'Saving…' : 'Save Attendance' }}
+                    </button>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <button @click="refreshTab('attendance')"
-                    class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center gap-1.5">
-                    <Icon icon="arrow-right" size="xs" class="rotate-90" />
-                    Refresh
-                  </button>
-                  <Link :href="route('teacher.classes.attendance.session', { classroom: classroom.id, date: todayIso })"
-                    class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all active:scale-95">
-                    <Icon icon="check-circle" size="xs" />
-                    Mark Today
-                  </Link>
+                <div v-if="saveError"
+                  class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs">
+                  {{ saveError }}
                 </div>
-              </div>
 
-              <div v-if="tabData.attendance?.sessions?.length" class="space-y-2">
-                <Link v-for="(sess, i) in tabData.attendance.sessions" :key="`${sess.date}-${i}`"
-                  :href="route('teacher.classes.attendance.session', { classroom: classroom.id, date: sess.date })"
-                  class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-4 border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-[#005506] dark:hover:border-[#86EFAC] hover:-translate-x-1 transition-all">
-                  <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-white dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center shrink-0">
-                      <Icon icon="calendar" size="md" class="text-[#005506] dark:text-[#86EFAC]" />
+                <div v-if="isMarkingLoading" class="py-16 text-center">
+                  <div class="inline-block w-8 h-8 border-4 border-emerald-200 dark:border-emerald-900/60 border-t-[#005506] dark:border-t-[#86EFAC] rounded-full animate-spin"></div>
+                  <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mt-3">Loading roster…</p>
+                </div>
+
+                <div v-else-if="attendanceRoster.length"
+                  class="overflow-x-auto -mx-2 sm:mx-0 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43]">
+                  <table class="w-full min-w-[720px] text-left border-collapse">
+                    <thead>
+                      <tr class="bg-[#F9F7F1] dark:bg-[#232D26] text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200/80 dark:border-[#3F4F43]">
+                        <th class="py-3 px-3 sm:px-4 w-12 text-center">#</th>
+                        <th class="py-3 px-3 sm:px-4">Student</th>
+                        <th class="py-3 px-3 sm:px-4 text-center">Status</th>
+                        <th class="py-3 px-3 sm:px-4">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-[#3F4F43] text-xs font-medium text-slate-700 dark:text-slate-200">
+                      <tr v-for="(r, idx) in attendanceRoster" :key="r.student_id"
+                        class="hover:bg-slate-50/80 dark:hover:bg-[#232D26]/40 transition-colors">
+                        <td class="py-3.5 px-3 sm:px-4 text-center font-bold text-slate-400">
+                          {{ String(idx + 1).padStart(2, '0') }}
+                        </td>
+                        <td class="py-3.5 px-3 sm:px-4">
+                          <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-extrabold text-[11px] flex items-center justify-center shrink-0">
+                              {{ initialsOf(r.name) }}
+                            </span>
+                            <div class="min-w-0">
+                              <p class="font-extrabold text-slate-800 dark:text-white truncate">{{ r.name }}</p>
+                              <p class="text-[10px] font-mono text-slate-400 truncate">{{ r.lrn }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-3 sm:px-4">
+                          <div class="flex items-center justify-center gap-1">
+                            <button v-for="st in ATT_STATUSES" :key="st.value"
+                              type="button"
+                              @click="r.status = st.value"
+                              :class="[
+                                'text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all',
+                                r.status === st.value
+                                  ? st.chip + ' ring-2 ring-offset-1 ring-slate-300 dark:ring-[#3F4F43] dark:ring-offset-[#2D3A31]'
+                                  : 'bg-white dark:bg-[#2D3A31] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#3F4F43] hover:bg-slate-50 dark:hover:bg-[#3F4F43]'
+                              ]">
+                              {{ st.short }}
+                            </button>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-3 sm:px-4">
+                          <input v-model="r.notes" type="text" placeholder="Optional note"
+                            class="w-full px-2.5 py-1.5 text-[11px] rounded-lg bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] text-slate-700 dark:text-slate-200" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div v-else class="bg-[#F9F7F1] dark:bg-[#232D26] p-12 rounded-2xl sm:rounded-3xl text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
+                  <Icon icon="users" size="xl" class="text-slate-400 mx-auto" />
+                  <p class="text-sm font-bold text-slate-800 dark:text-white">No learners enrolled</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Enroll students before marking attendance.</p>
+                </div>
+              </template>
+
+              <!-- ══════════ SESSION LIST ══════════ -->
+              <template v-else>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#3F4F43]">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/40">
+                      <Icon icon="clipboard-check" size="md" />
                     </div>
                     <div>
-                      <p class="font-extrabold text-slate-900 dark:text-white text-sm">
-                        {{ formatLongDate(sess.date) }}
-                      </p>
-                      <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                        {{ sess.total }} learners marked
+                      <h3 class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-white">Attendance Sessions</h3>
+                      <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {{ tabData.attendance?.sessions?.length || 0 }} sessions recorded •
+                        {{ tabData.attendance?.enrolled_students || 0 }} learners
                       </p>
                     </div>
                   </div>
 
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40">
-                      P: {{ sess.present }}
-                    </span>
-                    <span class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-200/60 dark:border-amber-900/40">
-                      L: {{ sess.late }}
-                    </span>
-                    <span class="bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-rose-200/60 dark:border-rose-900/40">
-                      A: {{ sess.absent }}
-                    </span>
-                    <span class="bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-sky-200/60 dark:border-sky-900/40">
-                      E: {{ sess.excused }}
-                    </span>
-                    <Icon icon="chevron-right" size="xs" class="text-slate-400 ml-1" />
+                  <div class="flex items-center gap-2">
+                    <button @click="refreshTab('attendance')"
+                      class="bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center gap-1.5">
+                      <Icon icon="arrow-right" size="xs" class="rotate-90" />
+                      Refresh
+                    </button>
+                    <button @click="openAttendanceFor(todayIso)"
+                      class="bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all active:scale-95">
+                      <Icon icon="check-circle" size="xs" />
+                      Mark Today
+                    </button>
                   </div>
-                </Link>
-              </div>
+                </div>
 
-              <div v-else class="bg-[#F9F7F1] dark:bg-[#232D26] p-12 rounded-2xl sm:rounded-3xl text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
-                <Icon icon="clipboard-check" size="xl" class="text-slate-400 mx-auto" />
-                <p class="text-sm font-bold text-slate-800 dark:text-white">No attendance sessions yet</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Start by marking attendance for today.</p>
-                <Link :href="route('teacher.classes.attendance.session', { classroom: classroom.id, date: todayIso })"
-                  class="inline-flex bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-4 py-2.5 rounded-xl hover:bg-[#004105] transition-colors items-center gap-2">
-                  <Icon icon="plus" size="xs" />
-                  Mark Today
-                </Link>
-              </div>
+                <div v-if="tabData.attendance?.sessions?.length" class="space-y-2">
+                  <button v-for="(sess, i) in tabData.attendance.sessions" :key="`${sess.date}-${i}`"
+                    type="button"
+                    @click="openAttendanceFor(sess.date)"
+                    class="w-full text-left bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-4 border border-slate-200/80 dark:border-[#3F4F43] flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-[#005506] dark:hover:border-[#86EFAC] hover:-translate-x-1 transition-all">
+                    <div class="flex items-center gap-3">
+                      <div class="w-11 h-11 rounded-2xl bg-white dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center shrink-0">
+                        <Icon icon="calendar" size="md" class="text-[#005506] dark:text-[#86EFAC]" />
+                      </div>
+                      <div>
+                        <p class="font-extrabold text-slate-900 dark:text-white text-sm">
+                          {{ formatLongDate(sess.date) }}
+                        </p>
+                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          {{ sess.total }} learners marked
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40">
+                        P: {{ sess.present }}
+                      </span>
+                      <span class="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-200/60 dark:border-amber-900/40">
+                        L: {{ sess.late }}
+                      </span>
+                      <span class="bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-rose-200/60 dark:border-rose-900/40">
+                        A: {{ sess.absent }}
+                      </span>
+                      <span class="bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] font-black px-2.5 py-1 rounded-full border border-sky-200/60 dark:border-sky-900/40">
+                        E: {{ sess.excused }}
+                      </span>
+                      <Icon icon="chevron-right" size="xs" class="text-slate-400 ml-1" />
+                    </div>
+                  </button>
+                </div>
+
+                <div v-else class="bg-[#F9F7F1] dark:bg-[#232D26] p-12 rounded-2xl sm:rounded-3xl text-center border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
+                  <Icon icon="clipboard-check" size="xl" class="text-slate-400 mx-auto" />
+                  <p class="text-sm font-bold text-slate-800 dark:text-white">No attendance sessions yet</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Start by marking attendance for today.</p>
+                  <button @click="openAttendanceFor(todayIso)"
+                    class="inline-flex bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26] text-xs font-black px-4 py-2.5 rounded-xl hover:bg-[#004105] transition-colors items-center gap-2">
+                    <Icon icon="plus" size="xs" />
+                    Mark Today
+                  </button>
+                </div>
+              </template>
+
             </div>
 
           </div>
@@ -653,7 +747,7 @@
       </div>
     </div>
 
-    <!-- ENROLL MODAL -->
+    <!-- ═══════════ ENROLL MODAL ═══════════ -->
     <div v-if="showEnrollModal"
       class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
       @click.self="showEnrollModal = false">
@@ -723,6 +817,23 @@ const props = defineProps({
 })
 
 /* ═════════════════════════════════════════════════════════ */
+/* SHARED UTILS — declared first so everything below can use  */
+/* ═════════════════════════════════════════════════════════ */
+
+/**
+ * Normalize a date value to YYYY-MM-DD.
+ * Handles: "2026-09-29", "2026-09-29T00:00:00.000000Z", Carbon objects,
+ * and the { date: "...", value: "..." } envelope Inertia sometimes emits.
+ */
+function toDateParam(v) {
+  if (!v) return ''
+  if (typeof v === 'object') v = v.date ?? v.value ?? String(v)
+  return String(v).trim().slice(0, 10)
+}
+
+const todayIso = new Date().toISOString().slice(0, 10)
+
+/* ═════════════════════════════════════════════════════════ */
 /* TABS STATE                                                */
 /* ═════════════════════════════════════════════════════════ */
 const activeTab = ref('students')
@@ -756,7 +867,7 @@ function tabLabel(id) {
 }
 
 /* ═════════════════════════════════════════════════════════ */
-/* TAB LOADING (axios → JSON endpoints)                      */
+/* TAB LOADING                                               */
 /* ═════════════════════════════════════════════════════════ */
 async function loadTab(id) {
   if (id === 'students' || tabData[id] || tabLoading[id]) return
@@ -789,7 +900,6 @@ function selectTab(id) {
 }
 
 onMounted(() => {
-  // Deep-link: honor ?tab=<id> from the URL (e.g. coming from a "Gradebook" button)
   try {
     const params = new URLSearchParams(window.location.search)
     const tab = params.get('tab')
@@ -801,6 +911,94 @@ onMounted(() => {
     // Malformed URL — stay on Students
   }
 })
+
+/* ═════════════════════════════════════════════════════════ */
+/* ATTENDANCE MARKING STATE                                  */
+/* ═════════════════════════════════════════════════════════ */
+const selectedDate     = ref(null)
+const attendanceRoster = ref([])
+const isMarkingLoading = ref(false)
+const isSaving         = ref(false)
+const saveError        = ref('')
+
+const ATT_STATUSES = [
+  { value: 'present', label: 'Present', short: 'P', chip: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900/40' },
+  { value: 'late',    label: 'Late',    short: 'L', chip: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/40' },
+  { value: 'absent',  label: 'Absent',  short: 'A', chip: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/40' },
+  { value: 'excused', label: 'Excused', short: 'E', chip: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-900/40' },
+]
+
+async function openAttendanceFor(date) {
+  const clean = toDateParam(date)
+  if (!clean) return
+
+  selectedDate.value     = clean
+  attendanceRoster.value = []
+  saveError.value        = ''
+  isMarkingLoading.value = true
+
+  try {
+    const { data } = await axios.get(
+      route('teacher.classes.attendance.session', {
+        classroom: props.classroom.id,
+        date:      clean,
+      }),
+      { headers: { Accept: 'application/json' } }
+    )
+
+    // Controller returns `students` — each row has `{ id, name, lrn, status, notes }`.
+    // We normalize to `student_id` for our table + the save payload.
+    attendanceRoster.value = (data.students || []).map(r => ({
+      student_id: r.id,
+      name:       r.name,
+      lrn:        r.lrn,
+      status:     r.status ?? 'present',
+      notes:      r.notes ?? '',
+    }))
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to load attendance roster.'
+  } finally {
+    isMarkingLoading.value = false
+  }
+}
+
+async function saveAttendance() {
+  if (!selectedDate.value || !attendanceRoster.value.length) return
+
+  isSaving.value   = true
+  saveError.value  = ''
+
+  try {
+    await axios.post(
+      route('teacher.classes.attendance.mark', {
+        classroom: props.classroom.id,
+        date:      selectedDate.value,
+      }),
+      {
+        // Controller expects `records` (MarkAttendanceRequest).
+        records: attendanceRoster.value.map(r => ({
+          student_id: r.student_id,
+          status:     r.status,
+          notes:      r.notes || null,
+        })),
+      },
+      { headers: { Accept: 'application/json' } }
+    )
+
+    refreshTab('attendance')
+    closeAttendanceSession()
+  } catch (e) {
+    saveError.value = e.response?.data?.message || 'Failed to save attendance.'
+  } finally {
+    isSaving.value = false
+  }
+}
+
+function closeAttendanceSession() {
+  selectedDate.value = null
+  attendanceRoster.value = []
+  saveError.value = ''
+}
 
 /* ═════════════════════════════════════════════════════════ */
 /* SNAPSHOT CARDS (dynamic per tab)                          */
@@ -860,7 +1058,7 @@ const snapshotCards = computed(() => {
 })
 
 /* ═════════════════════════════════════════════════════════ */
-/* STUDENTS TAB — derived stats                              */
+/* STUDENTS TAB                                              */
 /* ═════════════════════════════════════════════════════════ */
 const statusCounts = computed(() => {
   const s = { active: 0, dropped: 0, completed: 0 }
@@ -906,9 +1104,9 @@ const perPage = 15
 const page = ref(1)
 watch([rosterSearch, statusFilter], () => { page.value = 1 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredStudents.value.length / perPage)))
-const pageStart  = computed(() => filteredStudents.value.length === 0 ? 0 : (page.value - 1) * perPage + 1)
-const pageEnd    = computed(() => Math.min(page.value * perPage, filteredStudents.value.length))
+const totalPages    = computed(() => Math.max(1, Math.ceil(filteredStudents.value.length / perPage)))
+const pageStart     = computed(() => filteredStudents.value.length === 0 ? 0 : (page.value - 1) * perPage + 1)
+const pageEnd       = computed(() => Math.min(page.value * perPage, filteredStudents.value.length))
 const pagedStudents = computed(() => {
   const start = (page.value - 1) * perPage
   return filteredStudents.value.slice(start, start + perPage)
@@ -920,7 +1118,7 @@ function resetRosterFilters() {
 }
 
 /* ═════════════════════════════════════════════════════════ */
-/* ASSIGNMENTS / LESSONS — derived stats                    */
+/* DERIVED STATS                                             */
 /* ═════════════════════════════════════════════════════════ */
 const assignmentsByStatus = computed(() => {
   const list = tabData.assignments?.assignments ?? []
@@ -945,7 +1143,7 @@ const lessonsByStatus = computed(() => {
 /* ═════════════════════════════════════════════════════════ */
 /* EXPORTS / ENROLL MODAL                                    */
 /* ═════════════════════════════════════════════════════════ */
-const showExportMenu = ref(false)
+const showExportMenu  = ref(false)
 const showEnrollModal = ref(false)
 
 function openEnrollModal() { showEnrollModal.value = true }
@@ -1022,28 +1220,14 @@ function formatShort(v) {
 }
 
 function formatLongDate(v) {
-  if (!v) return '—'
-  try {
-    // Handle potential object envelope defensively
-    if (typeof v === 'object') {
-      v = v.date ?? v.value ?? String(v)
-    }
-    // Take first 10 chars → "2026-09-24" regardless of whether a time is appended
-    const s = String(v).trim().slice(0, 10)
-    const d = new Date(s + 'T00:00:00')
-    if (isNaN(d.getTime())) return String(v)
-    return d.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month:   'long',
-      day:     'numeric',
-      year:    'numeric',
-    })
-  } catch {
-    return String(v)
-  }
+  const s = toDateParam(v)
+  if (!s) return '—'
+  const d = new Date(s + 'T00:00:00')
+  if (isNaN(d.getTime())) return String(v)
+  return d.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  })
 }
-
-const todayIso = new Date().toISOString().slice(0, 10)
 
 /* ═════════════════════════════════════════════════════════ */
 /* ANIMATIONS                                                */
@@ -1065,29 +1249,16 @@ const vObserve = {
 .animate-overlay { animation: pulse-opacity 6s infinite ease-in-out; }
 
 @keyframes slideUpFade { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
 .not-visible { opacity: 0; }
 .is-animated.anim-fade-down { animation: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.is-animated.anim-slide-up { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.is-animated.anim-slide-up  { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* Tab-swap transition */
-.tab-swap-enter-active {
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.tab-swap-leave-active {
-  transition: opacity 0.18s ease-in,
-              transform 0.18s ease-in;
-}
-.tab-swap-enter-from {
-  opacity: 0;
-  transform: translateY(14px);
-}
-.tab-swap-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
+.tab-swap-enter-active { transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.tab-swap-leave-active { transition: opacity 0.18s ease-in, transform 0.18s ease-in; }
+.tab-swap-enter-from { opacity: 0; transform: translateY(14px); }
+.tab-swap-leave-to   { opacity: 0; transform: translateY(-8px); }
 
 .text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
 .text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }

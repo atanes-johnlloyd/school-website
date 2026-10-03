@@ -35,7 +35,9 @@ class AttendanceController extends Controller
             ->orderByDesc('attendance_date')
             ->get()
             ->map(fn ($row) => [
-                'date'    => $row->attendance_date,
+                'date'    => $row->attendance_date instanceof \Carbon\Carbon
+                                ? $row->attendance_date->toDateString()
+                                : (string) $row->attendance_date, 
                 'present' => (int) $row->present,
                 'absent'  => (int) $row->absent,
                 'late'    => (int) $row->late,
