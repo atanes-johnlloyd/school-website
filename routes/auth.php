@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,23 +15,24 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:6,1')   // 6 attempts per minute per IP
+        ->middleware('throttle:6,1')
         ->name('login');
 
-    // Replace line 22-23 in routes/auth.php
+    // ── Forgot password (custom PasswordRecovery.vue) ──
     Route::get('forgot-password', function () {
         return Inertia::render('Auth/PasswordRecovery');
     })->name('password.request');
-
-    // Option A: Direct Inertia view route
-    Route::get('confirmation-email', function () {
-        return Inertia::render('Auth/ConfirmationEmail');
-    })->name('confirmation.email');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->middleware('throttle:3,1')
         ->name('password.email');
 
+    // ── Email confirmation landing (custom ConfirmationEmail.vue) ──
+    Route::get('confirmation-email', function () {
+        return Inertia::render('Auth/ConfirmationEmail');
+    })->name('confirmation.email');
+
+    // ── Reset password link (custom NewPassword.vue) ──
     Route::get('reset-password/{token}', function ($token) {
         return Inertia::render('Auth/NewPassword', [
             'token' => $token,
@@ -46,6 +45,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // ── Email verification ──
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
@@ -57,13 +57,14 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:6,1')
         ->name('verification.send');
 
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
+    // ── Change password (custom ChangePassword.vue) ──
+    Route::get('password/change', [PasswordChangeController::class, 'show'])
+        ->name('password.change');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    Route::put('password/change', [PasswordChangeController::class, 'update'])
+        ->name('password.change.update');
 
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
-
+    // ── Logout ──
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
