@@ -185,6 +185,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, useForm, usePage, router } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
@@ -269,8 +270,8 @@ function uploadAvatar(event) {
   })
 }
 
-function removeAvatar() {
-  if (!confirm('Remove your profile picture?')) return
+async function removeAvatar() {
+  if (!await confirmAction('Remove your profile picture?')) return
   router.delete(route('profile.avatar.destroy'), {
     preserveScroll: true,
   })

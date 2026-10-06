@@ -174,6 +174,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -236,7 +237,7 @@ async function payOnline() {
     }
     submitting.value = false
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not start payment.')
+    showError(e.response?.data?.message || 'Could not start payment.')
     submitting.value = false
     pendingAction.value = null
   }
@@ -249,7 +250,7 @@ async function payCash() {
     await axios.post(route('guardian.pay.pay-cash', props.token))
     choiceMade.value = true
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not record your choice.')
+    showError(e.response?.data?.message || 'Could not record your choice.')
     pendingAction.value = null
   } finally {
     submitting.value = false
@@ -266,7 +267,7 @@ async function decline() {
     showDecline.value = false
     choiceMade.value = true
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not record your response.')
+    showError(e.response?.data?.message || 'Could not record your response.')
     pendingAction.value = null
   } finally {
     submitting.value = false

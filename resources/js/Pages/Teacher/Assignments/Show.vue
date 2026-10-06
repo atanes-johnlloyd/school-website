@@ -262,6 +262,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -307,8 +308,8 @@ function togglePublish(next) {
   })
 }
 
-function destroy() {
-  if (!confirm('Delete this assignment? This cannot be undone.')) return
+async function destroy() {
+  if (!await confirmAction('Delete this assignment? This cannot be undone.')) return
   deleting.value = true
   router.delete(route('teacher.assignments.destroy', props.assignment.id), {
     onFinish: () => { deleting.value = false },

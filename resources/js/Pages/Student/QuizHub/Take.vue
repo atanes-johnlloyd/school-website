@@ -193,6 +193,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -345,7 +346,7 @@ async function submitAttempt() {
     exitLockdown()
     router.visit(route('student.quiz-attempts.result', props.attempt.id))
   } catch (e) {
-    alert('Failed to submit. Please try again.')
+    showError('Failed to submit. Please try again.')
   }
 }
 

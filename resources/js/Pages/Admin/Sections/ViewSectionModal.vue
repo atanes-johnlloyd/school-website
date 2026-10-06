@@ -246,6 +246,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -384,7 +385,7 @@ const submitEnroll = async () => {
 }
 
 const confirmRemove = async (student) => {
-  if (!confirm(`Remove ${student.name} from this section?`)) return
+  if (!await confirmAction(`Remove ${student.name} from this section?`)) return
   try {
     await axios.delete(`/admin/sections/${props.section.id}/students/${student.student_id}`)
     await fetchDetails()

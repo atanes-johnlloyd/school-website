@@ -238,6 +238,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -335,7 +336,7 @@ function gradeAnswer(answer) {
       preserveScroll: true,
       preserveState: true,
     }))
-    .catch(e => alert(e.response?.data?.message || 'Grading failed.'))
+    .catch(e => showError(e.response?.data?.message || 'Grading failed.'))
     .finally(() => { gradingId.value = null })
 }
 

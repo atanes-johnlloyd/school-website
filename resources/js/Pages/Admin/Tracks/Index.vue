@@ -201,6 +201,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -260,8 +261,8 @@ const saveStrand = () => {
   showFormModal.value = false
 }
 
-const deleteStrand = (strand) => {
-  if (confirm(`Are you sure you want to delete ${strand.code}?`)) {
+const deleteStrand = async (strand) => {
+  if (await confirmAction(`Are you sure you want to delete ${strand.code}?`)) {
     strands.value = strands.value.filter(s => s.id !== strand.id)
   }
 }

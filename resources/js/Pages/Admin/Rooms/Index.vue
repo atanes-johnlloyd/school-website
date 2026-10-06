@@ -275,6 +275,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -387,12 +388,12 @@ const openCreateModal = () => { selectedRoom.value = null; showFormModal.value =
 const openEditModal = (room) => { selectedRoom.value = room; showFormModal.value = true }
 
 const confirmDelete = async (room) => {
-  if (!confirm(`Delete "${room.name}" (${room.code})? Fails if it's used in any class schedule.`)) return
+  if (!await confirmAction(`Delete "${room.name}" (${room.code})? Fails if it's used in any class schedule.`)) return
   try {
     await axios.delete(`/admin/rooms/${room.id}`)
     fetchRooms()
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete room.')
+    showError(e.response?.data?.message || 'Cannot delete room.')
   }
 }
 

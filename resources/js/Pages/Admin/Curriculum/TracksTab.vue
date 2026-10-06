@@ -134,6 +134,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -182,12 +183,12 @@ const submit = async () => {
 }
 
 const confirmDelete = async (track) => {
-  if (!confirm(`Delete track "${track.name}"? Fails if strands are linked.`)) return
+  if (!await confirmAction(`Delete track "${track.name}"? Fails if strands are linked.`)) return
   try {
     await axios.delete(`/admin/tracks/${track.id}`)
     emit('changed')
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete track.')
+    showError(e.response?.data?.message || 'Cannot delete track.')
   }
 }
 </script>

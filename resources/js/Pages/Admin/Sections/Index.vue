@@ -333,6 +333,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -459,12 +460,12 @@ const fromViewToEdit = (s) => {
 }
 
 const confirmDelete = async (section) => {
-  if (!confirm(`Delete section "${section.name}"? Fails if students are enrolled.`)) return
+  if (!await confirmAction(`Delete section "${section.name}"? Fails if students are enrolled.`)) return
   try {
     await axios.delete(`/admin/sections/${section.id}`)
     fetchSections()
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete section.')
+    showError(e.response?.data?.message || 'Cannot delete section.')
   }
 }
 

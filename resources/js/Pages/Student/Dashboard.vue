@@ -8,7 +8,8 @@
     `text-scale-${fontSizeMode}`
   ]">
     <!-- SIDEBAR CONTAINER -->
-    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" class="sticky top-0 h-screen shrink-0 z-30" />
+    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false"
+      class="sticky top-0 h-screen shrink-0 z-30" />
 
     <!-- MAIN SCROLLABLE AREA -->
     <main class="flex-1 h-full overflow-y-auto overflow-x-hidden min-w-0 flex flex-col justify-between w-full">
@@ -17,24 +18,33 @@
 
       <div class="relative z-10 p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 pb-16 min-w-0">
 
-        <!-- HERO -->
-        <div
-          class="animate-fade-in-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[300px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+        <!-- Hero Banner -->
+        <div v-observe
+          class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
+          <img
+            :src="heroImage || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1600&auto=format&fit=crop'"
+            alt="Student Dashboard Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <!-- High-Quality Student Dashboard Image -->
-          <img :src="heroImage" alt="Student Dashboard Hero"
-            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+          <!-- Animated Green Overlay (Blend mode matched to system) -->
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
+          </div>
 
-          <!-- Animated Green Overlay -->
-          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+          <!-- Ambient Light Glow Highlights -->
+          <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+          </div>
+          <div
+            class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+          </div>
 
           <!-- Content Container -->
-          <div class="relative z-10 w-full max-w-4xl space-y-3 sm:space-y-5">
+          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
 
             <!-- Top Badge Container -->
             <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <div
-                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide">
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
                 <span>✨</span> STUDENT PORTAL
               </div>
 
@@ -45,82 +55,100 @@
               </div>
             </div>
 
-            <!-- Avatar + Greeting Row -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-5">
-
-              <!-- Avatar -->
+            <!-- Main Title & Quote Section -->
+            <div class="space-y-1 sm:space-y-1.5 max-w-3xl">
               <div
-                class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
-                <img v-if="student?.avatar_url" :src="student.avatar_url" alt="Student Avatar"
-                  class="w-full h-full object-cover" />
-                <div v-else
-                  class="w-full h-full bg-emerald-800 text-white font-black flex items-center justify-center text-xl sm:text-2xl uppercase">
-                  {{ studentInitials }}
-                </div>
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>GOOD DAY,</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">{{ student?.name || 'STUDENT'
+                  }}!</span>
               </div>
-
-              <!-- Title + Metadata -->
-              <div class="space-y-1 min-w-0">
-                <h2 class="text-xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight truncate">
-                  Good Day, {{ student?.name || 'Student' }}!
-                </h2>
-
-                <p class="text-white/90 text-[11px] sm:text-sm md:text-base leading-relaxed font-medium">
-                  LRN: <span class="font-black text-[#F9C20C]">{{ student?.lrn || '—' }}</span>
-                  <span v-if="student?.grade_level"> • Grade <span class="font-bold">{{ student.grade_level
-                      }}</span></span>
-                  <span v-if="student?.section"> - <span class="font-bold">{{ student.section }}</span></span>
-                  • School Year <span class="font-bold">2026–2027</span>
-                </p>
-              </div>
+              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium italic">
+                "Welcome to your personal learning hub. Stay updated with your active classes, grades, and tasks."
+              </p>
             </div>
 
-            <!-- Stat Cards Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
+            <!-- Details Row & Stat Cards Grid -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
 
-              <!-- Enrolled Classes -->
-              <div
-                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 hover:bg-black/40 hover:-translate-y-1 transition-all duration-300">
-                <span
-                  class="text-[10px] sm:text-[11px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
-                  Enrolled Classes
-                </span>
-                <div class="text-2xl sm:text-3xl font-black text-white leading-none mt-1.5">
-                  {{ stats?.classes ?? 0 }}
+              <!-- Left Avatar & Student Info -->
+              <div class="flex items-center gap-3 sm:gap-4">
+                <!-- Avatar Container -->
+                <div
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                  <img v-if="student?.avatar_url" :src="student.avatar_url" alt="Student Avatar"
+                    class="w-full h-full object-cover" />
+                  <div v-else
+                    class="w-full h-full bg-[#006907] text-white font-black flex items-center justify-center text-lg sm:text-xl uppercase">
+                    {{ studentInitials }}
+                  </div>
                 </div>
-                <span class="text-[10px] text-emerald-100/70 block font-medium mt-1">{{ active_term || '—' }}</span>
+
+                <!-- Metadata -->
+                <div class="space-y-0.5 min-w-0">
+                  <h2 class="text-base sm:text-lg md:text-xl font-black text-white tracking-tight leading-tight">
+                    LRN: <span class="text-[#F9C20C]">{{ student?.lrn || '—' }}</span>
+                  </h2>
+                  <p class="text-white/90 text-[11px] sm:text-xs font-medium truncate">
+                    <span v-if="student?.grade_level">Grade <span class="font-bold">{{ student.grade_level
+                        }}</span></span>
+                    <span v-if="student?.section"> - <span class="font-bold">{{ student.section }}</span></span>
+                    • S.Y. 2026–2027
+                  </p>
+                </div>
               </div>
 
-              <!-- Graded Work -->
-              <div
-                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 hover:bg-black/40 hover:-translate-y-1 transition-all duration-300">
-                <span
-                  class="text-[10px] sm:text-[11px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
-                  Graded Work
-                </span>
-                <div class="text-2xl sm:text-3xl font-black text-white leading-none mt-1.5">
-                  {{ stats?.grades_available ?? 0 }}
-                </div>
-                <span class="text-[10px] text-emerald-100/70 block font-medium mt-1">Results released</span>
-              </div>
+              <!-- Stat Cards Grid (Right-Aligned / Stretched) -->
+              <div class="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0 sm:w-96">
 
-              <!-- Pending Tasks -->
-              <div
-                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl sm:rounded-2xl py-3 sm:py-4 px-4 hover:bg-black/40 hover:-translate-y-1 transition-all duration-300">
-                <span
-                  class="text-[10px] sm:text-[11px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
-                  Pending Tasks
-                </span>
-                <div class="flex items-center gap-2 mt-1.5">
-                  <span class="text-2xl sm:text-3xl font-black text-white leading-none">
-                    {{ stats?.pending_assignments ?? 0 }}
+                <!-- Enrolled Classes -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3 sm:px-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Classes
                   </span>
-                  <span v-if="urgentCount > 0"
-                    class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider animate-pulse">
-                    {{ urgentCount }} Due Soon
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight mt-0.5">
+                    {{ stats?.classes ?? 0 }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                    {{ active_term || '—' }}
                   </span>
                 </div>
-                <span class="text-[10px] text-emerald-100/70 block font-medium mt-1">Across all classes</span>
+
+                <!-- Graded Work -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3 sm:px-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Graded
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-[#86EFAC] leading-tight mt-0.5">
+                    {{ stats?.grades_available ?? 0 }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                    Released
+                  </span>
+                </div>
+
+                <!-- Pending Tasks -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3 sm:px-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Pending
+                  </span>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight">
+                      {{ stats?.pending_assignments ?? 0 }}
+                    </span>
+                    <span v-if="urgentCount > 0"
+                      class="bg-red-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
+                      Due
+                    </span>
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                    Tasks
+                  </span>
+                </div>
+
               </div>
 
             </div>
@@ -141,7 +169,8 @@
                 <div class="flex items-center gap-3">
                   <div class="w-2.5 h-7 bg-[#004d08] dark:bg-[#86EFAC] rounded-full shrink-0"></div>
                   <div>
-                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">Enrolled
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+                      Enrolled
                       Classes</h3>
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
                       {{ classList.length }} {{ classList.length === 1 ? 'class' : 'classes' }} this term
@@ -285,7 +314,8 @@
 
                       <!-- Subject & Task Title -->
                       <div class="space-y-1 min-w-0">
-                        <h4 class="text-xs font-black text-[#005506] dark:text-[#86EFAC] uppercase tracking-wide truncate">
+                        <h4
+                          class="text-xs font-black text-[#005506] dark:text-[#86EFAC] uppercase tracking-wide truncate">
                           {{ task.subject || 'General Subject' }}
                         </h4>
                         <h3
@@ -299,7 +329,8 @@
                         class="bg-[#F9F7F1] dark:bg-[#2D3A31] p-3 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2 text-xs">
                         <div class="flex items-center justify-between text-slate-700 dark:text-slate-300 font-medium">
                           <span class="text-slate-500 dark:text-slate-400">Due Date:</span>
-                          <span class="font-bold text-slate-900 dark:text-white truncate ml-2">{{ task.due_human }}</span>
+                          <span class="font-bold text-slate-900 dark:text-white truncate ml-2">{{ task.due_human
+                            }}</span>
                         </div>
                         <div class="flex items-center justify-between text-slate-700 dark:text-slate-300 font-medium">
                           <span class="text-slate-500 dark:text-slate-400">Weight / Score:</span>
@@ -345,7 +376,8 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-2.5 h-6 bg-[#004d08] dark:bg-[#86EFAC] rounded-full shrink-0"></div>
-                  <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Announcements</h3>
+                  <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Announcements
+                  </h3>
                 </div>
                 <Link :href="route('student.announcements.feed')"
                   class="bg-[#f0f4ee] dark:bg-[#232D26] text-[#004d08] dark:text-[#86EFAC] text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-[#e1e8dd] dark:border-[#3F4F43] hover:bg-[#e4ede1] transition-colors">
@@ -365,10 +397,11 @@
                       <Icon icon="star" size="xs" />
                       <span>Pinned</span>
                     </span>
-                    <span v-else class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{{ a.subject ||
+                    <span v-else class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{{ a.subject
+                      ||
                       'General' }}</span>
                     <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0">{{ a.published_human
-                      }}</span>
+                    }}</span>
                   </div>
                   <h4 class="font-bold text-slate-900 dark:text-white text-sm leading-snug truncate">{{ a.title }}</h4>
                   <p class="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed mt-1 line-clamp-2">{{
@@ -391,7 +424,8 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-2.5 h-6 bg-[#004d08] dark:bg-[#86EFAC] rounded-full shrink-0"></div>
-                  <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Term Snapshot</h3>
+                  <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">Term Snapshot
+                  </h3>
                 </div>
                 <span
                   class="bg-emerald-100 dark:bg-emerald-950/60 text-[#004d08] dark:text-[#86EFAC] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full truncate max-w-[120px]">
@@ -402,20 +436,26 @@
               <div class="grid grid-cols-3 gap-2">
                 <div
                   class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 dark:border-[#3F4F43] text-center space-y-1">
-                  <div class="text-xl sm:text-2xl font-black text-[#004d08] dark:text-[#86EFAC]">{{ stats?.classes ?? 0 }}</div>
-                  <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Classes</span>
-                </div>
-                <div
-                  class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 dark:border-[#3F4F43] text-center space-y-1">
-                  <div class="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-400">{{ stats?.pending_assignments ?? 0
+                  <div class="text-xl sm:text-2xl font-black text-[#004d08] dark:text-[#86EFAC]">{{ stats?.classes ?? 0
                     }}</div>
-                  <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Pending</span>
+                  <span
+                    class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Classes</span>
                 </div>
                 <div
                   class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 dark:border-[#3F4F43] text-center space-y-1">
-                  <div class="text-xl sm:text-2xl font-black text-[#004d08] dark:text-[#86EFAC]">{{ stats?.grades_available ?? 0 }}
+                  <div class="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-400">{{
+                    stats?.pending_assignments ?? 0
+                    }}</div>
+                  <span
+                    class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Pending</span>
+                </div>
+                <div
+                  class="bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 dark:border-[#3F4F43] text-center space-y-1">
+                  <div class="text-xl sm:text-2xl font-black text-[#004d08] dark:text-[#86EFAC]">{{
+                    stats?.grades_available ?? 0 }}
                   </div>
-                  <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Graded</span>
+                  <span
+                    class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block truncate">Graded</span>
                 </div>
               </div>
 
@@ -506,6 +546,7 @@ const counts = computed(() => {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

@@ -145,6 +145,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { Head, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
@@ -168,8 +169,8 @@ function submit() {
   form.put(route('teacher.lessons.update', props.lesson.id))
 }
 
-function destroy() {
-  if (!confirm('Delete this lesson? This cannot be undone.')) return
+async function destroy() {
+  if (!await confirmAction('Delete this lesson? This cannot be undone.')) return
   form.delete(route('teacher.lessons.destroy', props.lesson.id))
 }
 
