@@ -37,6 +37,7 @@ class RoleSeeder extends Seeder
                 'manage-settings',
                 'manage-announcements',
                 'manage-backups',
+                'manage-contributions',   // ← NEW
             ],
             'teacher' => [
                 'view-own-classes',
@@ -49,6 +50,7 @@ class RoleSeeder extends Seeder
                 'manage-own-announcements',
                 'view-own-schedule',
                 'send-messages',
+                'manage-own-contributions',   // ← NEW
             ],
             'student' => [
                 'view-own-courses',
@@ -59,6 +61,7 @@ class RoleSeeder extends Seeder
                 'view-own-report-card',
                 'view-announcements',
                 'send-messages',
+                'pay-contributions',          // ← NEW
             ],
             'shared' => [
                 'view-own-profile',

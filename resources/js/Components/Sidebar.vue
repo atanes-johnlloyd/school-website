@@ -223,6 +223,23 @@
             </svg>
             <span class="text-sm tracking-wide">Student Records</span>
           </Link>
+
+          <!-- Contributions -->
+          <Link 
+            :href="route('student.contributions.index')" 
+            @click="$emit('close-sidebar')"
+            :class="[
+              'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
+              isRouteActive('student.contributions.*')
+                ? 'bg-[#006907] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-md font-extrabold'
+                : 'text-[#2C3E2D] dark:text-slate-300 hover:bg-[#006907]/10 dark:hover:bg-[#3F4F43] hover:text-[#006907] dark:hover:text-white'
+            ]"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span class="text-sm tracking-wide">Contributions</span>
+          </Link>
         </nav>
       </div>
 

@@ -27,6 +27,7 @@ class AdminPositionSeeder extends Seeder
                     'manage-rooms', 'manage-classes', 'assign-teachers',
                     'manage-class-schedules', 'view-reports', 'view-audit-log',
                     'manage-settings', 'manage-announcements', 'manage-backups',
+                    'manage-contributions',   // ← NEW
                 ],
             ],
             [
@@ -35,6 +36,7 @@ class AdminPositionSeeder extends Seeder
                 'default_permissions' => [
                     'manage-students', 'manage-enrollment', 'manage-sections',
                     'view-reports',
+                    'manage-contributions',   // ← NEW
                 ],
             ],
             [

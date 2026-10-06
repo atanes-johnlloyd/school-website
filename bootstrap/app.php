@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission'      => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'password.changed'        => \App\Http\Middleware\EnsurePasswordChanged::class,
         ]);
+        $middleware->preventRequestForgery(except: [
+            'webhooks/paymongo',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

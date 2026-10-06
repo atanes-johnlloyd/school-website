@@ -319,6 +319,22 @@
               </span>
             </span>
           </Link>
+          <Link
+            v-if="can('manage-contributions')"
+            :href="route('admin.contributions.index')"
+            :class="[
+              'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
+              isRouteActive('admin.contributions.*')
+                ? 'bg-white text-[#063B11] dark:bg-[#86EFAC] dark:text-[#062910] shadow-md font-extrabold'
+                : 'text-emerald-100/80 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:text-emerald-200/80 dark:hover:text-white'
+            ]"
+          >
+            <!-- Credit card / Payments Icon -->
+            <svg class="w-5 h-5 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>Contributions</span>
+          </Link>
         </div>
 
         <!-- SYSTEM SECTION -->

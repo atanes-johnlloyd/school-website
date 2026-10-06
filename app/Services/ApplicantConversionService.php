@@ -129,8 +129,27 @@ class ApplicantConversionService
                 'strand_id'      => $applicant->strand_id,
                 'guardian_name'    => $guardian?->full_name,        // ← new
                 'guardian_contact' => $guardian?->contact_number,
+                'guardian_email' => $guardian?->email,
                 'status'         => 'active',
             ]);
+
+            // Copy applicant contacts into student_guardians
+            foreach ($applicant->contacts as $contact) {
+                if (! in_array($contact->role, ['father', 'mother', 'guardian'], true)) {
+                    continue;
+                }
+
+                \App\Models\StudentGuardian::create([
+                    'student_id'        => $student->id,
+                    'full_name'         => $contact->full_name,
+                    'relationship'      => $contact->relationship ?: $contact->role,
+                    'contact_number'    => $contact->contact_number,
+                    'email'             => $contact->email,
+                    'is_primary'        => $contact->role === 'guardian',
+                    'source'            => 'applicant',
+                    'source_contact_id' => $contact->id,
+                ]);
+            }
 
             // 3. Enrollment
             Enrollment::create([

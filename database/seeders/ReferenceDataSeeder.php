@@ -149,7 +149,8 @@ class ReferenceDataSeeder extends Seeder
                     'manage-school-years','manage-tracks','manage-strands','manage-subjects',
                     'manage-sections','manage-rooms','manage-classes','assign-teachers',
                     'manage-class-schedules','view-reports','view-audit-log','manage-settings',
-                    'manage-announcements','manage-backups',
+                    'manage-announcements','manage-backups', 'manage-class-schedules','view-reports','view-audit-log','manage-settings',
+                    'manage-announcements','manage-backups','manage-contributions',   // ← NEW
                 ],
             ],
             [
