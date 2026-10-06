@@ -448,6 +448,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { usePage } from '@inertiajs/vue3'
@@ -679,7 +680,7 @@ const openEditModal = async (item) => {
     showModal.value = true
   } catch (error) {
     console.error('Failed to load applicant details:', error)
-    flash.error('Failed to load applicant details. Please try again.')   // ✅ was alert()
+    flash.error('Failed to load applicant details. Please try again.')   // ✅ was showError()
   }
 }
 

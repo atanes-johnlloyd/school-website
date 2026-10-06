@@ -14,9 +14,9 @@
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
 
-        <!-- HERO -->
+        <!-- Hero Banner -->
         <div v-observe
-          class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
           <!-- Background Image Layer with Fallback Unsplash Image -->
           <img
             :src="heroImage || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1600&auto=format&fit=crop'"
@@ -35,13 +35,18 @@
           </div>
 
           <!-- Content Container -->
-          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+          <div class="relative z-10 w-full space-y-4 sm:space-y-5">
 
             <!-- Top Badge Container -->
             <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <div
                 class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
-                <span>📊</span> STUDENT GRADEMATRIX
+                <!-- SVG Icon instead of Emoji -->
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                STUDENT GRADEMATRIX
               </div>
 
               <div
@@ -52,67 +57,77 @@
             </div>
 
             <!-- Main Title & Quote Section -->
-            <div class="space-y-1 sm:space-y-1.5 max-w-3xl">
+            <div class="space-y-1 max-w-3xl">
               <div
                 class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
                 <span>STUDENT</span>
                 <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">GRADES</span>
               </div>
-              <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium italic">
+              <p class="text-white/90 text-xs sm:text-sm leading-relaxed font-medium italic">
                 "Your journey to knowledge starts with one click."
               </p>
             </div>
 
-            <!-- Details Row & Stat Cards Grid -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-              <!-- Left Subheader / Icon Info -->
-              <div class="flex items-center gap-3 sm:gap-4">
+            <!-- Details Row & Responsive Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center pt-1">
+
+              <!-- Left Subheader / Icon Info (Spans 7 Cols on Large Screens) -->
+              <div class="lg:col-span-7 flex items-center gap-3 sm:gap-4">
                 <div
-                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center text-2xl sm:text-3xl transition-transform hover:scale-105 duration-300">
-                  📊
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300 text-white">
+                  <!-- SVG Icon instead of Emoji -->
+                  <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                  </svg>
                 </div>
 
                 <div class="space-y-0.5 min-w-0">
-                  <h2 class="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight leading-tight">
+                  <h2 class="text-base sm:text-xl font-black text-white tracking-tight leading-snug">
                     Academic Performance Record
                   </h2>
-                  <p class="text-white/90 text-[11px] sm:text-sm font-medium">
+                  <p class="text-white/90 text-xs font-medium">
                     Official transcript preview • <span class="font-black text-[#F9C20C]">{{ gradeRecords.length
                       }}</span> {{ gradeRecords.length === 1 ? 'subject' : 'subjects' }}
                   </p>
                 </div>
               </div>
 
-              <!-- Stat Cards Grid (Right-Aligned / Stretched) -->
-              <div class="grid grid-cols-2 gap-2.5 sm:gap-3 shrink-0 sm:w-80">
-                <!-- General Average -->
+              <!-- Stat Cards Grid (Spans 5 Cols on Large Screens / Responsive Layout) -->
+              <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full">
+
+                <!-- General Average Card -->
                 <div
-                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
                   <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
                     General Average
                   </span>
-                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight mt-0.5">
+                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight my-0.5">
                     {{ generalAverageDisplay }}
                   </div>
-                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
                     {{ honorLabel }}
                   </span>
                 </div>
 
-                <!-- Complete Subjects -->
+                <!-- Complete Subjects Card -->
                 <div
-                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
                   <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
                     Complete Subjects
                   </span>
-                  <div class="text-lg sm:text-2xl font-black text-white leading-tight mt-0.5">
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight my-0.5">
                     {{ completeCount }}/{{ gradeRecords.length }}
                   </div>
-                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
                     All categories graded
                   </span>
                 </div>
+
               </div>
+
             </div>
 
           </div>

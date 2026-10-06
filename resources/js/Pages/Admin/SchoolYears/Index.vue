@@ -356,6 +356,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
@@ -466,22 +467,22 @@ const submitYear = async () => {
 }
 
 const activateYear = async (year) => {
-  if (!confirm(`Activate ${year.label}? Any currently active school year will be deactivated.`)) return
+  if (!await confirmAction(`Activate ${year.label}? Any currently active school year will be deactivated.`)) return
   try {
     await axios.put(`/admin/school-years/${year.id}/activate`)
     refresh()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to activate school year.')
+    showError(e.response?.data?.message || 'Failed to activate school year.')
   }
 }
 
 const confirmDeleteYear = async (year) => {
-  if (!confirm(`Delete ${year.label}? This fails if linked terms, sections, or enrollments exist.`)) return
+  if (!await confirmAction(`Delete ${year.label}? This fails if linked terms, sections, or enrollments exist.`)) return
   try {
     await axios.delete(`/admin/school-years/${year.id}`)
     refresh()
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete school year.')
+    showError(e.response?.data?.message || 'Cannot delete school year.')
   }
 }
 
@@ -593,22 +594,22 @@ const submitTerm = async () => {
 }
 
 const activateTerm = async (term) => {
-  if (!confirm(`Activate ${term.name}? Any currently active term will be deactivated.`)) return
+  if (!await confirmAction(`Activate ${term.name}? Any currently active term will be deactivated.`)) return
   try {
     await axios.put(`/admin/terms/${term.id}/activate`)
     refresh()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to activate term.')
+    showError(e.response?.data?.message || 'Failed to activate term.')
   }
 }
 
 const confirmDeleteTerm = async (term) => {
-  if (!confirm(`Delete ${term.name}? This fails if the term has linked classes.`)) return
+  if (!await confirmAction(`Delete ${term.name}? This fails if the term has linked classes.`)) return
   try {
     await axios.delete(`/admin/terms/${term.id}`)
     refresh()
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete term.')
+    showError(e.response?.data?.message || 'Cannot delete term.')
   }
 }
 </script>

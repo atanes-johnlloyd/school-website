@@ -371,6 +371,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -570,7 +571,7 @@ async function destroyConfirmed() {
     confirmDelete.value = null
     router.reload({ only: ['questions', 'subjects'] })
   } catch (e) {
-    alert(e.response?.data?.message || 'Delete failed.')
+    showError(e.response?.data?.message || 'Delete failed.')
   } finally {
     deleting.value = false
   }

@@ -212,6 +212,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -302,12 +303,12 @@ const submit = async () => {
 }
 
 const confirmDelete = async (subject) => {
-  if (!confirm(`Delete subject "${subject.name}"? Fails if used in classes.`)) return
+  if (!await confirmAction(`Delete subject "${subject.name}"? Fails if used in classes.`)) return
   try {
     await axios.delete(`/admin/subjects/${subject.id}`)
     emit('changed')
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete subject.')
+    showError(e.response?.data?.message || 'Cannot delete subject.')
   }
 }
 </script>

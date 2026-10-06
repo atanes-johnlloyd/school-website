@@ -1,57 +1,139 @@
 <template>
+
   <Head title="My Contributions - Salawag LMS" />
 
   <div :class="[
     'h-screen w-full flex bg-[#e8f5e9] dark:bg-[#232D26] font-[\'Inter\'] relative transition-colors duration-300 overflow-hidden',
     `text-scale-${fontSizeMode}`
   ]">
-    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" class="sticky top-0 h-screen shrink-0 z-30" />
+    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false"
+      class="sticky top-0 h-screen shrink-0 z-30" />
 
     <main class="flex-1 h-full overflow-y-auto overflow-x-hidden min-w-0 flex flex-col justify-between w-full">
-      <navbartop searchPlaceholder="Search contributions..."
-        @open-sidebar="isSidebarOpen = true"
+      <navbartop searchPlaceholder="Search contributions..." @open-sidebar="isSidebarOpen = true"
         @font-size-changed="(size) => fontSizeMode = size" />
 
       <div class="relative z-10 p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 pb-16 min-w-0">
 
-        <!-- HERO -->
-        <div class="animate-fade-in-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[240px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
-          <img :src="heroImage" alt="Contributions"
-            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
-          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+        <!-- Hero Banner -->
+        <div v-observe
+          class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
+          <img
+            :src="heroImage || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1600&auto=format&fit=crop'"
+            alt="Contributions Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <div class="relative z-10 w-full max-w-3xl space-y-3">
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide">
-                <Icon icon="credit-card" size="xs" /> CONTRIBUTIONS
+          <!-- Animated Green Overlay (Blend mode matched to system dark green) -->
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
+          </div>
+
+          <!-- Ambient Light Glow Highlights -->
+          <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+          </div>
+          <div
+            class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+          </div>
+
+          <!-- Content Container -->
+          <div class="relative z-10 w-full space-y-4 sm:space-y-5">
+
+            <!-- Top Badge Container -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
+                <Icon icon="credit-card" size="xs" />
+                <span>CONTRIBUTIONS</span>
               </div>
-              <div class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+
+              <div
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 {{ counts.all }} total • {{ counts.pending }} awaiting action
               </div>
             </div>
 
-            <div class="space-y-1.5">
-              <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                My Contributions
-              </h2>
-              <p class="text-white/90 text-xs sm:text-sm md:text-base font-medium">
-                Guardian-approved payments for field trips, projects, and class activities.
+            <!-- Main Anton Page Title & Subtitle Section -->
+            <div class="space-y-1 max-w-3xl">
+              <div
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>MY</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">CONTRIBUTIONS</span>
+              </div>
+              <p class="text-white/90 text-xs sm:text-sm leading-relaxed font-medium italic">
+                "Guardian-approved payments for field trips, projects, and class activities."
               </p>
             </div>
+
+            <!-- Details Row & Responsive Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center pt-1">
+
+              <!-- Left Subheader / Icon Info (Spans 7 Cols on Large Screens) -->
+              <div class="lg:col-span-7 flex items-center gap-3 sm:gap-4">
+                <div
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                  <Icon icon="credit-card" size="lg" class="text-white" />
+                </div>
+
+                <div class="space-y-0.5 min-w-0">
+                  <h2 class="text-base sm:text-xl font-black text-white tracking-tight leading-snug">
+                    Class Activity &amp; Project Fees
+                  </h2>
+                  <p class="text-white/90 text-xs font-medium">
+                    <span class="font-black text-[#F9C20C]">{{ counts.pending }}</span> pending items requiring payment
+                    confirmation
+                  </p>
+                </div>
+              </div>
+
+              <!-- Stat Cards Grid (Spans 5 Cols on Large Screens / Responsive Layout) -->
+              <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full">
+
+                <!-- Total Card -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Total Items
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight my-0.5">
+                    {{ counts.all }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
+                    Overall record
+                  </span>
+                </div>
+
+                <!-- Pending Action Card -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Pending Action
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight my-0.5">
+                    {{ counts.pending }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
+                    Awaiting payment
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
         </div>
 
         <!-- STATUS FILTER -->
-        <div class="animate-fade-slide-left bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl p-3.5 sm:p-4 shadow-sm">
+        <div
+          class="animate-fade-slide-left bg-[#fbfdf9] dark:bg-[#2D3A31] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl p-3.5 sm:p-4 shadow-sm">
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            <button v-for="f in statusFilters" :key="f.id" @click="statusFilter = f.id"
-              :class="[
-                'text-[11px] font-black px-3.5 py-2 rounded-xl shadow-sm transition-all shrink-0',
-                statusFilter === f.id
-                  ? 'bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26]'
-                  : 'bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] border border-slate-200/80 dark:border-[#3F4F43]'
-              ]">
+            <button v-for="f in statusFilters" :key="f.id" @click="statusFilter = f.id" :class="[
+              'text-[11px] font-black px-3.5 py-2 rounded-xl shadow-sm transition-all shrink-0',
+              statusFilter === f.id
+                ? 'bg-[#005506] dark:bg-[#86EFAC] text-white dark:text-[#232D26]'
+                : 'bg-[#F9F7F1] dark:bg-[#232D26] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43] border border-slate-200/80 dark:border-[#3F4F43]'
+            ]">
               {{ f.label }} ({{ f.count }})
             </button>
           </div>
@@ -59,22 +141,22 @@
 
         <!-- LIST -->
         <div v-if="filteredAssignments.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div v-for="a in filteredAssignments" :key="a.id"
-            :class="[
-              'bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-5 shadow-sm border space-y-4 transition-all',
-              a.status === 'paid'
-                ? 'border-emerald-200/80 dark:border-emerald-900/40'
-                : a.status === 'authorized'
-                  ? 'border-amber-300/80 dark:border-amber-900/50'
-                  : a.status === 'declined'
-                    ? 'border-rose-200/80 dark:border-rose-900/40'
-                    : 'border-slate-200/60 dark:border-[#3F4F43]'
-            ]">
+          <div v-for="a in filteredAssignments" :key="a.id" :class="[
+            'bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-5 shadow-sm border space-y-4 transition-all',
+            a.status === 'paid'
+              ? 'border-emerald-200/80 dark:border-emerald-900/40'
+              : a.status === 'authorized'
+                ? 'border-amber-300/80 dark:border-amber-900/50'
+                : a.status === 'declined'
+                  ? 'border-rose-200/80 dark:border-rose-900/40'
+                  : 'border-slate-200/60 dark:border-[#3F4F43]'
+          ]">
 
             <!-- Header -->
             <div class="flex items-start justify-between gap-3">
               <div class="flex items-start gap-3 min-w-0">
-                <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border', statusIconClass(a.status)]">
+                <div
+                  :class="['w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border', statusIconClass(a.status)]">
                   <Icon :icon="statusIcon(a.status)" size="md" />
                 </div>
                 <div class="min-w-0 space-y-0.5">
@@ -93,7 +175,8 @@
             </div>
 
             <!-- Amount block -->
-            <div class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
+            <div
+              class="bg-[#F9F7F1] dark:bg-[#232D26] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Amount</span>
                 <span class="text-lg font-black text-slate-900 dark:text-white">
@@ -102,13 +185,15 @@
               </div>
               <div v-if="a.deadline_at" class="flex items-center justify-between text-[11px]">
                 <span class="font-semibold text-slate-500">Deadline</span>
-                <span :class="isPast(a.deadline_at) ? 'text-rose-600 font-bold' : 'text-slate-700 dark:text-slate-300 font-bold'">
+                <span
+                  :class="isPast(a.deadline_at) ? 'text-rose-600 font-bold' : 'text-slate-700 dark:text-slate-300 font-bold'">
                   {{ formatDate(a.deadline_at) }}
                 </span>
               </div>
               <div v-if="a.requires_consent && a.guardian" class="flex items-center justify-between text-[11px]">
                 <span class="font-semibold text-slate-500">Guardian</span>
-                <span class="text-slate-700 dark:text-slate-300 font-bold truncate max-w-[180px]">{{ a.guardian.name }}</span>
+                <span class="text-slate-700 dark:text-slate-300 font-bold truncate max-w-[180px]">{{ a.guardian.name
+                  }}</span>
               </div>
             </div>
 
@@ -121,12 +206,10 @@
 
             <!-- Actions -->
             <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-[#3F4F43]">
-              <button v-if="a.can_request_consent"
-                @click="requestConsent(a)"
-                :disabled="busyId === a.id"
+              <button v-if="a.can_request_consent" @click="requestConsent(a)" :disabled="busyId === a.id"
                 class="w-full bg-[#005506] dark:bg-[#86EFAC] hover:bg-[#004105] text-white dark:text-[#232D26] text-xs font-black py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50">
                 <Icon icon="envelope" size="xs" />
-                {{ busyId === a.id ? 'Sending…' : (a.status === 'declined' ? 'Resend to Guardian' : 'Request Guardian Approval') }}
+                {{ busyId === a.id ? 'Sending…' : (a.status === 'declined' ? 'Resend to Guardian' : 'Request GuardianApproval') }}
               </button>
 
               <div v-else-if="a.status === 'awaiting_guardian'"
@@ -135,9 +218,7 @@
                 Waiting for guardian approval
               </div>
 
-              <button v-else-if="a.can_pay"
-                @click="openCheckout(a)"
-                :disabled="busyId === a.id"
+              <button v-else-if="a.can_pay" @click="openCheckout(a)" :disabled="busyId === a.id"
                 class="w-full bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] text-xs font-black py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50">
                 <Icon icon="credit-card" size="xs" />
                 {{ busyId === a.id ? 'Opening…' : 'Pay Now' }}
@@ -157,7 +238,8 @@
           </div>
         </div>
 
-        <div v-else class="bg-[#fbfdf9] dark:bg-[#2D3A31] rounded-2xl p-12 text-center shadow-sm border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
+        <div v-else
+          class="bg-[#fbfdf9] dark:bg-[#2D3A31] rounded-2xl p-12 text-center shadow-sm border border-dashed border-slate-300 dark:border-[#3F4F43] space-y-3">
           <Icon icon="credit-card" size="xl" class="text-slate-400 mx-auto" />
           <p class="text-sm font-bold text-slate-800 dark:text-white">
             {{ assignments.length === 0 ? 'No contributions yet' : 'No contributions match this filter' }}
@@ -204,6 +286,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -213,22 +296,22 @@ import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
 
 const props = defineProps({
-  assignments: { type: Array,  default: () => [] },
-  counts:      { type: Object, default: () => ({ all: 0, pending: 0, ready: 0, paid: 0, declined: 0 }) },
+  assignments: { type: Array, default: () => [] },
+  counts: { type: Object, default: () => ({ all: 0, pending: 0, ready: 0, paid: 0, declined: 0 }) },
 })
 
 const isSidebarOpen = ref(false)
-const fontSizeMode  = ref('base')
-const statusFilter  = ref('all')
-const busyId        = ref(null)
+const fontSizeMode = ref('base')
+const statusFilter = ref('all')
+const busyId = ref(null)
 const openAmountFor = ref(null)
 const openAmountValue = ref(null)
 
 const statusFilters = computed(() => [
-  { id: 'all',      label: 'All',      count: props.counts.all },
-  { id: 'pending',  label: 'Pending',  count: props.counts.pending },
-  { id: 'ready',    label: 'Ready',    count: props.counts.ready },
-  { id: 'paid',     label: 'Paid',     count: props.counts.paid },
+  { id: 'all', label: 'All', count: props.counts.all },
+  { id: 'pending', label: 'Pending', count: props.counts.pending },
+  { id: 'ready', label: 'Ready', count: props.counts.ready },
+  { id: 'paid', label: 'Paid', count: props.counts.paid },
   { id: 'declined', label: 'Declined', count: props.counts.declined },
 ].filter(f => f.id === 'all' || f.count > 0))
 
@@ -251,7 +334,7 @@ async function requestConsent(a) {
     await axios.post(route('student.contributions.request-consent', a.id))
     router.reload({ only: ['assignments', 'counts'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not send consent request.')
+    showError(e.response?.data?.message || 'Could not send consent request.')
   } finally {
     busyId.value = null
   }
@@ -283,7 +366,7 @@ async function proceedCheckout(a, amount) {
       window.location.href = data.checkout_url
     }
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not start checkout.')
+    showError(e.response?.data?.message || 'Could not start checkout.')
     busyId.value = null
   }
 }
@@ -298,13 +381,13 @@ function statusLabel(s) {
 
 function statusPillClass(s) {
   return {
-    pending:            'bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-[#3F4F43]',
-    awaiting_guardian:  'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40',
-    authorized:         'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40',
-    paid:               'bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] border-emerald-200/80 dark:border-emerald-900/40',
-    declined:           'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40',
-    waived:             'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-900/40',
-    expired:            'bg-slate-100 dark:bg-[#232D26] text-slate-500 border-slate-200 dark:border-[#3F4F43]',
+    pending: 'bg-slate-100 dark:bg-[#232D26] text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-[#3F4F43]',
+    awaiting_guardian: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40',
+    authorized: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/40',
+    paid: 'bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] border-emerald-200/80 dark:border-emerald-900/40',
+    declined: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/40',
+    waived: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-900/40',
+    expired: 'bg-slate-100 dark:bg-[#232D26] text-slate-500 border-slate-200 dark:border-[#3F4F43]',
   }[s] || 'bg-slate-100 text-slate-600'
 }
 
@@ -340,13 +423,60 @@ function isPast(v) { return v && new Date(v) < new Date() }
 </script>
 
 <style scoped>
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeSlideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes pulse-opacity { 0%, 100% { opacity: 0.88; } 50% { opacity: 0.65; } }
-.animate-overlay { animation: pulse-opacity 6s infinite ease-in-out; }
-.animate-fade-in-down { animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-slide-left { animation: fadeSlideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-opacity {
+
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.animate-overlay {
+  animation: pulse-opacity 6s infinite ease-in-out;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-slide-left {
+  animation: fadeSlideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
 </style>

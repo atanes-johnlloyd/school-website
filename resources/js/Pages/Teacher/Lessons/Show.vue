@@ -118,6 +118,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -133,8 +134,8 @@ const props = defineProps({
 
 const deleting = ref(false)
 
-function destroy() {
-  if (!confirm('Delete this lesson? This cannot be undone.')) return
+async function destroy() {
+  if (!await confirmAction('Delete this lesson? This cannot be undone.')) return
   deleting.value = true
   router.delete(route('teacher.lessons.destroy', props.lesson.id), {
     onFinish: () => { deleting.value = false },

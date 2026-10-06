@@ -427,6 +427,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -601,12 +602,12 @@ const formatDate = (iso) => {
 }
 
 const approve = async (e) => {
-  if (!confirm(`Approve ${e.student_name}'s enrollment?`)) return
+  if (!await confirmAction(`Approve ${e.student_name}'s enrollment?`)) return
   try {
     await axios.put(`/admin/enrollments/${e.id}/approve`)
     fetchList()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to approve.')
+    showError(err.response?.data?.message || 'Failed to approve.')
   }
 }
 
@@ -627,7 +628,7 @@ const confirmReject = async () => {
     rejectTarget.value = null
     fetchList()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to reject.')
+    showError(err.response?.data?.message || 'Failed to reject.')
   } finally {
     saving.value = false
   }
@@ -650,7 +651,7 @@ const confirmAssign = async () => {
     assignTarget.value = null
     fetchList()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to assign section.')
+    showError(err.response?.data?.message || 'Failed to assign section.')
   } finally {
     saving.value = false
   }

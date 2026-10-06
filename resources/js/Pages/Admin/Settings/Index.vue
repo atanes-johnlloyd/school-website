@@ -198,6 +198,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -242,7 +243,7 @@ const save = async () => {
 
 /* Reset one group */
 const resetGroup = async (group) => {
-  if (!confirm(`Reset all settings in "${groupLabel(group)}" to their defaults?`)) return
+  if (!await confirmAction(`Reset all settings in "${groupLabel(group)}" to their defaults?`)) return
   saving.value = true
   generalError.value = ''
   try {
@@ -256,7 +257,7 @@ const resetGroup = async (group) => {
 
 /* Reset every group */
 const resetAll = async () => {
-  if (!confirm('Reset ALL settings to their defaults? This cannot be undone.')) return
+  if (!await confirmAction('Reset ALL settings to their defaults? This cannot be undone.')) return
   saving.value = true
   generalError.value = ''
   try {

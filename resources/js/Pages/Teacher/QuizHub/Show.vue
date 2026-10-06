@@ -318,6 +318,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, watch, onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -384,7 +385,7 @@ function toggleSetting(key) {
     })
     .catch(e => {
       settingOverrides.value = { ...settingOverrides.value, [key]: current }
-      alert(e.response?.data?.message || 'Could not update setting.')
+      showError(e.response?.data?.message || 'Could not update setting.')
     })
     .finally(() => { togglingKey.value = null })
 }
@@ -437,7 +438,7 @@ function togglePublish() {
   publishing.value = true
   axios.put(route('teacher.quizzes.toggle-publish', props.quiz.id))
     .then(() => router.reload({ only: ['quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => alert(e.response?.data?.message || 'Action failed.'))
+    .catch(e => showError(e.response?.data?.message || 'Action failed.'))
     .finally(() => { publishing.value = false })
 }
 
@@ -456,7 +457,7 @@ function attachQuestion(bq) {
     question_ids: [bq.id],
   })
     .then(() => router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => alert(e.response?.data?.message || 'Attach failed.'))
+    .catch(e => showError(e.response?.data?.message || 'Attach failed.'))
     .finally(() => { attachingId.value = null })
 }
 
@@ -464,7 +465,7 @@ function detachQuestion(q) {
   if (!q) return
   axios.delete(route('teacher.quizzes.detach-question', { quiz: props.quiz.id, question: q.id }))
     .then(() => router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => alert(e.response?.data?.message || 'Detach failed.'))
+    .catch(e => showError(e.response?.data?.message || 'Detach failed.'))
 }
 
 // ── drag: bank item ─────────────────────────────────────────
@@ -570,7 +571,7 @@ function reorderQuestions(fromIdx, toIdx) {
       router.reload({ only: ['quiz'], preserveScroll: true, preserveState: true })
     })
     .catch(e => {
-      alert(e.response?.data?.message || 'Reorder failed — restoring order.')
+      showError(e.response?.data?.message || 'Reorder failed — restoring order.')
       localQuestions.value = [...props.questions]
     })
 }
