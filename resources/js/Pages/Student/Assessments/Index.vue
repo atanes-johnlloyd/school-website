@@ -501,7 +501,7 @@ const allTasks = computed(() => props.assessments ?? [])
 const filterTabs = computed(() => [
   { id: 'all', label: 'All', count: props.counts.all },
   { id: 'pending', label: 'Pending', count: props.counts.pending },
-  { id: 'in_progress', label: 'Submitted', count: props.counts.in_progress },
+  { id: 'submitted', label: 'Submitted', count: props.counts.in_progress },
   { id: 'graded', label: 'Graded', count: props.counts.graded },
   { id: 'overdue', label: 'Overdue', count: props.counts.overdue },
 ])
