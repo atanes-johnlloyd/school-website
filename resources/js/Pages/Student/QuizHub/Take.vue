@@ -235,9 +235,23 @@ function initTimer() {
   const tick = () => {
     const now = Date.now()
     secondsLeft.value = Math.max(0, Math.floor((expires - now) / 1000))
-    if (secondsLeft.value <= 0) {
-      clearInterval(timerHandle)
-      router.visit(route('student.quiz-attempts.result', props.attempt.id))
+    const secondsLeft = ref(0)
+    const hasTimer = computed(() => !!props.attempt.expires_at)
+    let timerHandle = null
+
+    function initTimer() {
+      if (!hasTimer.value) return
+      const expires = new Date(props.attempt.expires_at).getTime()
+      const tick = () => {
+        const now = Date.now()
+        secondsLeft.value = Math.max(0, Math.floor((expires - now) / 1000))
+        if (secondsLeft.value <= 0) {
+          clearInterval(timerHandle)
+          submitAttempt(true) // ✅ FIX: Trigger backend submission instead of just navigating
+        }
+      }
+      tick()
+      timerHandle = setInterval(tick, 1000)
     }
   }
   tick()
@@ -339,13 +353,27 @@ function preventKeyCombos(e) {
 // ─── Submit ─────────────────────────────────────────
 function confirmSubmit() { showConfirmModal.value = true }
 
-async function submitAttempt() {
+async function submitAttempt(isTimeout = false) {
   try {
-    await axios.post(route('student.quiz-attempts.submit', props.attempt.id))
+    if (!isTimeout) {
+      showConfirmModal.value = false
+    }
+    
+    // ✅ FIX: Send the reason to the backend so it can mark the attempt as 'expired' vs 'manual'
+    await axios.post(route('student.quiz-attempts.submit', props.attempt.id), {
+      reason: isTimeout ? 'expired' : 'manual'
+    })
+    
     exitLockdown()
     router.visit(route('student.quiz-attempts.result', props.attempt.id))
   } catch (e) {
-    alert('Failed to submit. Please try again.')
+    // If it's an auto-submit on timeout, don't alert the user—just force navigate to results
+    if (isTimeout) {
+      exitLockdown()
+      router.visit(route('student.quiz-attempts.result', props.attempt.id))
+    } else {
+      alert('Failed to submit. Please try again.')
+    }
   }
 }
 

@@ -85,6 +85,10 @@ class PayController extends Controller
     /* CHOOSE: pay online                                        */
     /* ══════════════════════════════════════════════════════ */
 
+        /* ══════════════════════════════════════════════════════ */
+    /* CHOOSE: pay online                                        */
+    /* ══════════════════════════════════════════════════════ */
+
     public function payOnline(Request $request, string $token)
     {
         $auth = $this->resolve($token);
@@ -98,26 +102,30 @@ class PayController extends Controller
         }
 
         try {
-            $this->contributions->recordGuardianChoice(
-                $auth,
-                PaymentAuthorization::ACTION_PAY_ONLINE,
-                $request->ip(),
-                $request->userAgent()
-            );
-
+            // 1. Create the local payment record
             $payment = $this->contributions->createPaymentFor($assignment, $auth->guardian);
 
+            // 2. Attempt to create the PayMongo checkout session
             $session = $this->paymongo->createCheckoutSession($payment, [
                 'description' => $assignment->contribution->title,
                 'success_url' => route('guardian.pay.return', ['ref' => $payment->reference_no, 'status' => 'success']),
                 'cancel_url'  => route('guardian.pay.return', ['ref' => $payment->reference_no, 'status' => 'cancelled']),
             ]);
 
+            // 3. Update the payment with the checkout details
             $payment->update([
                 'paymongo_checkout_id' => $session['checkout_id'],
                 'checkout_url'         => $session['checkout_url'],
                 'raw_response'         => $session['raw'],
             ]);
+
+            // 4. ONLY mark the authorization token as used AFTER everything succeeds
+            $this->contributions->recordGuardianChoice(
+                $auth,
+                PaymentAuthorization::ACTION_PAY_ONLINE,
+                $request->ip(),
+                $request->userAgent()
+            );
 
             return response()->json([
                 'checkout_url' => $session['checkout_url'],

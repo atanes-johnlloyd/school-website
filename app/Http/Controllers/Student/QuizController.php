@@ -327,7 +327,15 @@ class QuizController extends Controller
             ]);
         }
 
-        $this->grader->submit($attempt, 'manual');
+        $reason = $request->input('reason', 'manual');
+
+        // Enforce expiration check server-side. Even if the client lies, 
+        // if the time is up, we mark it as expired.
+        if ($attempt->expires_at && now()->greaterThan($attempt->expires_at)) {
+            $reason = 'expired';
+        }
+
+        $this->grader->submit($attempt, $reason);
 
         return response()->json([
             'message' => 'Quiz submitted.',

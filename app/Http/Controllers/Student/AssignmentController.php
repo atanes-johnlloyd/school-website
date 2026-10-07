@@ -40,7 +40,7 @@ class AssignmentController extends Controller
                         'submitted_at' => $sub->submitted_at?->toIso8601String(),
                         'has_file'    => (bool) $sub->file_path,
                         'download_url' => $sub->file_path
-                            ? route('student.assignments.submission.download', $assignment->id)
+                            ? route('student.assignments.submission.download', $a->id)
                             : null,
                     ] : null,
                 ];

@@ -17,7 +17,7 @@ class PaymongoWebhookController extends Controller
         protected ContributionService $contributions,
     ) {}
 
-    public function handle(Request $request)
+        public function handle(Request $request)
     {
         $rawBody = $request->getContent();
         $signature = $request->header('Paymongo-Signature');
@@ -35,29 +35,49 @@ class PaymongoWebhookController extends Controller
             return response()->json(['message' => 'Missing event id.'], 422);
         }
 
-        // Idempotency — skip if we've seen this event before
-        if (PaymongoWebhookEvent::where('event_id', $eventId)->exists()) {
+        // ─── Idempotency ─────────────────────────────────────────
+        // Only skip if the event was SUCCESSFULLY processed before.
+        // If a previous attempt exists but failed (processed_at is null),
+        // we will retry processing it. PayMongo will resend the event
+        // since we returned 500 on the previous failure.
+        $event = PaymongoWebhookEvent::where('event_id', $eventId)->first();
+
+        if ($event && $event->processed_at !== null) {
             return response()->json(['message' => 'Already processed.']);
         }
 
-        $event = PaymongoWebhookEvent::create([
-            'event_id'    => $eventId,
-            'type'        => $type,
-            'payload'     => $payload,
-            'received_at' => now(),
-        ]);
+        // Create the event record on first delivery. On retries, reuse the existing row.
+        if (! $event) {
+            $event = PaymongoWebhookEvent::create([
+                'event_id'    => $eventId,
+                'type'        => $type,
+                'payload'     => $payload,
+                'received_at' => now(),
+            ]);
+        }
 
         try {
             $this->dispatch($type, $payload);
-            $event->update(['processed_at' => now()]);
+
+            // Mark as processed only on success
+            $event->update([
+                'processed_at' => now(),
+                'error'        => null,
+            ]);
         } catch (\Throwable $e) {
             $event->update(['error' => $e->getMessage()]);
+
             Log::error('PayMongo webhook handler failed', [
-                'event_id' => $eventId,
-                'type'     => $type,
-                'error'    => $e->getMessage(),
+                'event_id'   => $eventId,
+                'type'       => $type,
+                'error'      => $e->getMessage(),
+                'retry_note' => 'Returning 500 so PayMongo retries the delivery.',
             ]);
-            // Return 200 so PayMongo doesn't retry endlessly — we log the failure
+
+            // ✅ Return 500 so PayMongo retries.
+            // PayMongo retries with exponential backoff (up to ~24 hours).
+            // If it never succeeds, you have the 'error' column for manual inspection.
+            return response()->json(['message' => 'Processing failed, will retry.'], 500);
         }
 
         return response()->json(['message' => 'Received.']);
