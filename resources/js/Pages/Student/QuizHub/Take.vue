@@ -193,6 +193,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -367,13 +368,7 @@ async function submitAttempt(isTimeout = false) {
     exitLockdown()
     router.visit(route('student.quiz-attempts.result', props.attempt.id))
   } catch (e) {
-    // If it's an auto-submit on timeout, don't alert the user—just force navigate to results
-    if (isTimeout) {
-      exitLockdown()
-      router.visit(route('student.quiz-attempts.result', props.attempt.id))
-    } else {
-      alert('Failed to submit. Please try again.')
-    }
+    showError('Failed to submit. Please try again.')
   }
 }
 

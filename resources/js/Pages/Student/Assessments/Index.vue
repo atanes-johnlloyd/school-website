@@ -14,15 +14,15 @@
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
 
-        <!-- HERO BANNER -->
+        <!-- Hero Banner -->
         <div v-observe
-          class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
-          <!-- Background Image Layer with Fallback Unsplash URL -->
+          class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
           <img
             :src="heroImage || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1600&auto=format&fit=crop'"
             alt="Student Assessments Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <!-- Animated Green Overlay (Matched to System Dark Green Blend) -->
+          <!-- Animated Green Overlay (Blend mode matched to system dark green) -->
           <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
           </div>
 
@@ -35,13 +35,18 @@
           </div>
 
           <!-- Content Container -->
-          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+          <div class="relative z-10 w-full space-y-4 sm:space-y-5">
 
             <!-- Top Badge Container -->
             <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <div
                 class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
-                <span>📝</span> STUDENT ASSESSMENTS
+                <!-- SVG Icon replacing Emoji -->
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                STUDENT ASSESSMENTS
               </div>
 
               <div
@@ -51,56 +56,72 @@
               </div>
             </div>
 
-            <!-- Main Header + Details Row -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="flex items-center gap-3 sm:gap-4">
+            <!-- Main Anton Page Title & Quote Section -->
+            <div class="space-y-1 max-w-3xl">
+              <div
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>STUDENT</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">ASSESSMENTS</span>
+              </div>
+              <p class="text-white/90 text-xs sm:text-sm leading-relaxed font-medium italic">
+                "Track your academic deliverables, submit work, and review scoring rubrics."
+              </p>
+            </div>
+
+            <!-- Details Row & Responsive Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center pt-1">
+
+              <!-- Left Subheader / Icon Info (Spans 7 Cols on Large Screens) -->
+              <div class="lg:col-span-7 flex items-center gap-3 sm:gap-4">
                 <div
                   class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
                   <Icon icon="clipboard-list" size="lg" class="text-white" />
                 </div>
 
                 <div class="space-y-0.5 min-w-0">
-                  <h2
-                    class="text-xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
-                    Academic Submissions & Rubrics
+                  <h2 class="text-base sm:text-xl font-black text-white tracking-tight leading-snug">
+                    Academic Submissions &amp; Rubrics
                   </h2>
-                  <p class="text-white/90 text-[11px] sm:text-sm md:text-base leading-relaxed font-medium">
+                  <p class="text-white/90 text-xs font-medium">
                     <span class="font-black text-[#F9C20C]">{{ counts.all }}</span> total deliverables • School Year
                     <span class="font-bold">2026–2027</span>
                   </p>
                 </div>
               </div>
 
-              <!-- Stat Cards Grid (Right-Aligned / Stretched) -->
-              <div class="grid grid-cols-2 gap-2.5 sm:gap-3 shrink-0 sm:w-80">
-                <!-- Pending -->
+              <!-- Stat Cards Grid (Spans 5 Cols on Large Screens / Responsive Layout) -->
+              <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full">
+
+                <!-- Pending Card -->
                 <div
-                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
                   <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
                     Pending
                   </span>
-                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight mt-0.5">
+                  <div class="text-lg sm:text-2xl font-black text-[#F9C20C] leading-tight my-0.5">
                     {{ counts.pending }}
                   </div>
-                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
                     Action needed
                   </span>
                 </div>
 
-                <!-- Graded -->
+                <!-- Graded Card -->
                 <div
-                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between">
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
                   <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
                     Graded
                   </span>
-                  <div class="text-lg sm:text-2xl font-black text-white leading-tight mt-0.5">
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight my-0.5">
                     {{ counts.graded }}
                   </div>
-                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5">
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
                     Results released
                   </span>
                 </div>
+
               </div>
+
             </div>
 
           </div>
@@ -319,13 +340,13 @@
                     class="flex items-center justify-between text-xs font-extrabold text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-[#3F4F43] pb-1.5">
                     <span>ASSESSMENT INFO</span>
                     <span class="text-[#004d08] dark:text-[#86EFAC]">{{ categoryLabel(activeDrawerTask.category)
-                    }}</span>
+                      }}</span>
                   </div>
                   <div class="space-y-1.5 text-xs">
                     <div class="flex justify-between items-center text-slate-700 dark:text-slate-300 font-semibold">
                       <span>Due</span>
                       <span class="font-bold text-slate-900 dark:text-white">{{ formatDate(activeDrawerTask.due_at)
-                      }}</span>
+                        }}</span>
                     </div>
                     <div v-if="activeDrawerTask.type === 'quiz' && activeDrawerTask.time_limit_minutes"
                       class="flex justify-between items-center text-slate-700 dark:text-slate-300 font-semibold">
@@ -350,7 +371,7 @@
                     <span class="text-2xl font-black text-[#005506] dark:text-[#86EFAC]">
                       {{ activeDrawerTask.submission.grade }}
                       <span class="text-sm font-normal text-slate-500 dark:text-slate-400">/ {{ activeDrawerTask.points
-                      }}</span>
+                        }}</span>
                     </span>
                   </div>
                   <p v-if="activeDrawerTask.submission.feedback"
@@ -423,7 +444,7 @@
                     class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs sm:text-sm font-black py-3.5 rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50">
                     <Icon icon="send" size="sm" />
                     {{ form.processing ? 'Submitting...' : (activeDrawerTask.submission ? 'Resubmit Assignment' :
-                    'TurnIn Assignment') }}
+                      'TurnIn Assignment') }}
                   </button>
 
                   <div

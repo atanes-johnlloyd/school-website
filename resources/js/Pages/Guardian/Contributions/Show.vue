@@ -267,6 +267,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -327,20 +328,20 @@ async function notifyGuardian(a) {
     await axios.post(route('teacher.contributions.notify-guardian', a.id))
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not send.')
+    showError(e.response?.data?.message || 'Could not send.')
   } finally {
     busyId.value = null
   }
 }
 
 async function markCashReceived(a) {
-  if (!confirm(`Mark ₱${formatMoney(a.amount_owed)} as received for ${a.student_name}?`)) return
+  if (!await confirmAction(`Mark ₱${formatMoney(a.amount_owed)} as received for ${a.student_name}?`)) return
   busyId.value = a.id
   try {
     await axios.post(route('teacher.contributions.mark-cash-received', a.id))
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not mark as paid.')
+    showError(e.response?.data?.message || 'Could not mark as paid.')
   } finally {
     busyId.value = null
   }
@@ -353,7 +354,7 @@ function openRejectCash(a) {
 
 async function rejectCash() {
   if (!rejectReason.value.trim()) {
-    alert('Please provide a reason.')
+    showError('Please provide a reason.')
     return
   }
   busyId.value = rejectCashFor.value.id
@@ -364,7 +365,7 @@ async function rejectCash() {
     rejectCashFor.value = null
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not reject.')
+    showError(e.response?.data?.message || 'Could not reject.')
   } finally {
     busyId.value = null
   }

@@ -341,6 +341,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
@@ -481,25 +482,25 @@ const togglePin = async (a) => {
     await axios.put(`/admin/school-news/${a.id}/pin`)
     fetchList()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to toggle pin.')
+    showError(e.response?.data?.message || 'Failed to toggle pin.')
   }
 }
 
 const togglePublish = async (a) => {
   const willPublish = a.is_draft
   if (willPublish && a.priority === 'urgent') {
-    if (!confirm('This urgent announcement will be emailed to all active users. Continue?')) return
+    if (!await confirmAction('This urgent announcement will be emailed to all active users. Continue?')) return
   } else if (a.is_draft) {
-    if (!confirm('Publish this announcement? It will be visible to all users.')) return
+    if (!await confirmAction('Publish this announcement? It will be visible to all users.')) return
   } else {
-    if (!confirm('Unpublish this announcement? It will be hidden from all users.')) return
+    if (!await confirmAction('Unpublish this announcement? It will be hidden from all users.')) return
   }
 
   try {
     await axios.put(`/admin/school-news/${a.id}/publish`)
     fetchList()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to toggle publish state.')
+    showError(e.response?.data?.message || 'Failed to toggle publish state.')
   }
 }
 
@@ -517,7 +518,7 @@ const executeDelete = async () => {
     deleteTarget.value = null
     fetchList()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to delete.')
+    showError(e.response?.data?.message || 'Failed to delete.')
   } finally {
     saving.value = false
   }

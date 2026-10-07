@@ -406,6 +406,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
@@ -541,7 +542,7 @@ const openEditModal = async (teacher) => {
     showFormModal.value = true
   } catch (e) {
     console.error(e)
-    alert('Failed to load faculty details. Please try again.')
+    showError('Failed to load faculty details. Please try again.')
   }
 }
 

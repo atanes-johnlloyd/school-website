@@ -239,6 +239,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -297,7 +298,7 @@ async function resendConsent(a) {
     await axios.post(route('teacher.contributions.resend-consent', a.id))
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not resend.')
+    showError(e.response?.data?.message || 'Could not resend.')
   } finally {
     resendingId.value = null
   }
@@ -362,7 +363,7 @@ async function overrideConfirm() {
     overrideFor.value = null
     router.reload({ only: ['assignments', 'contribution'], preserveScroll: true })
   } catch (e) {
-    alert(e.response?.data?.message || 'Could not override.')
+    showError(e.response?.data?.message || 'Could not override.')
   } finally {
     busyId.value = null
   }

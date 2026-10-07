@@ -370,6 +370,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -413,8 +414,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onWindowChange, true)
 })
 
-function destroy(lesson) {
-  if (!confirm(`Delete "${lesson.title}"? This cannot be undone.`)) return
+async function destroy(lesson) {
+  if (!await confirmAction(`Delete "${lesson.title}"? This cannot be undone.`)) return
   router.delete(route('teacher.lessons.destroy', lesson.id), {
     preserveScroll: true,
   })

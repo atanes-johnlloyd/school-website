@@ -436,6 +436,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -607,7 +608,7 @@ const toggleRead = async (m) => {
     m.is_read = !m.is_read
     fetchList()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to update read status.')
+    showError(e.response?.data?.message || 'Failed to update read status.')
   }
 }
 
@@ -629,7 +630,7 @@ const executeDelete = async () => {
     }
     fetchList()
   } catch (e) {
-    alert(e.response?.data?.message || 'Failed to delete.')
+    showError(e.response?.data?.message || 'Failed to delete.')
   } finally {
     saving.value = false
   }

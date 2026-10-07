@@ -194,6 +194,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -214,7 +215,7 @@ function togglePin() {
   pinning.value = true
   axios.put(route('teacher.announcements.toggle-pin', props.announcement.id))
     .then(() => router.reload({ only: ['announcement'], preserveScroll: true, preserveState: true }))
-    .catch(e => alert(e.response?.data?.message || 'Could not toggle pin.'))
+    .catch(e => showError(e.response?.data?.message || 'Could not toggle pin.'))
     .finally(() => { pinning.value = false })
 }
 
@@ -222,7 +223,7 @@ function destroyConfirmed() {
   deleting.value = true
   axios.delete(route('teacher.announcements.destroy', props.announcement.id))
     .then(() => router.visit(route('teacher.announcements.index')))
-    .catch(e => alert(e.response?.data?.message || 'Delete failed.'))
+    .catch(e => showError(e.response?.data?.message || 'Delete failed.'))
     .finally(() => { deleting.value = false })
 }
 

@@ -9,75 +9,116 @@
     <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
 
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop searchPlaceholder="Search enrolled subjects, codes, or faculty..."
-        @open-sidebar="isSidebarOpen = true"
+      <navbartop searchPlaceholder="Search enrolled subjects, codes, or faculty..." @open-sidebar="isSidebarOpen = true"
         @font-size-changed="(size) => fontSizeMode = size" />
 
       <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
 
-        <!-- HERO -->
-        <div
-          class="animate-fade-in-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none p-4 sm:p-6 md:p-8">
+        <!-- Hero Banner -->
+        <div v-observe
+          class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
+          <!-- Background Image Layer with Fallback Unsplash Image -->
+          <img
+            :src="heroImage || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1600&auto=format&fit=crop'"
+            alt="Student Subjects Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
-          <img :src="heroImage" alt="Student Subjects Hero"
-            class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
+          <!-- Animated Green Overlay (Blend mode matched to system) -->
+          <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply">
+          </div>
 
-          <div class="absolute inset-0 bg-[#004d05] dark:bg-[#152B1C] animate-overlay z-0 mix-blend-multiply"></div>
+          <!-- Ambient Light Glow Highlights -->
+          <div
+            class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
+          </div>
+          <div
+            class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
+          </div>
 
-          <div class="relative z-10 w-full space-y-3 sm:space-y-4">
+          <!-- Content Container -->
+          <div class="relative z-10 w-full space-y-4 sm:space-y-5">
 
-            <div class="flex flex-wrap items-center gap-2">
+            <!-- Top Badge Container -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
               <div
-                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 py-1 rounded-full shadow-sm tracking-wide">
+                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
                 <span>📚</span> STUDENT SUBJECTS
               </div>
 
               <div
-                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 {{ activeTerm || 'Active Term' }}
               </div>
             </div>
 
-            <div class="flex items-center gap-3 sm:gap-4">
+            <!-- Main Title & Quote Section -->
+            <div class="space-y-1 max-w-3xl">
               <div
-                class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
-                <Icon icon="academic-cap" size="lg" class="text-white" />
+                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+                <span>STUDENT</span>
+                <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">SUBJECTS</span>
               </div>
-
-              <div class="space-y-0.5 min-w-0">
-                <h2 class="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
-                  Senior High School Curriculum
-                </h2>
-                <p class="text-white/90 text-[11px] sm:text-sm leading-snug font-medium">
-                  {{ classList.length }} Active {{ classList.length === 1 ? 'Subject' : 'Subjects' }}
-                  • School Year <span class="font-bold">2026–2027</span>
-                </p>
-              </div>
+              <p class="text-white/90 text-xs sm:text-sm leading-relaxed font-medium italic">
+                "Access your enrolled classes, course modules, schedules, and learning materials."
+              </p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div
-                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
-                <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
-                  Track
-                </span>
-                <div class="text-base sm:text-xl font-black text-[#F9C20C] leading-tight mt-1 break-words">
-                  {{ studentStrand }}
+            <!-- Details Row & Responsive Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center pt-1">
+
+              <!-- Left Icon & Curriculum Info (Spans 7 Cols on Large Screens) -->
+              <div class="lg:col-span-7 flex items-center gap-3 sm:gap-4">
+                <div
+                  class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm overflow-hidden shrink-0 shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                  <Icon icon="academic-cap" size="lg" class="text-white" />
                 </div>
-                <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">Academic Strand</span>
+
+                <div class="space-y-0.5 min-w-0">
+                  <h2 class="text-base sm:text-xl font-black text-white tracking-tight leading-snug">
+                    Senior High School Curriculum
+                  </h2>
+                  <p class="text-white/90 text-xs font-medium">
+                    <span class="font-black text-[#F9C20C]">{{ classList.length }}</span> Active {{ classList.length ===
+                      1 ? 'Subject' : 'Subjects' }}
+                    • School Year <span class="font-bold">2026–2027</span>
+                  </p>
+                </div>
               </div>
 
-              <div
-                class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/15 rounded-xl py-3 sm:py-4 px-4 sm:px-5 hover:bg-black/40 transition-all duration-300">
-                <span class="text-[10px] font-semibold text-emerald-100/80 uppercase tracking-wider block">
-                  Total Subjects
-                </span>
-                <div class="text-base sm:text-xl font-black text-white leading-tight mt-1">
-                  {{ pagination.total || classList.length }}
+              <!-- Stat Cards Grid (Spans 5 Cols on Large Screens / Fluid Widths) -->
+              <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full">
+
+                <!-- Academic Track / Strand Card -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Track / Strand
+                  </span>
+                  <div
+                    class="text-xs sm:text-sm md:text-base font-black text-[#F9C20C] leading-snug my-0.5 break-words">
+                    {{ studentStrand || '—' }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium">
+                    Academic Strand
+                  </span>
                 </div>
-                <span class="text-[10px] text-emerald-100/70 block font-medium mt-0.5">{{ activeTerm || '—' }}</span>
+
+                <!-- Total Subjects Card -->
+                <div
+                  class="bg-black/30 dark:bg-black/50 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-3.5 hover:bg-black/40 transition-all duration-300 flex flex-col justify-between shadow-sm min-h-[75px]">
+                  <span class="text-[9px] sm:text-[10px] font-black text-emerald-100/80 uppercase tracking-wider block">
+                    Total Subjects
+                  </span>
+                  <div class="text-lg sm:text-2xl font-black text-white leading-tight my-0.5">
+                    {{ pagination.total || classList.length }}
+                  </div>
+                  <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium truncate">
+                    {{ activeTerm || '—' }}
+                  </span>
+                </div>
+
               </div>
+
             </div>
 
           </div>
@@ -94,16 +135,10 @@
                 class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <Icon icon="search" size="md" />
               </div>
-              <input
-                v-model="searchQuery"
-                @input="debouncedSearch"
-                type="text"
+              <input v-model="searchQuery" @input="debouncedSearch" type="text"
                 placeholder="Search subjects, codes, or teachers..."
                 class="w-full pl-11 pr-10 py-3 bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:bg-white dark:focus:bg-[#2D3A31] transition-all shadow-xs" />
-              <button
-                v-if="searchQuery"
-                type="button"
-                @click="clearSearch"
+              <button v-if="searchQuery" type="button" @click="clearSearch"
                 class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <Icon icon="x" size="xs" />
               </button>
@@ -111,15 +146,14 @@
 
             <!-- Sort -->
             <div class="relative w-full sm:w-56 shrink-0">
-              <select
-                v-model="sortBy"
-                @change="executeSearch"
+              <select v-model="sortBy" @change="executeSearch"
                 class="w-full appearance-none bg-[#f5f7f2] dark:bg-[#232D26] border border-slate-200/80 dark:border-[#3F4F43] rounded-2xl pl-4 pr-10 py-3 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] cursor-pointer shadow-xs">
                 <option value="subject">Subject (A–Z)</option>
                 <option value="teacher">Teacher (A–Z)</option>
                 <option value="created_at">Recently Added</option>
               </select>
-              <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+              <div
+                class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <Icon icon="chevron-down" size="xs" />
               </div>
             </div>
@@ -235,18 +269,18 @@ import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/studentsubject.png'
 
 const props = defineProps({
-  classes:       { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0 }) },
-  filters:       { type: Object, default: () => ({}) },
-  activeTerm:    { type: String, default: null },
+  classes: { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0 }) },
+  filters: { type: Object, default: () => ({}) },
+  activeTerm: { type: String, default: null },
   studentStrand: { type: String, default: null },
   filterOptions: { type: Object, default: () => ({ terms: [] }) },
 })
 
 const isSidebarOpen = ref(false)
-const fontSizeMode  = ref('base')
+const fontSizeMode = ref('base')
 
 const searchQuery = ref(props.filters?.search || '')
-const sortBy      = ref(props.filters?.sort || 'subject')
+const sortBy = ref(props.filters?.sort || 'subject')
 
 /* ─── Data ────────────────────────────────────────────── */
 const classList = computed(() => props.classes?.data ?? [])
@@ -261,11 +295,11 @@ const classList = computed(() => props.classes?.data ?? [])
 
 const pagination = computed(() => ({
   current_page: props.classes?.current_page ?? 1,
-  last_page:    props.classes?.last_page ?? 1,
-  total:        props.classes?.total ?? 0,
-  from:         props.classes?.from ?? 0,
-  to:           props.classes?.to ?? 0,
-  links:        props.classes?.links ?? [],
+  last_page: props.classes?.last_page ?? 1,
+  total: props.classes?.total ?? 0,
+  from: props.classes?.from ?? 0,
+  to: props.classes?.to ?? 0,
+  links: props.classes?.links ?? [],
 }))
 
 const studentStrand = computed(() =>
@@ -292,12 +326,12 @@ function executeSearch() {
     route('student.classes.index'),
     {
       search: searchQuery.value || undefined,
-      sort:   sortBy.value,
+      sort: sortBy.value,
     },
     {
-      preserveState:  true,
+      preserveState: true,
       preserveScroll: true,
-      replace:        true,
+      replace: true,
     }
   )
 }

@@ -151,6 +151,7 @@
 </template>
 
 <script setup>
+import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -209,12 +210,12 @@ const submit = async () => {
 }
 
 const confirmDelete = async (strand) => {
-  if (!confirm(`Delete strand "${strand.name}"? Fails if subjects or sections are linked.`)) return
+  if (!await confirmAction(`Delete strand "${strand.name}"? Fails if subjects or sections are linked.`)) return
   try {
     await axios.delete(`/admin/strands/${strand.id}`)
     emit('changed')
   } catch (e) {
-    alert(e.response?.data?.message || 'Cannot delete strand.')
+    showError(e.response?.data?.message || 'Cannot delete strand.')
   }
 }
 </script>
