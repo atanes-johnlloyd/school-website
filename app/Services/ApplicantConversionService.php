@@ -65,24 +65,38 @@ class ApplicantConversionService
         }
 
         // ─── Find a section FIRST. Nothing is created until we know. ───
-        $sectionId = $this->findAvailableSection(
-            $applicant->strand_id,
-            (string) $applicant->desired_grade_level,
-            $activeYear->id
-        );
-
-        if (! $sectionId) {
+        $activeYear = SchoolYear::where('is_active', true)->first();
+        if (! $activeYear) {
             return [
-                'success'    => false,
-                'reason'     => 'no_section',
-                'message'    => 'No section with capacity for this strand/grade. Applicant remains approved pending manual placement.',
-                'section_id' => null,
+                'success' => false,
+                'reason'  => 'no_active_year',
+                'message' => 'No active school year — cannot convert.',
             ];
         }
 
-        $section = Section::find($sectionId);
+        // ✅ FIX: Wrap EVERYTHING (lookup + creation) in a single transaction.
+        // The `lockForUpdate()` in findAvailableSection() will now be held until
+        // this outer transaction commits, closing the TOCTOU window.
+        return DB::transaction(function () use ($applicant, $activeYear) {
 
-        return DB::transaction(function () use ($applicant, $activeYear, $section) {
+            // Look up the section INSIDE the transaction so the lock is held throughout
+            $sectionId = $this->findAvailableSection(
+                $applicant->strand_id,
+                (string) $applicant->desired_grade_level,
+                $activeYear->id
+            );
+
+            if (! $sectionId) {
+                return [
+                    'success'    => false,
+                    'reason'     => 'no_section',
+                    'message'    => 'No section with capacity for this strand/grade. Applicant remains approved pending manual placement.',
+                    'section_id' => null,
+                ];
+            }
+
+            $section = Section::find($sectionId);
+
             // 1. User account
             $tempPassword = Str::random(12);
 
@@ -102,38 +116,37 @@ class ApplicantConversionService
             $applicant->loadMissing('contacts');
 
             $guardian = $applicant->contacts
-            ->sortBy(fn ($c) => match ($c->role) {
-                'guardian'  => 0,
-                'father'    => 1,
-                'mother'    => 2,
-                default     => 9,
-            })
-            ->first(fn ($c) => filled($c->full_name));
+                ->sortBy(fn ($c) => match ($c->role) {
+                    'guardian' => 0,
+                    'father'   => 1,
+                    'mother'   => 2,
+                    default    => 9,
+                })
+                ->first(fn ($c) => filled($c->full_name));
 
             // 2. Student profile
             $student = Student::create([
-                'user_id'        => $user->id,
-                'lrn'            => $applicant->lrn,
-                'first_name'     => $applicant->first_name,
-                'middle_name'    => $applicant->middle_name,
-                'last_name'      => $applicant->last_name,
-                'extension_name' => $applicant->extension_name,
-                'sex'            => strtolower((string) $applicant->sex),
-                'date_of_birth'  => $applicant->date_of_birth,
-                'contact_number' => $applicant->contact_number,
-                'house_street'   => $applicant->house_street,
-                'barangay'       => $applicant->barangay,
-                'municipality'   => $applicant->municipality,
-                'province'       => $applicant->province,
-                'zip_code'       => $applicant->zip_code,
-                'strand_id'      => $applicant->strand_id,
-                'guardian_name'    => $guardian?->full_name,        // ← new
+                'user_id'          => $user->id,
+                'lrn'              => $applicant->lrn,
+                'first_name'       => $applicant->first_name,
+                'middle_name'      => $applicant->middle_name,
+                'last_name'        => $applicant->last_name,
+                'extension_name'   => $applicant->extension_name,
+                'sex'              => strtolower((string) $applicant->sex),
+                'date_of_birth'    => $applicant->date_of_birth,
+                'contact_number'   => $applicant->contact_number,
+                'house_street'     => $applicant->house_street,
+                'barangay'         => $applicant->barangay,
+                'municipality'     => $applicant->municipality,
+                'province'         => $applicant->province,
+                'zip_code'         => $applicant->zip_code,
+                'strand_id'        => $applicant->strand_id,
+                'guardian_name'    => $guardian?->full_name,
                 'guardian_contact' => $guardian?->contact_number,
-                'guardian_email' => $guardian?->email,
-                'status'         => 'active',
+                'guardian_email'   => $guardian?->email,
+                'status'           => 'active',
             ]);
 
-            // Copy applicant contacts into student_guardians
             foreach ($applicant->contacts as $contact) {
                 if (! in_array($contact->role, ['father', 'mother', 'guardian'], true)) {
                     continue;
@@ -198,27 +211,28 @@ class ApplicantConversionService
     {
         if (! $strandId) return null;
 
-        return DB::transaction(function () use ($strandId, $gradeLevel, $schoolYearId) {
-            $candidates = Section::where('strand_id', $strandId)
-                ->where('grade_level', $gradeLevel)
-                ->where('school_year_id', $schoolYearId)
-                ->lockForUpdate()
-                ->withCount(['enrollments as enrolled_count' => function ($q) use ($schoolYearId) {
-                    $q->where('school_year_id', $schoolYearId)
-                      ->where('status', 'enrolled');
-                }])
-                ->get();
+        // ✅ FIX: Removed the nested DB::transaction here. We now rely on the
+        // caller's transaction to keep the lock held across the capacity check
+        // AND the subsequent insert.
+        $candidates = Section::where('strand_id', $strandId)
+            ->where('grade_level', $gradeLevel)
+            ->where('school_year_id', $schoolYearId)
+            ->lockForUpdate()
+            ->withCount(['enrollments as enrolled_count' => function ($q) use ($schoolYearId) {
+                $q->where('school_year_id', $schoolYearId)
+                ->where('status', 'enrolled');
+            }])
+            ->get();
 
-            // max_capacity === null means unlimited
-            $available = $candidates
-                ->filter(fn (Section $s) =>
-                    is_null($s->max_capacity)
-                    || $s->enrolled_count < $s->max_capacity
-                )
-                ->sortBy('enrolled_count')
-                ->first();
+        // max_capacity === null means unlimited
+        $available = $candidates
+            ->filter(fn (Section $s) =>
+                is_null($s->max_capacity)
+                || $s->enrolled_count < $s->max_capacity
+            )
+            ->sortBy('enrolled_count')
+            ->first();
 
-            return $available?->id;
-        });
+        return $available?->id;
     }
 }

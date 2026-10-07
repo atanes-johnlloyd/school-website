@@ -41,4 +41,27 @@ class AuditContext
             static::clear();
         }
     }
+
+    protected static ?int $actorId = null;
+
+    public static function actorId(): ?int
+    {
+        return self::$actorId;
+    }
+
+    public static function setActor(?int $id): void
+    {
+        self::$actorId = $id;
+    }
+
+    public static function withActor(?int $id, callable $callback)
+    {
+        $previous = self::$actorId;
+        self::$actorId = $id;
+        try {
+            return $callback();
+        } finally {
+            self::$actorId = $previous;
+        }
+    }
 }

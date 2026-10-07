@@ -27,9 +27,9 @@ trait Auditable
 
     protected function writeAudit(string $action): void
     {
-        if (! auth()->check()) {
-            return;
-        }
+        // ✅ FIX: Resolve an actor even when no HTTP user is authenticated.
+        // Priority: explicit AuditContext actor > auth() user > null (system).
+        $actorId = auth()->id() ?? AuditContext::actorId() ?? null;
 
         $old = null;
         $new = null;
@@ -55,11 +55,10 @@ trait Auditable
             if ($new && isset($new[$field])) $new[$field] = '[REDACTED]';
         }
 
-        // ── NEW: truncate long string values ──
         $old = $this->truncateAuditStrings($old);
         $new = $this->truncateAuditStrings($new);
 
-        // Attach business context if a controller set one
+        // Attach business context if set
         $event = AuditContext::event();
         $extra = AuditContext::extra();
 
@@ -71,22 +70,21 @@ trait Auditable
             $new = array_merge(is_array($new) ? $new : [], $extra);
         }
 
+        // ✅ FIX: `user_id` is now nullable. If no actor is resolvable, we still
+        // record the audit row with `user_id = null` — the action is preserved
+        // rather than silently dropped.
         AuditLog::create([
-            'user_id'        => auth()->id(),
+            'user_id'        => $actorId,
             'action'         => $action,
             'auditable_type' => static::class,
             'auditable_id'   => $this->getKey(),
             'old_values'     => $old,
             'new_values'     => $new,
-            'ip_address'     => request()->ip(),
-            'user_agent'     => request()->userAgent(),
+            'ip_address'     => app()->runningInConsole() ? null : request()->ip(),
+            'user_agent'     => app()->runningInConsole() ? 'console' : request()->userAgent(),
         ]);
     }
 
-    /**
-     * Trim any string value longer than the cap so huge bodies/blobs don't
-     * dominate the audit table.
-     */
     protected function truncateAuditStrings(?array $data): ?array
     {
         if (! is_array($data)) {
