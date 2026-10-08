@@ -289,13 +289,18 @@ class EntranceExamController extends Controller
     {
         $validated = $request->validate([
             'applicant_id' => ['required', 'integer', 'exists:applicants,id'],
+            'reason'       => ['nullable', 'string', 'max:500'],
         ]);
 
         $deleted = AuditContext::wrap('remove_from_exam', function () use ($exam, $validated) {
             return EntranceExamResult::where('entrance_exam_id', $exam->id)
                 ->where('applicant_id', $validated['applicant_id'])
                 ->delete();
-        }, ['exam_id' => $exam->id]);
+        }, [
+            'exam_id'      => $exam->id,
+            'applicant_id' => $validated['applicant_id'],
+            'reason'       => $validated['reason'] ?? null,
+        ]);
 
         return response()->json([
             'success' => (bool) $deleted,

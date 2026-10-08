@@ -111,10 +111,11 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({ show: { type: Boolean, default: false } })
 const emit  = defineEmits(['close', 'imported'])
-
+const flash = useFlash()
 const fileInput    = ref(null)
 const file         = ref(null)
 const isLoading    = ref(false)
@@ -140,6 +141,7 @@ const onFilePicked = (e) => {
   }
   generalError.value = ''
   file.value = picked
+  flash.error(generalError.value)
 }
 
 const downloadTemplate = () => {
@@ -182,6 +184,13 @@ const submitImport = async () => {
   try {
     const { data } = await axios.post('/admin/students/import', fd)
     result.value = { created: data.created, errors: data.errors || [] }
+
+    if (data.errors?.length) {
+      flash.info(`Imported ${data.created} student(s). ${data.errors.length} row(s) skipped.`)
+    } else {
+      flash.success(`Imported ${data.created} student(s).`)
+    }
+
     emit('imported')
   } catch (error) {
     if (error.response?.status === 422) {
@@ -190,8 +199,7 @@ const submitImport = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Import failed. Please try again.'
     }
-  } finally {
-    isLoading.value = false
+    flash.error(generalError.value)
   }
 }
 

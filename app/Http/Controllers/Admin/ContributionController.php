@@ -264,6 +264,42 @@ class ContributionController extends Controller
     }
 
     /* ═══════════════════════════════════════════════════════════ */
+    /* DETAIL (JSON — for modals)                                    */
+    /* ═══════════════════════════════════════════════════════════ */
+    public function detail(Request $request, Contribution $contribution)
+    {
+        $contribution->load([
+            'classroom.subject:id,name', 'classroom.section:id,name',
+            'section.strand:id,code,name', 'strand:id,code,name',
+            'creator:id,name',
+        ]);
+
+        // Reuse the same assignment shape that show() uses
+        $assignments = ContributionAssignment::where('contribution_id', $contribution->id)
+            ->with(['student.user:id,name', 'student:id,user_id,lrn', 'guardian:id,full_name,email'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($a) => [
+                'id'             => $a->id,
+                'student_name'   => $a->student->user?->name,
+                'lrn'            => $a->student->lrn,
+                'amount_owed'    => (float) $a->amount_owed,
+                'status'         => $a->status,
+                'guardian_name'  => $a->guardian?->full_name,
+                'guardian_email' => $a->guardian?->email,
+                'authorized_at'  => $a->authorized_at?->toIso8601String(),
+                'paid_at'        => $a->paid_at?->toIso8601String(),
+                'decline_reason' => $a->decline_reason,
+                'last_sent_at'   => $a->last_consent_sent_at?->toIso8601String(),
+            ]);
+
+        return response()->json([
+            'contribution' => $this->transform($contribution),
+            'assignments'  => $assignments,
+        ]);
+    }
+
+    /* ═══════════════════════════════════════════════════════════ */
     /* DESTROY                                                       */
     /* ═══════════════════════════════════════════════════════════ */
     public function destroy(Request $request, Contribution $contribution)
@@ -367,5 +403,49 @@ class ContributionController extends Controller
                 : null,
             'created_at'    => $c->created_at?->toIso8601String(),
         ];
+    }
+
+    /* ═══════════════════════════════════════════════════════════ */
+    /* UPDATE (admin — title/purpose/amount/deadline/toggles)        */
+    /* ═══════════════════════════════════════════════════════════ */
+    public function update(Request $request, Contribution $contribution)
+    {
+        $validated = $request->validate([
+            'title'                     => ['required', 'string', 'max:255'],
+            'description'               => ['nullable', 'string', 'max:2000'],
+            'purpose'                   => ['nullable', 'string', 'max:200'],
+            'amount_type'               => ['required', 'in:fixed,open'],
+            'amount'                    => ['required_if:amount_type,fixed', 'nullable', 'numeric', 'min:1', 'max:100000'],
+            'min_amount'                => ['nullable', 'numeric', 'min:1', 'max:100000'],
+            'target_amount'             => ['nullable', 'numeric', 'min:1', 'max:10000000'],
+            'is_required'               => ['boolean'],
+            'deadline_at'               => ['nullable', 'date'],
+            'is_published'              => ['boolean'],
+            'requires_guardian_consent' => ['boolean'],
+        ]);
+
+        AuditContext::wrap('admin_update_contribution', function () use ($contribution, $validated) {
+            $contribution->update([
+                'title'                     => $validated['title'],
+                'description'               => $validated['description'] ?? null,
+                'purpose'                   => $validated['purpose'] ?? null,
+                'amount_type'               => $validated['amount_type'],
+                'amount'                    => $validated['amount_type'] === 'fixed' ? $validated['amount'] : null,
+                'min_amount'                => $validated['amount_type'] === 'open' ? ($validated['min_amount'] ?? null) : null,
+                'target_amount'             => $validated['target_amount'] ?? null,
+                'is_required'               => $validated['is_required'] ?? false,
+                'deadline_at'               => $validated['deadline_at'] ?? null,
+                'is_published'              => $validated['is_published'] ?? false,
+                'published_at'              => ($validated['is_published'] ?? false)
+                                                ? ($contribution->published_at ?? now())
+                                                : null,
+                'requires_guardian_consent' => $validated['requires_guardian_consent'] ?? true,
+            ], ['contribution_id' => $contribution->id]);
+        });
+
+        return response()->json([
+            'message' => 'Contribution updated.',
+            'id'      => $contribution->id,
+        ]);
     }
 }

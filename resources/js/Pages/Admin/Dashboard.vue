@@ -1,7 +1,22 @@
 <template>
   <AdminLayout>
     <div class="space-y-6 pb-10 font-['Inter']">
-
+      <!-- No active year warning -->
+      <div v-if="!activeYear"
+          class="rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 px-5 py-3 flex items-center gap-3">
+        <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M4.93 19h14.14a2 2 0 001.74-3L13.74 4a2 2 0 00-3.48 0L3.19 16a2 2 0 001.74 3z" />
+        </svg>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-amber-900 dark:text-amber-200">
+            No active school year set. Numbers below are unfiltered.
+          </p>
+        </div>
+        <Link :href="route('admin.school-years.index')"
+              class="text-[11px] font-medium uppercase tracking-wider text-amber-900 dark:text-amber-200 hover:underline shrink-0">
+          Set one →
+        </Link>
+      </div>
       <!-- HEADER BANNER -->
       <div v-observe
         class="anim-fade-down relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-[#006907]/20 dark:border-none min-h-[200px] sm:min-h-[220px] flex flex-col justify-center p-4 sm:p-8 md:p-10">

@@ -307,18 +307,19 @@
 
           <!-- ✏️ Editable: approved / needs_resubmission / rejected -->
           <template v-else>
-            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
-              Manual override. Prefer the View modal for approve / reject / resubmission.
-            </p>
-            <select
-              v-model="form.status"
-              class="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none capitalize cursor-pointer"
-            >
-              <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
-            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 leading-relaxed">
-              “Under Review” is reserved for the review workflow and can't be set here.
-            </p>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43]">
+              <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
+                  {{ form.status ? form.status.replace('_', ' ') : '—' }}
+                </p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                  Status changes go through the review workflow. Open the View modal to approve, reject, or request resubmission.
+                </p>
+              </div>
+            </div>
           </template>
         </section>
 
@@ -624,10 +625,6 @@ const submitForm = async () => {
     const v = form[k]
     if (v !== null && v !== undefined && v !== '') fd.append(k, v)
   })
-
-  if (isEditing.value && form.status && !statusEditorDisabled.value) {
-    fd.append('status', form.status)
-  }
 
   let ci = 0
   Object.entries(form.contacts).forEach(([role, c]) => {

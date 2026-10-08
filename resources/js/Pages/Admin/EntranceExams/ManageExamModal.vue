@@ -176,7 +176,7 @@
                                 :title="'Mark as absent — score will be cleared'">
                             <input type="checkbox" v-model="a.draft_absent"
                                   @change="if (a.draft_absent) { a.draft_score = ''; a.draft_interview = false }"
-                                  :disabled="!canRecord"
+                                  :disabled="!canRecord || resultLocked(a)"
                                   class="w-3 h-3 accent-red-500 cursor-pointer" />
                             Absent
                           </label>
@@ -184,7 +184,7 @@
                                 :title="'Mark for interview — score will be cleared'">
                             <input type="checkbox" v-model="a.draft_interview"
                                   @change="if (a.draft_interview) { a.draft_score = ''; a.draft_absent = false }"
-                                  :disabled="!canRecord"
+                                  :disabled="!canRecord || resultLocked(a)"
                                   class="w-3 h-3 accent-sky-500 cursor-pointer" />
                             Interview
                           </label>
@@ -203,12 +203,12 @@
                     <td class="py-2.5 px-3 text-right">
                       <div class="flex items-center justify-end gap-1.5">
                         <button type="button" @click="saveResult(a)"
-                                :disabled="!canRecord || a.saving || !isDirty(a)"
+                                :disabled="!canRecord || a.saving || !isDirty(a) || resultLocked(a)"
                                 class="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-white bg-[#004d08] hover:bg-emerald-900 rounded-md transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                           {{ a.saving ? '…' : 'Save' }}
                         </button>
                         <button type="button" @click="removeApplicant(a)"
-                                :disabled="a.saving || exam.status === 'Completed'"
+                                :disabled="a.saving || exam.status === 'Completed' || resultLocked(a)"
                                 class="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-red-700 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-950/50 border border-red-200 dark:border-red-900 rounded-md transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                           Remove
                         </button>
@@ -416,10 +416,13 @@ const saveAll = async () => {
 
   try {
     const { data } = await axios.put(`/admin/entrance-exams/${props.exam.id}/results/bulk`, payload)
-    dirty.forEach(a => {
-      a.score  = a.draft_score
-      a.result = computedResult(a)
-    })
+    await fetchDetails()
+    emit('changed')
+    flash.success(data.message || `Saved ${dirty.length} result${dirty.length === 1 ? '' : 's'}.`)
+    if (data.errors?.length) {
+      flash.info(`${data.errors.length} row(s) skipped — see details below.`)
+      // Optional: surface data.errors as a visible list in the modal.
+    }
     emit('changed')
     flash.success(data.message || `Saved ${dirty.length} result${dirty.length === 1 ? '' : 's'}.`)
     if (data.errors?.length) {

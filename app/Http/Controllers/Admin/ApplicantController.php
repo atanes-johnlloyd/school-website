@@ -336,12 +336,15 @@ class ApplicantController extends Controller
 
         $student = AuditContext::wrap('manual_enroll', function () use ($applicant, $validated) {
             return DB::transaction(function () use ($applicant, $validated) {
+                $tempPassword = Str::random(12);
+
                 $user = User::firstOrCreate(
                     ['email' => $applicant->email],
                     [
-                        'name'     => $applicant->full_name,
-                        'password' => Hash::make('password123'),
-                        'role'     => 'student',
+                        'name'                 => $applicant->full_name,
+                        'password'             => Hash::make($tempPassword),
+                        'role'                 => 'student',
+                        'must_change_password' => true,
                     ]
                 );
 
@@ -389,6 +392,7 @@ class ApplicantController extends Controller
                 return $student;
             });
         }, ['section_id' => $validated['section_id']]);
+
 
         return response()->json([
             'message'   => 'Applicant successfully enrolled and attached to section.',

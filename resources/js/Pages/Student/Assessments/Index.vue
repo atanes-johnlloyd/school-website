@@ -479,6 +479,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
 import navbartop from '@/Components/navbartop.vue'
 import Icon from '@/Components/Icon.vue'
+import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
   assessments: { type: Array, default: () => [] },
@@ -492,6 +493,8 @@ const selectedTab = ref('all')
 const searchQuery = ref('')
 const isDrawerOpen = ref(false)
 const activeDrawerTask = ref(null)
+const submitSuccess = ref(false)
+const submitMessage = ref('')
 const fileInput = ref(null)
 
 const form = useForm({ text_content: '', file: null })
@@ -528,6 +531,9 @@ const filteredGeneralTasks = computed(() =>
   filteredTasks.value.filter(t => !filteredPriorityTasks.value.some(p => p.id === t.id))
 )
 
+submitSuccess.value = false
+submitMessage.value = ''
+
 function openDrawer(task) {
   activeDrawerTask.value = task
   isDrawerOpen.value = true
@@ -551,11 +557,21 @@ function handleFile(e) {
 
 function submitWork() {
   if (!activeDrawerTask.value || activeDrawerTask.value.type !== 'assignment') return
+
   form.post(route('student.assignments.submit', activeDrawerTask.value.raw_id), {
     forceFormData: true,
     preserveScroll: true,
-    onSuccess: () => {
-      closeDrawer()
+    preserveState: true,
+    onSuccess: (page) => {
+      submitSuccess.value = true
+      submitMessage.value = page.props.flash?.success ?? 'Assignment turned in successfully!'
+      form.file = null
+      if (fileInput.value) fileInput.value.value = ''
+
+      router.reload({ only: ['assessments', 'counts'], preserveScroll: true })
+    },
+    onError: () => {
+      submitSuccess.value = false
     },
   })
 }

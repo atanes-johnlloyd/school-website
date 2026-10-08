@@ -14,9 +14,10 @@ class Student extends Model
     
     protected $fillable = [
         'user_id', 'lrn', 'sex', 'date_of_birth', 'contact_number',
-        'house_street', 'barangay', 'municipality', 'province', 'zip_code', 'status',
+        'house_street', 'barangay', 'municipality', 'province', 'zip_code',
+        'guardian_name', 'guardian_contact',
+        'status',
     ];
-
     protected $casts = ['date_of_birth' => 'date'];
 
     public function user()              { return $this->belongsTo(User::class); }

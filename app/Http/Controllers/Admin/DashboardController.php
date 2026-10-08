@@ -44,7 +44,9 @@ class DashboardController extends Controller
             'applicants_under_review'=> $underReview,
             'applicants_approved'    => $approved,
             'applicants_enrolled'    => $enrolledApps,
-            'students_active'        => Student::where('status', 'active')->count(),
+            Student::where('status', 'active')
+                ->when($activeYear, fn ($q) => $q->where('school_year_id', $activeYear->id))
+                ->count(),
             'teachers_active'        => Teacher::where('is_active', true)->count(),
             'sections_count'         => (clone $sectionsQuery)->count(),
             'total_capacity'         => $totalCapacity,

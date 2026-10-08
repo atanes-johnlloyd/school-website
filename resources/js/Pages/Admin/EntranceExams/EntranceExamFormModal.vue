@@ -217,13 +217,24 @@ const submit = async () => {
     const method = isEditing.value ? 'put' : 'post'
     const { data } = await axios[method](url, form)
 
-    flash.success(
-      isEditing.value
-        ? 'Exam updated.'
-        : (data?.auto_assigned
-            ? `Exam scheduled — ${data.auto_assigned} applicant(s) auto-assigned.`
-            : 'Exam scheduled.')
-    )
+    if (isEditing.value) {
+      const r = data?.reassignment
+      if (r && (r.removed > 0 || r.moved > 0)) {
+        const parts = []
+        if (r.removed > 0) parts.push(`${r.removed} unassigned`)
+        if (r.moved   > 0) parts.push(`${r.moved} moved`)
+        flash.success(`Exam updated. ${parts.join(', ')}.`)
+        if (r.removed > 0) {
+          flash.info(`${r.removed} applicant(s) no longer fit this exam and were removed. Review the applicant list.`)
+        }
+      } else {
+        flash.success('Exam updated.')
+      }
+    } else if (data?.auto_assigned) {
+      flash.success(`Exam scheduled — ${data.auto_assigned} applicant(s) auto-assigned.`)
+    } else {
+      flash.success('Exam scheduled.')
+    }
 
     emit('saved')
     closeModal()

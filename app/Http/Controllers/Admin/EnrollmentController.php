@@ -158,9 +158,13 @@ class EnrollmentController extends Controller
             return response()->json(['message' => 'Only pending enrollments can be rejected.'], 422);
         }
 
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
         AuditContext::wrap('reject_enrollment', function () use ($enrollment) {
             $enrollment->update(['status' => 'dropped']);
-        });
+        }, ['reason' => $validated['reason'] ?? null]);
 
         return response()->json(['message' => 'Enrollment rejected.']);
     }

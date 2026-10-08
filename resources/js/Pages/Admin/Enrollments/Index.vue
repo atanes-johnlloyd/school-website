@@ -432,6 +432,8 @@ import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
+
 
 const props = defineProps({
   schoolYears: { type: Array, default: () => [] },
@@ -439,6 +441,7 @@ const props = defineProps({
   activeYearId: { type: Number, default: null },
 })
 
+const flash = useFlash()
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
 const enrollments = ref(emptyPaginator())
@@ -605,9 +608,12 @@ const approve = async (e) => {
   if (!await confirmAction(`Approve ${e.student_name}'s enrollment?`)) return
   try {
     await axios.put(`/admin/enrollments/${e.id}/approve`)
+    flash.success(`${e.student_name}'s enrollment approved.`)
     fetchList()
   } catch (err) {
-    showError(err.response?.data?.message || 'Failed to approve.')
+    const msg = err.response?.data?.message || 'Failed to approve.'
+    showError(msg)
+    flash.error(msg)
   }
 }
 
@@ -624,11 +630,14 @@ const confirmReject = async () => {
     await axios.put(`/admin/enrollments/${rejectTarget.value.id}/reject`, {
       reason: rejectReason.value || null,
     })
+    flash.success(`${rejectTarget.value.student_name}'s enrollment rejected.`)
     showRejectModal.value = false
     rejectTarget.value = null
     fetchList()
   } catch (err) {
-    showError(err.response?.data?.message || 'Failed to reject.')
+    const msg = err.response?.data?.message || 'Failed to reject.'
+    showError(msg)
+    flash.error(msg)
   } finally {
     saving.value = false
   }
@@ -647,11 +656,14 @@ const confirmAssign = async () => {
     await axios.put(`/admin/enrollments/${assignTarget.value.id}/assign-section`, {
       section_id: assignSectionId.value,
     })
+    flash.success(`${assignTarget.value.student_name} assigned.`)
     showAssignModal.value = false
     assignTarget.value = null
     fetchList()
   } catch (err) {
-    showError(err.response?.data?.message || 'Failed to assign section.')
+    const msg = err.response?.data?.message || 'Failed to assign section.'
+    showError(msg)
+    flash.error(msg)
   } finally {
     saving.value = false
   }

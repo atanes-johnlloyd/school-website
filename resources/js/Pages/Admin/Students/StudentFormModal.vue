@@ -108,7 +108,6 @@
         </div>
 
         <!-- Academic Placement: Grade Level & Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Section
@@ -125,22 +124,7 @@
             </select>
             <p v-if="form.errors.section_id" class="mt-1 text-[11px] text-red-500 font-normal">{{ form.errors.section_id }}</p>
           </div>
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
-              Section / Strand
-            </label>
-            <select
-              v-model="form.section"
-              class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer"
-            >
-              <option value="">Select Section...</option>
-              <option v-for="s in sections" :key="s.id" :value="s.id">
-                Grade {{ s.grade_level }} — {{ s.name }}
-              </option>
-            </select>
-          </div>
-        </div>
+        
 
         <!-- Personal Info: Sex & Date of Birth -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

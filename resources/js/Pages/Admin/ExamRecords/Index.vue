@@ -195,20 +195,20 @@
           </div>
 
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto lg:justify-end">
-            <select v-model="filters.exam_id" @change="fetchList()"
+            <select v-model="filters.exam_id" @change="resetAndFetch()"
               class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[200px] truncate">
               <option value="">All Exams</option>
               <option v-for="e in exams" :key="e.id" :value="e.id">{{ e.exam_name }}</option>
             </select>
 
-            <select v-model="filters.grade_level" @change="fetchList()"
+            <select v-model="filters.grade_level" @change="resetAndFetch()"
               class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
               <option value="">All Grades</option>
               <option value="11">Grade 11</option>
               <option value="12">Grade 12</option>
             </select>
 
-            <select v-model="filters.strand_id" @change="fetchList()"
+            <select v-model="filters.strand_id" @change="resetAndFetch()"
               class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[160px] truncate">
               <option value="">All Strands</option>
               <option v-for="s in strands" :key="s.id" :value="s.id">{{ s.code }}</option>
@@ -347,11 +347,14 @@ import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   exams: { type: Array, default: () => [] },
   strands: { type: Array, default: () => [] },
 })
+
+const flash = useFlash()
 
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
@@ -389,7 +392,8 @@ const fetchList = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load records:', e)
-    records.value = emptyPaginator()
+    // Keep last-known records/counts; don't clear.
+    flash.error(e.response?.data?.message || 'Failed to load exam records. Please refresh.')
   }
 }
 
@@ -470,6 +474,11 @@ const formatDateTime = (iso) => {
   if (!iso) return '—'
   try { return new Date(iso).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) }
   catch { return iso }
+}
+
+const resetAndFetch = () => {
+  filters.page = 1
+  fetchList()
 }
 
 onMounted(() => { fetchList() })

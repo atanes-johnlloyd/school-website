@@ -695,6 +695,9 @@ const openViewModal = (item) => {
 }
 
 onMounted(() => {
+  const url = new URL(window.location.href)
+  const search = url.searchParams.get('search')
+  if (search) filters.search = search
   fetchApplications()
 })
 

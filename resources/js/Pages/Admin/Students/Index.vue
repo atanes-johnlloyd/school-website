@@ -327,7 +327,7 @@
                     </button>
                     <button @click="openDeleteConfirmation(student)"
                       class="px-2.5 py-1 text-[10px] font-normal text-red-700 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-900 transition-colors cursor-pointer">
-                      Deactivate
+                      Remove
                     </button>
                   </div>
                 </td>
@@ -389,7 +389,7 @@
       <!-- Import Modal -->
       <ImportStudentsModal :show="showImportModal" @close="showImportModal = false" @imported="fetchStudents" />
 
-      <!-- Deactivate Confirmation -->
+      <!-- Remove Confirmation -->
       <Modal :show="showDeleteModal" @close="showDeleteModal = false" max-width="md">
         <div
           class="p-6 bg-white dark:bg-[#2D3A31] rounded-3xl border border-gray-200 dark:border-[#3F4F43] font-['Inter'] transition-colors">
@@ -402,16 +402,15 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xs font-medium uppercase tracking-wider text-gray-900 dark:text-white">Deactivate Student
+              <h3 class="text-xs font-medium uppercase tracking-wider text-gray-900 dark:text-white">Remove Student
                 Account</h3>
               <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">Confirm status update</p>
             </div>
           </div>
 
           <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed mb-6">
-            Are you sure you want to deactivate <strong class="font-semibold text-gray-900 dark:text-white">{{
-              studentToDelete?.name || 'this student' }}</strong>?
-            This will soft-delete their record and revoke portal access.
+            Are you sure you want to remove <strong class="font-semibold text-gray-900 dark:text-white">{{ studentToDelete?.name || 'this student' }}</strong>?
+            Their record will be archived and portal access revoked. Contact the developer to restore.
           </p>
 
           <div class="flex justify-end gap-2.5 pt-4 border-t border-gray-100 dark:border-[#3F4F43]">
@@ -441,11 +440,12 @@ import Modal from '@/Components/Modal.vue'
 import StudentFormModal from './StudentFormModal.vue'
 import ViewStudentModal from './ViewStudentModal.vue'
 import ImportStudentsModal from './ImportStudentsModal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   sections: { type: Array, default: () => [] },
 })
-
+const flash = useFlash()
 /* ─── State ─────────────────────────────────────────────── */
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
@@ -632,8 +632,15 @@ const openDeleteConfirmation = (student) => {
 
 const executeDeactivation = () => {
   if (!studentToDelete.value) return
+  const name = studentToDelete.value.name
   isDeactivating.value = true
   router.delete(route('admin.students.destroy', studentToDelete.value.id), {
+    onSuccess: () => {
+      flash.success(`${name} deactivated.`)
+    },
+    onError: (err) => {
+      flash.error(err?.message || 'Failed to deactivate student.')
+    },
     onFinish: () => {
       isDeactivating.value = false
       showDeleteModal.value = false

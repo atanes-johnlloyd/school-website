@@ -161,13 +161,17 @@ class AssignmentController extends Controller
             ]));
         }
 
-        return $request->wantsJson()
-            ? response()->json([
+        if ($request->wantsJson()) {
+            return response()->json([
                 'message'    => $isLate ? 'Submitted (late).' : 'Submitted.',
                 'submission' => $submission->fresh(),
-            ], 201)
-            : redirect()->route('student.assignments.show', $assignment->id)
-                        ->with('success', $isLate ? 'Submitted (late).' : 'Submitted.');
+            ], 201);
+        }
+
+        return back()->with(
+            'success',
+            $isLate ? 'Turned in (late).' : 'Turned in successfully.'
+        );
     }
 
     public function downloadSubmission(Request $request, Assignment $assignment)

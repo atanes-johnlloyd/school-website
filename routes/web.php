@@ -265,26 +265,30 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
 
         // ─── Contributions (NEW) ───
         Route::middleware('permission:manage-contributions')->group(function () {
-            Route::get('/contributions', [\App\Http\Controllers\Admin\ContributionController::class, 'index'])
-                ->name('contributions.index');
-            Route::get('/contributions/create', [\App\Http\Controllers\Admin\ContributionController::class, 'create'])
-                ->name('contributions.create');
-            Route::post('/contributions', [\App\Http\Controllers\Admin\ContributionController::class, 'store'])
-                ->name('contributions.store');
-            Route::get('/contributions/{contribution}', [\App\Http\Controllers\Admin\ContributionController::class, 'show'])
-                ->name('contributions.show');
-            Route::delete('/contributions/{contribution}', [\App\Http\Controllers\Admin\ContributionController::class, 'destroy'])
-                ->name('contributions.destroy');
+            Route::get('/contributions',        [\App\Http\Controllers\Admin\ContributionController::class, 'index'])->name('contributions.index');
+            Route::get('/contributions/create', [\App\Http\Controllers\Admin\ContributionController::class, 'create'])->name('contributions.create');
+            Route::post('/contributions',       [\App\Http\Controllers\Admin\ContributionController::class, 'store'])->name('contributions.store');
+
+            // ▼ NEW: JSON detail endpoint for the modal — MUST come before {contribution}
+            Route::get('/contributions/{contribution}/detail',
+                [\App\Http\Controllers\Admin\ContributionController::class, 'detail'])->name('contributions.detail');
+
+            Route::get('/contributions/{contribution}',
+                [\App\Http\Controllers\Admin\ContributionController::class, 'show'])->name('contributions.show');
+
+            // ▼ NEW: admin update (edit modal needs this — teacher route won't work from admin)
+            Route::put('/contributions/{contribution}',
+                [\App\Http\Controllers\Admin\ContributionController::class, 'update'])->name('contributions.update');
+
+            Route::delete('/contributions/{contribution}',
+                [\App\Http\Controllers\Admin\ContributionController::class, 'destroy'])->name('contributions.destroy');
 
             Route::post('/contributions/assignments/{assignment}/override-authorize',
-                [\App\Http\Controllers\Admin\ContributionController::class, 'overrideAuthorize'])
-                ->name('contributions.override-authorize');
+                [\App\Http\Controllers\Admin\ContributionController::class, 'overrideAuthorize'])->name('contributions.override-authorize');
             Route::post('/contributions/assignments/{assignment}/notify-guardian',
-                [\App\Http\Controllers\Admin\ContributionController::class, 'notifyGuardian'])
-                ->name('contributions.notify-guardian');
+                [\App\Http\Controllers\Admin\ContributionController::class, 'notifyGuardian'])->name('contributions.notify-guardian');
             Route::post('/contributions/assignments/{assignment}/mark-cash-received',
-                [\App\Http\Controllers\Admin\ContributionController::class, 'markCashReceived'])
-                ->name('contributions.mark-cash-received');
+                [\App\Http\Controllers\Admin\ContributionController::class, 'markCashReceived'])->name('contributions.mark-cash-received');
         });
     });
 
