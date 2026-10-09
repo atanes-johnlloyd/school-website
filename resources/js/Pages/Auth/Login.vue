@@ -28,7 +28,7 @@
                 <!-- Header: School Logo & Portal Title -->
                 <div class="flex flex-col items-center text-center mb-8">
                     <img :src="logoImg" alt="Salawag Senior High School Logo"
-                        class="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 drop-shadow-sm" />
+                        class="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 drop-shadow-sm scale-150" />
                     <h1 class="text-2xl sm:text-3xl font-bold text-[#005506] tracking-tight">
                         Salawag Senior High School
                     </h1>
