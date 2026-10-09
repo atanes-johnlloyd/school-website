@@ -448,7 +448,6 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { usePage } from '@inertiajs/vue3'

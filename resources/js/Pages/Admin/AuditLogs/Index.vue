@@ -170,7 +170,7 @@
 
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
 
-              <select v-model="filters.action" @change="fetchList()"
+              <select v-model="filters.action" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All Actions</option>
                 <option value="created">Created</option>
@@ -179,13 +179,13 @@
                 <option value="restored">Restored</option>
               </select>
 
-              <select v-model="filters.user_id" @change="fetchList()"
+              <select v-model="filters.user_id" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[180px] truncate">
                 <option value="">All Users</option>
                 <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
               </select>
 
-              <select v-model="filters.model_type" @change="fetchList()"
+              <select v-model="filters.model_type" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[180px] truncate">
                 <option value="">All Models</option>
                 <option v-for="m in modelTypes" :key="m.value" :value="m.value">{{ m.label }}</option>
@@ -218,13 +218,13 @@
           <!-- Date range row -->
           <div class="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
             <span class="font-medium uppercase tracking-wider text-[10px]">Date Range</span>
-            <input v-model="filters.date_from" @change="fetchList()" type="date"
+            <input v-model="filters.date_from" @change="resetAndFetch()" type="date"
               class="px-2.5 py-1.5 text-[11px] bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none cursor-pointer" />
             <span>→</span>
-            <input v-model="filters.date_to" @change="fetchList()" type="date"
+            <input v-model="filters.date_to" @change="resetAndFetch()" type="date"
               class="px-2.5 py-1.5 text-[11px] bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-[#004d08] focus:outline-none cursor-pointer" />
             <button v-if="filters.date_from || filters.date_to"
-              @click="filters.date_from = ''; filters.date_to = ''; fetchList()"
+              @click="filters.date_from = ''; filters.date_to = ''; resetAndFetch()"
               class="text-[10px] uppercase tracking-wider text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer">
               Clear
             </button>
@@ -360,7 +360,7 @@
 
       <!-- Detail Modal -->
       <ViewAuditLogModal :show="showDetailModal" :log="selectedLog"
-        @close="showDetailModal = false; selectedLog = null" />
+        @close="showDetailModal = false" />
     </div>
   </AdminLayout>
 </template>
@@ -437,14 +437,18 @@ const fetchList = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load audit logs:', e)
-    logs.value = emptyPaginator()
-    flash.error('Failed to load audit logs. Please refresh.')   // ✅ NEW
+    flash.error(e.response?.data?.message || 'Failed to load audit logs. Please refresh.')
   }
 }
 
 const debouncedFetch = () => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => { filters.page = 1; fetchList() }, 300)
+}
+
+const resetAndFetch = () => {
+  filters.page = 1
+  fetchList()
 }
 
 const resetFilters = () => {

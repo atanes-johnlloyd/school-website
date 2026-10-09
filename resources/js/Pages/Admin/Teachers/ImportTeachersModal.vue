@@ -111,10 +111,12 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({ show: { type: Boolean, default: false } })
 const emit  = defineEmits(['close', 'imported'])
 
+const flash = useFlash()
 const fileInput    = ref(null)
 const file         = ref(null)
 const isLoading    = ref(false)
@@ -136,6 +138,7 @@ const onFilePicked = (e) => {
   if (!picked) return
   if (!picked.name.toLowerCase().endsWith('.csv')) {
     generalError.value = 'Please select a .csv file.'
+    flash.error(generalError.value)
     return
   }
   generalError.value = ''
@@ -179,6 +182,13 @@ const submitImport = async () => {
   try {
     const { data } = await axios.post('/admin/teachers/import', fd)
     result.value = { created: data.created, errors: data.errors || [] }
+
+    if (data.errors?.length) {
+      flash.info(`Imported ${data.created} faculty. ${data.errors.length} row(s) skipped.`)
+    } else {
+      flash.success(`Imported ${data.created} faculty member(s).`)
+    }
+
     emit('imported')
   } catch (error) {
     if (error.response?.status === 422) {
@@ -187,6 +197,7 @@ const submitImport = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Import failed. Please try again.'
     }
+    flash.error(generalError.value)
   } finally {
     isLoading.value = false
   }

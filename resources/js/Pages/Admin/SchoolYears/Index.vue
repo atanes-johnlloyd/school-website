@@ -356,17 +356,20 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   schoolYears: { type: Array, default: () => [] },
 })
 
+const flash = useFlash()
+const confirm = useConfirm()
 const expanded = ref([])
 
 onMounted(() => {
@@ -412,7 +415,13 @@ const openYearModal = (year = null) => {
   showYearModal.value = true
 }
 
-const closeYearModal = () => { showYearModal.value = false; editingYear.value = null; yearError.value = '' }
+const closeYearModal = () => {
+  showYearModal.value = false
+  yearError.value = ''
+  // NOTE: do not reset editingYear / yearForm here — the modal is still
+  // fading out and would flip to the "create" layout mid-animation.
+  // The next openYearModal() call resets everything.
+}
 
 const submitYear = async () => {
   yearError.value = ''
@@ -446,12 +455,24 @@ const submitYear = async () => {
     return
   }
 
+  // Guard: don't let the admin deactivate the only active year
+  if (
+    editingYear.value?.is_active &&
+    !yearForm.is_active &&
+    props.schoolYears.filter(y => y.id !== editingYear.value.id && y.is_active).length === 0
+  ) {
+    yearError.value = 'Cannot deactivate the only active school year. Activate another year first.'
+    return
+  }
+
   savingYear.value = true
   try {
     if (editingYear.value) {
       await axios.put(`/admin/school-years/${editingYear.value.id}`, yearForm)
+      flash.success(`School year ${yearForm.label} updated.`)
     } else {
       await axios.post('/admin/school-years', yearForm)
+      flash.success(`School year ${yearForm.label} created.`)
     }
     closeYearModal()
     refresh()
@@ -461,28 +482,47 @@ const submitYear = async () => {
     } else {
       yearError.value = e.response?.data?.message || 'Failed to save school year.'
     }
+    flash.error(yearError.value)
   } finally {
     savingYear.value = false
   }
 }
 
 const activateYear = async (year) => {
-  if (!await confirmAction(`Activate ${year.label}? Any currently active school year will be deactivated.`)) return
+  const { confirmed } = await confirm({
+    title: 'Activate School Year',
+    message: `Activate ${year.label}?`,
+    details: ['Any currently active school year will be deactivated.'],
+    confirmLabel: 'Activate',
+    variant: 'info',
+  })
+  if (!confirmed) return
+
   try {
     await axios.put(`/admin/school-years/${year.id}/activate`)
+    flash.success(`${year.label} is now the active school year.`)
     refresh()
   } catch (e) {
-    showError(e.response?.data?.message || 'Failed to activate school year.')
+    flash.error(e.response?.data?.message || 'Failed to activate school year.')
   }
 }
 
 const confirmDeleteYear = async (year) => {
-  if (!await confirmAction(`Delete ${year.label}? This fails if linked terms, sections, or enrollments exist.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete School Year',
+    message: `Delete ${year.label}?`,
+    details: ['This fails if the year has linked terms, sections, or enrollments.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/school-years/${year.id}`)
+    flash.success(`School year ${year.label} deleted.`)
     refresh()
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete school year.')
+    flash.error(e.response?.data?.message || 'Cannot delete school year.')
   }
 }
 
@@ -521,7 +561,6 @@ const openTermModal = (year, term = null) => {
       termForm.start_date = year.start_date
       termForm.end_date = year.end_date
     } else {
-      // Year is fully consumed — leave blank, user must resolve manually
       termForm.start_date = ''
       termForm.end_date = ''
     }
@@ -529,7 +568,11 @@ const openTermModal = (year, term = null) => {
   showTermModal.value = true
 }
 
-const closeTermModal = () => { showTermModal.value = false; editingTerm.value = null; termTargetYear.value = null; termError.value = '' }
+const closeTermModal = () => {
+  showTermModal.value = false
+  termError.value = ''
+  // Same — don't clear editingTerm / termTargetYear / termForm here.
+}
 
 const submitTerm = async () => {
   termError.value = ''
@@ -577,8 +620,10 @@ const submitTerm = async () => {
   try {
     if (editingTerm.value) {
       await axios.put(`/admin/terms/${editingTerm.value.id}`, payload)
+      flash.success(`Term ${termForm.name} updated.`)
     } else {
       await axios.post('/admin/terms', payload)
+      flash.success(`Term ${termForm.name} created.`)
     }
     closeTermModal()
     refresh()
@@ -588,28 +633,47 @@ const submitTerm = async () => {
     } else {
       termError.value = e.response?.data?.message || 'Failed to save term.'
     }
+    flash.error(termError.value)
   } finally {
     savingTerm.value = false
   }
 }
 
 const activateTerm = async (term) => {
-  if (!await confirmAction(`Activate ${term.name}? Any currently active term will be deactivated.`)) return
+  const { confirmed } = await confirm({
+    title: 'Activate Term',
+    message: `Activate ${term.name}?`,
+    details: ['Any currently active term will be deactivated globally.'],
+    confirmLabel: 'Activate',
+    variant: 'info',
+  })
+  if (!confirmed) return
+
   try {
     await axios.put(`/admin/terms/${term.id}/activate`)
+    flash.success(`${term.name} is now the active term.`)
     refresh()
   } catch (e) {
-    showError(e.response?.data?.message || 'Failed to activate term.')
+    flash.error(e.response?.data?.message || 'Failed to activate term.')
   }
 }
 
 const confirmDeleteTerm = async (term) => {
-  if (!await confirmAction(`Delete ${term.name}? This fails if the term has linked classes.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Term',
+    message: `Delete ${term.name}?`,
+    details: ['This fails if the term has linked classes.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/terms/${term.id}`)
+    flash.success(`Term ${term.name} deleted.`)
     refresh()
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete term.')
+    flash.error(e.response?.data?.message || 'Cannot delete term.')
   }
 }
 </script>

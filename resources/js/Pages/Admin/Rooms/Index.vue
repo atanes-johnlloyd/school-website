@@ -80,7 +80,7 @@
 
             <!-- Type filter -->
             <div class="relative">
-              <select v-model="filters.type" @change="fetchRooms()"
+              <select v-model="filters.type" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All Types</option>
                 <option value="regular">Regular</option>
@@ -94,7 +94,7 @@
 
             <!-- Building filter -->
             <div v-if="buildings.length" class="relative">
-              <select v-model="filters.building" @change="fetchRooms()"
+              <select v-model="filters.building" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[180px] truncate">
                 <option value="">All Buildings</option>
                 <option v-for="b in buildings" :key="b" :value="b">{{ b }}</option>
@@ -268,14 +268,15 @@
       </div>
 
       <!-- Form Modal -->
-      <RoomFormModal :show="showFormModal" :room="selectedRoom" @close="showFormModal = false; selectedRoom = null"
+      <RoomFormModal :show="showFormModal" :room="selectedRoom" @close="showFormModal = false"
         @saved="fetchRooms" />
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -287,6 +288,8 @@ const props = defineProps({
 
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
+const flash = useFlash()
+const confirm = useConfirm()
 const rooms = ref(emptyPaginator())
 const counts = ref({ total: 0, active: 0, inactive: 0 })
 
@@ -317,13 +320,18 @@ const fetchRooms = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load rooms:', e)
-    rooms.value = emptyPaginator()
+    flash.error(e.response?.data?.message || 'Failed to load rooms. Please refresh.')
   }
 }
 
 const debouncedFetch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => { filters.page = 1; fetchRooms() }, 300)
+}
+
+const resetAndFetch = () => {
+  filters.page = 1
+  fetchRooms()
 }
 
 const setSort = (field) => {
@@ -388,12 +396,21 @@ const openCreateModal = () => { selectedRoom.value = null; showFormModal.value =
 const openEditModal = (room) => { selectedRoom.value = room; showFormModal.value = true }
 
 const confirmDelete = async (room) => {
-  if (!await confirmAction(`Delete "${room.name}" (${room.code})? Fails if it's used in any class schedule.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Room',
+    message: `Delete "${room.name}" (${room.code})?`,
+    details: ['Fails if the room is used in any class schedule.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/rooms/${room.id}`)
+    flash.success(`Room ${room.code} deleted.`)
     fetchRooms()
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete room.')
+    flash.error(e.response?.data?.message || 'Cannot delete room.')
   }
 }
 

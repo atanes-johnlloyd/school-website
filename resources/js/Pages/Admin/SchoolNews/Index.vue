@@ -341,7 +341,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
@@ -350,6 +351,8 @@ import Modal from '@/Components/Modal.vue'
 
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
+const flash = useFlash()
+const confirm = useConfirm()
 const announcements = ref(emptyPaginator())
 const counts = ref({ total: 0, published: 0, drafts: 0, pinned: 0, urgent: 0 })
 
@@ -387,7 +390,7 @@ const fetchList = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load announcements:', e)
-    announcements.value = emptyPaginator()
+    flash.error(e.response?.data?.message || 'Failed to load announcements. Please refresh.')
   }
 }
 
@@ -480,27 +483,38 @@ const formatDate = (iso) => {
 const togglePin = async (a) => {
   try {
     await axios.put(`/admin/school-news/${a.id}/pin`)
+    flash.success(a.is_pinned ? `Unpinned "${a.title}".` : `Pinned "${a.title}".`)
     fetchList()
   } catch (e) {
-    showError(e.response?.data?.message || 'Failed to toggle pin.')
+    flash.error(e.response?.data?.message || 'Failed to toggle pin.')
   }
 }
 
 const togglePublish = async (a) => {
   const willPublish = a.is_draft
-  if (willPublish && a.priority === 'urgent') {
-    if (!await confirmAction('This urgent announcement will be emailed to all active users. Continue?')) return
-  } else if (a.is_draft) {
-    if (!await confirmAction('Publish this announcement? It will be visible to all users.')) return
-  } else {
-    if (!await confirmAction('Unpublish this announcement? It will be hidden from all users.')) return
-  }
+  const isUrgent    = a.priority === 'urgent'
+
+  const details = willPublish
+    ? (isUrgent
+        ? ['This urgent announcement will be emailed to all active users.']
+        : ['It will become visible to all users.'])
+    : ['It will be hidden from all users.']
+
+  const { confirmed } = await confirm({
+    title: willPublish ? (isUrgent ? 'Publish Urgent Announcement' : 'Publish Announcement') : 'Unpublish Announcement',
+    message: `${willPublish ? 'Publish' : 'Unpublish'} "${a.title}"?`,
+    details,
+    confirmLabel: willPublish ? 'Publish' : 'Unpublish',
+    variant: willPublish ? (isUrgent ? 'danger' : 'info') : 'warning',
+  })
+  if (!confirmed) return
 
   try {
     await axios.put(`/admin/school-news/${a.id}/publish`)
+    flash.success(willPublish ? `"${a.title}" published.` : `"${a.title}" unpublished.`)
     fetchList()
   } catch (e) {
-    showError(e.response?.data?.message || 'Failed to toggle publish state.')
+    flash.error(e.response?.data?.message || 'Failed to toggle publish state.')
   }
 }
 
@@ -511,14 +525,16 @@ const confirmDelete = (a) => {
 
 const executeDelete = async () => {
   if (!deleteTarget.value) return
+  const title = deleteTarget.value.title
   saving.value = true
   try {
     await axios.delete(`/admin/school-news/${deleteTarget.value.id}`)
+    flash.success(`"${title}" deleted.`)
     showDeleteModal.value = false
     deleteTarget.value = null
     fetchList()
   } catch (e) {
-    showError(e.response?.data?.message || 'Failed to delete.')
+    flash.error(e.response?.data?.message || 'Failed to delete.')
   } finally {
     saving.value = false
   }

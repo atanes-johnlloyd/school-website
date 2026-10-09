@@ -151,7 +151,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, reactive, computed } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -162,6 +163,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 
+const flash = useFlash()
+const confirm = useConfirm()
 const filterTrack = ref('')
 
 const filtered = computed(() =>
@@ -191,7 +194,13 @@ const openModal = (strand = null) => {
   showModal.value = true
 }
 
-const closeModal = () => { showModal.value = false; editing.value = null; error.value = '' }
+const closeModal = () => {
+  showModal.value = false
+  error.value = ''
+  // Do NOT reset editing / form here — the modal is still fading out and
+  // the title would flip from "Edit …" to "New …" mid-animation.
+  // openModal() fully resets on the next open.
+}
 
 const submit = async () => {
   saving.value = true
@@ -199,23 +208,35 @@ const submit = async () => {
   try {
     if (editing.value) await axios.put(`/admin/strands/${editing.value.id}`, form)
     else               await axios.post('/admin/strands', form)
+
+    flash.success(editing.value ? `Strand ${form.name} updated.` : `Strand ${form.name} created.`)
     closeModal()
     emit('changed')
   } catch (e) {
     if (e.response?.status === 422) error.value = Object.values(e.response.data.errors || {}).flat()[0]
     else                            error.value = e.response?.data?.message || 'Failed to save strand.'
+    flash.error(error.value)
   } finally {
     saving.value = false
   }
 }
 
 const confirmDelete = async (strand) => {
-  if (!await confirmAction(`Delete strand "${strand.name}"? Fails if subjects or sections are linked.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Strand',
+    message: `Delete strand "${strand.name}"?`,
+    details: ['Fails if subjects or sections are still linked to this strand.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/strands/${strand.id}`)
+    flash.success(`Strand ${strand.name} deleted.`)
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete strand.')
+    flash.error(e.response?.data?.message || 'Cannot delete strand.')
   }
 }
 </script>

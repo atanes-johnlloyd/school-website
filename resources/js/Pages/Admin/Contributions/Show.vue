@@ -239,7 +239,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -253,13 +253,20 @@ const props = defineProps({
   assignments:  { type: Array,  default: () => [] },
 })
 
+const flash = useFlash()
 const statusFilter = ref('all')
 const resendingId  = ref(null)
+const busyId       = ref(null)
 
 const paidCount       = computed(() => props.assignments.filter(a => a.status === 'paid').length)
 const authorizedCount = computed(() => props.assignments.filter(a => a.status === 'authorized').length)
 const awaitingCount   = computed(() => props.assignments.filter(a => a.status === 'awaiting_guardian').length)
 const declinedCount   = computed(() => props.assignments.filter(a => a.status === 'declined').length)
+
+const cashPendingCount = computed(() =>
+  props.assignments.filter(a => ['cash_pending', 'notified'].includes(a.status)).length
+)
+
 const totalCount      = computed(() => props.assignments.length)
 
 const progressPercent = computed(() =>
@@ -295,10 +302,11 @@ const filteredAssignments = computed(() =>
 async function resendConsent(a) {
   resendingId.value = a.id
   try {
-    await axios.post(route('teacher.contributions.resend-consent', a.id))
+    await axios.post(route('admin.contributions.notify-guardian', a.id))
+    flash.success(`Consent request resent to ${a.guardian_name || a.student_name}.`)
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not resend.')
+    flash.error(e.response?.data?.message || 'Could not resend.')
   } finally {
     resendingId.value = null
   }
@@ -363,10 +371,18 @@ async function overrideConfirm() {
     overrideFor.value = null
     router.reload({ only: ['assignments', 'contribution'], preserveScroll: true })
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not override.')
+    flash.error(e.response?.data?.message || 'Could not override.')
   } finally {
     busyId.value = null
   }
+}
+
+function reloadList() {
+  router.reload({
+    only: ['contributions', 'stats'],
+    preserveScroll: true,
+    onError: () => flash.error('Failed to refresh contributions. Please reload.'),
+  })
 }
 </script>
 

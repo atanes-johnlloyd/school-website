@@ -32,7 +32,7 @@
             Create New Password
           </h1>
           <p class="text-xs sm:text-sm text-slate-500 font-normal mt-2 max-w-xs">
-            Your new password must be at least 8 characters and include numbers.
+            Your password must meet all {{ requirements.length }} requirements below.
           </p>
         </div>
 
@@ -110,24 +110,32 @@
             </p>
           </div>
 
-          <!-- PASSWORD STRENGTH INDICATOR -->
+          <!-- PASSWORD REQUIREMENTS CHECKLIST -->
           <div class="pt-1">
-            <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
-              <span class="text-slate-500">Password Strength</span>
-              <span class="text-[#005506] font-bold">{{ strengthLabel }}</span>
+            <div class="flex items-center justify-between text-xs font-semibold mb-2">
+              <span class="text-slate-500">Password Requirements</span>
+              <span :class="allRequirementsMet ? 'text-[#005506]' : 'text-slate-400'">
+                {{ metCount }} / {{ requirements.length }}
+              </span>
             </div>
-            <div class="grid grid-cols-3 gap-1.5 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-              <div :class="strengthScore >= 1 ? 'bg-[#005506]' : 'bg-transparent'" class="h-full transition-colors duration-300"></div>
-              <div :class="strengthScore >= 2 ? 'bg-[#005506]' : 'bg-transparent'" class="h-full transition-colors duration-300"></div>
-              <div :class="strengthScore >= 3 ? 'bg-[#005506]' : 'bg-transparent'" class="h-full transition-colors duration-300"></div>
-            </div>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+              <li v-for="req in requirements" :key="req.key"
+                  class="flex items-center gap-2"
+                  :class="req.met ? 'text-[#005506] font-medium' : 'text-slate-400'">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path v-if="req.met" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  <path v-else stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                </svg>
+                <span>{{ req.label }}</span>
+              </li>
+            </ul>
           </div>
 
           <!-- CHANGE PASSWORD BUTTON -->
           <div class="pt-3">
-            <button 
+            <button
               type="submit"
-              :disabled="form.processing"
+              :disabled="form.processing || !allRequirementsMet"
               class="w-full py-3.5 bg-[#005506] hover:bg-[#004204] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               Change Password
@@ -141,6 +149,9 @@
           <p class="text-[11px] text-slate-400 font-medium">
             © 2026 Salawag Senior High School - All rights reserved
           </p>
+          <p v-if="rule.uncompromised" class="text-[10px] text-slate-400 mt-2">
+            Passwords that appear in known data breaches will be rejected.
+          </p>
         </div>
 
       </div>
@@ -149,8 +160,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Head, useForm } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 
 import bgImg from '../../../assets/img/login_background.png'
 import catImg from '@/../assets/img/cat_login.png'
@@ -166,11 +177,13 @@ const props = defineProps({
   },
 })
 
+const page = usePage()
+const rule = computed(() =>
+  page.props.passwordRule || { min: 12, letters: true, mixedCase: true, numbers: true, symbols: true, uncompromised: false }
+)
+
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-
-const strengthScore = ref(0)
-const strengthLabel = ref('Weak')
 
 const form = useForm({
   token: props.token,
@@ -179,30 +192,30 @@ const form = useForm({
   password_confirmation: '',
 })
 
-const assessStrength = () => {
-  const val = form.password
-  if (!val) {
-    strengthScore.value = 0
-    strengthLabel.value = 'Weak'
-    return
-  }
-
-  let score = 0
-  if (val.length >= 8) score++
-  if (/[0-9]/.test(val)) score++
-  if (/[A-Z]/.test(val) || /[^A-Za-z0-9]/.test(val)) score++
-
-  strengthScore.value = score
-  if (score === 1) strengthLabel.value = 'Weak'
-  else if (score === 2) strengthLabel.value = 'Medium'
-  else if (score >= 3) strengthLabel.value = 'Strong'
-}
-
 const submit = () => {
   form.post(route('password.store'), {
     onFinish: () => form.reset('password', 'password_confirmation'),
   })
 }
+
+const requirements = computed(() => {
+  const p = form.password || ''
+  const r = rule.value
+
+  const list = [
+    { key: 'length',  label: `At least ${r.min} characters`, met: p.length >= r.min },
+  ]
+
+  if (r.letters)   list.push({ key: 'letters',   label: 'Contains a letter',              met: /[A-Za-z]/.test(p) })
+  if (r.mixedCase) list.push({ key: 'mixed',     label: 'Upper and lower case',           met: /[a-z]/.test(p) && /[A-Z]/.test(p) })
+  if (r.numbers)   list.push({ key: 'numbers',   label: 'Contains a number',              met: /[0-9]/.test(p) })
+  if (r.symbols)   list.push({ key: 'symbols',   label: 'Contains a symbol (!@#$…)',      met: /[^A-Za-z0-9]/.test(p) })
+
+  return list
+})
+
+const metCount = computed(() => requirements.value.filter(r => r.met).length)
+const allRequirementsMet = computed(() => metCount.value === requirements.value.length)
 </script>
 
 <style scoped>

@@ -91,6 +91,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import TracksTab from './TracksTab.vue'
 import StrandsTab from './StrandsTab.vue'
 import SubjectsTab from './SubjectsTab.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   tracks: { type: Array, default: () => [] },
@@ -99,6 +100,8 @@ const props = defineProps({
   prerequisites: { type: Array, default: () => [] },
 })
 
+
+const flash = useFlash()
 const activeTab = ref('tracks')
 
 const tabs = computed(() => [
@@ -107,5 +110,10 @@ const tabs = computed(() => [
   { key: 'subjects', label: 'Subjects', count: props.subjects.length },
 ])
 
-const refresh = () => router.reload({ only: ['tracks', 'strands', 'subjects', 'prerequisites'] })
+const refresh = () => router.reload({
+  only: ['tracks', 'strands', 'subjects', 'prerequisites'],
+  onError: (errors) => {
+    flash.error('Failed to refresh curriculum data. Please reload the page.')
+  },
+})
 </script>

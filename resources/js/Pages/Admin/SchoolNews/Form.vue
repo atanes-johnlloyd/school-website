@@ -183,10 +183,13 @@ import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   announcement: { type: Object, default: null },
 })
+
+const flash = useFlash()
 
 const isEditing = computed(() => !!props.announcement?.id)
 const wasPublished = computed(() => !!props.announcement?.is_published)
@@ -201,6 +204,7 @@ const form = reactive({
 
 const fileInput = ref(null)
 const newImage = ref(null)
+const removeImage = ref(false)
 const currentImageUrl = ref(null)
 
 const saving = ref(false)
@@ -258,7 +262,7 @@ const onFilePicked = (e) => {
 
 const removeCurrentImage = () => {
   currentImageUrl.value = null
-  // We'll signal removal via a flag on submit if needed later
+  removeImage.value = true
 }
 
 const formatFileSize = (b) => {
@@ -292,6 +296,7 @@ const submit = async (publish) => {
   fd.append('is_published', publish ? '1' : '0')
   if (form.expires_at) fd.append('expires_at', form.expires_at)
   if (newImage.value) fd.append('image', newImage.value)
+  if (removeImage.value) fd.append('remove_image', '1')
 
   try {
     if (isEditing.value) {
@@ -301,6 +306,12 @@ const submit = async (publish) => {
       await axios.post('/admin/school-news', fd)
     }
 
+    flash.success(
+      publish
+        ? (isEditing.value ? 'Announcement updated and published.' : 'Announcement published.')
+        : (isEditing.value ? 'Draft updated.' : 'Draft saved.')
+    )
+
     router.visit(route('admin.school-news.index'))
   } catch (e) {
     if (e.response?.status === 422) {
@@ -309,6 +320,7 @@ const submit = async (publish) => {
     } else {
       generalError.value = e.response?.data?.message || 'Failed to save announcement.'
     }
+    flash.error(generalError.value)
   } finally {
     saving.value = false
     publishing.value = false

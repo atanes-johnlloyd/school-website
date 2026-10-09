@@ -1,27 +1,35 @@
-import { reactive, watch } from 'vue'
+// Remove the Vue import entirely
+// import { reactive, watchEffect } from 'vue'
 
-// ─── Store ───────────────────────────────────────────────────
-export const flashState = reactive({ items: [] })
+// ─── Store — plain JS, no Vue reactivity ─────────────────────
+export const flashState = { items: [] }
 let uid = 0
 
 export const dismissFlash = (id) => {
   const i = flashState.items.findIndex(x => x.id === id)
-  if (i !== -1) flashState.items.splice(i, 1)
+  if (i !== -1) {
+    flashState.items.splice(i, 1)
+    render()                      // ← draw immediately
+    console.log('[useFlash] dismissed', id, '| remaining:', flashState.items.length)
+  }
 }
 
-const push = (type, message, timeout) => {
-  if (!message) return
+export const dismissAll = () => {
+  flashState.items.length = 0
+  render()
+}
+
+const push = (type, message, timeout = 4000) => {
+  if (!message) return null
   const id = ++uid
   flashState.items.push({ id, type, message: String(message) })
+  render()                        // ← draw immediately
+  console.log('[useFlash] pushed', { id, type, message })
   if (timeout > 0) setTimeout(() => dismissFlash(id), timeout)
   return id
 }
 
-// ─── DOM host ────────────────────────────────────────────────
-let hostEl    = null
-let hostReady = false
-
-// ─── Visual variants: solid fill, big shadow, white text ─────
+// ─── Styles ──────────────────────────────────────────────────
 const STYLES = {
   success: {
     bg:     'linear-gradient(135deg,#059669 0%,#047857 100%)',
@@ -43,68 +51,95 @@ const STYLES = {
   },
 }
 
-const renderToasts = () => {
+// ─── DOM host ────────────────────────────────────────────────
+let hostEl    = null
+let hostReady = false
+
+const buildToast = (item) => {
+  const s = STYLES[item.type] || STYLES.info
+
+  const el = document.createElement('div')
+  el.dataset.id = String(item.id)
+  el.setAttribute('role', 'status')
+  el.style.cssText = `
+    pointer-events:auto;
+    border-radius:14px;
+    border:none;
+    background:${s.bg};
+    color:#fff;
+    box-shadow:0 20px 30px -10px ${s.glow}, 0 8px 12px -8px rgba(0,0,0,0.25);
+    padding:14px 16px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    transform-origin:top right;
+    animation:flashPop 260ms cubic-bezier(0.34,1.56,0.64,1);
+    position:relative;
+  `
+
+  const iconWrap = document.createElement('div')
+  iconWrap.style.cssText = `
+    flex-shrink:0;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:rgba(255,255,255,0.18);
+    color:${s.accent};
+    margin-top:1px;
+  `
+  iconWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="${s.icon}"/></svg>`
+
+  const text = document.createElement('div')
+  text.style.cssText = 'flex:1;font-size:13px;font-weight:500;line-height:1.4;color:#fff;word-break:break-word;letter-spacing:0.005em'
+  text.textContent = item.message
+
+  const close = document.createElement('button')
+  close.type = 'button'
+  close.setAttribute('aria-label', 'Dismiss')
+  close.style.cssText = `
+    flex-shrink:0;
+    background:rgba(255,255,255,0.15);
+    border:none;cursor:pointer;
+    color:rgba(255,255,255,0.9);
+    padding:4px;margin:-2px -2px 0 0;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:6px;
+    transition:background 120ms, color 120ms;
+  `
+  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M6 18L18 6M6 6l12 12"/></svg>'
+  close.addEventListener('mouseenter', () => { close.style.background = 'rgba(255,255,255,0.28)'; close.style.color = '#fff' })
+  close.addEventListener('mouseleave', () => { close.style.background = 'rgba(255,255,255,0.15)'; close.style.color = 'rgba(255,255,255,0.9)' })
+  close.addEventListener('click', (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('[useFlash] close clicked for id', item.id)
+    dismissFlash(item.id)
+  })
+
+  el.appendChild(iconWrap)
+  el.appendChild(text)
+  el.appendChild(close)
+  return el
+}
+
+const render = () => {
   if (!hostEl) return
-  hostEl.innerHTML = ''
 
-  flashState.items.forEach(item => {
-    const s = STYLES[item.type] || STYLES.info
+  const wantedIds = new Set(flashState.items.map(i => String(i.id)))
 
-    const el = document.createElement('div')
-    el.setAttribute('role', 'status')
-    el.style.cssText = `
-      pointer-events:auto;
-      border-radius:14px;
-      border:none;
-      background:${s.bg};
-      color:#fff;
-      box-shadow:0 20px 30px -10px ${s.glow}, 0 8px 12px -8px rgba(0,0,0,0.25);
-      padding:14px 16px;
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      font-family:Inter,system-ui,-apple-system,sans-serif;
-      transform-origin:top right;
-      animation:flashPop 260ms cubic-bezier(0.34,1.56,0.64,1);
-    `
+  // Remove DOM nodes no longer in state
+  Array.from(hostEl.children).forEach((node) => {
+    if (!wantedIds.has(node.dataset.id)) {
+      node.remove()
+    }
+  })
 
-    const iconWrap = document.createElement('div')
-    iconWrap.style.cssText = `
-      flex-shrink:0;width:26px;height:26px;
-      display:flex;align-items:center;justify-content:center;
-      border-radius:50%;
-      background:rgba(255,255,255,0.18);
-      color:${s.accent};
-      margin-top:1px;
-    `
-    iconWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="${s.icon}"/></svg>`
-
-    const text = document.createElement('div')
-    text.style.cssText = 'flex:1;font-size:13px;font-weight:500;line-height:1.4;color:#fff;word-break:break-word;letter-spacing:0.005em'
-    text.textContent = item.message
-
-    const close = document.createElement('button')
-    close.type = 'button'
-    close.setAttribute('aria-label', 'Dismiss')
-    close.style.cssText = `
-      flex-shrink:0;
-      background:rgba(255,255,255,0.15);
-      border:none;cursor:pointer;
-      color:rgba(255,255,255,0.9);
-      padding:4px;margin:-2px -2px 0 0;
-      display:flex;align-items:center;justify-content:center;
-      border-radius:6px;
-      transition:background 120ms, color 120ms;
-    `
-    close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M6 18L18 6M6 6l12 12"/></svg>'
-    close.addEventListener('mouseenter', () => { close.style.background = 'rgba(255,255,255,0.28)'; close.style.color = '#fff' })
-    close.addEventListener('mouseleave', () => { close.style.background = 'rgba(255,255,255,0.15)'; close.style.color = 'rgba(255,255,255,0.9)' })
-    close.addEventListener('click', () => dismissFlash(item.id))
-
-    el.appendChild(iconWrap)
-    el.appendChild(text)
-    el.appendChild(close)
-    hostEl.appendChild(el)
+  // Append any new toasts (in order)
+  flashState.items.forEach((item) => {
+    const existing = hostEl.querySelector(`[data-id="${item.id}"]`)
+    if (!existing) {
+      hostEl.appendChild(buildToast(item))
+    }
   })
 }
 
@@ -125,7 +160,6 @@ const ensureHostMounted = () => {
     document.head.appendChild(style)
   }
 
-  // Clean any stale host left over by HMR
   document.getElementById('flash-host-root')?.remove()
 
   hostEl = document.createElement('div')
@@ -143,20 +177,6 @@ const ensureHostMounted = () => {
   ].join(';')
   document.body.appendChild(hostEl)
 
-  if (!document.getElementById('flash-toast-keyframes')) {
-    const style = document.createElement('style')
-    style.id = 'flash-toast-keyframes'
-    style.textContent = '@keyframes flashSlideIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }'
-    document.head.appendChild(style)
-  }
-
-  // Re-render whenever the set of item ids changes (push / splice)
-  watch(
-    () => flashState.items.map(i => i.id).join('|'),
-    renderToasts,
-    { immediate: true }
-  )
-
   hostReady = true
   console.log('[useFlash] host mounted ✓')
 }
@@ -169,14 +189,16 @@ export const useFlash = () => {
     error:   (msg, t = 6500) => push('error',   msg, t),
     info:    (msg, t = 4000) => push('info',    msg, t),
     dismiss: dismissFlash,
+    clear:   dismissAll,
   }
 }
 
-// ─── Debug helper: window.flashTest() in DevTools ────────────
+// ─── Debug helpers ───────────────────────────────────────────
 if (typeof window !== 'undefined') {
-  window.flashTest = () => {
-    console.log('host exists:', !!document.getElementById('flash-host-root'))
-    console.log('items:', flashState.items.length, flashState.items)
-    push('success', 'Test toast at ' + new Date().toLocaleTimeString())
+  window.flashTest = (msg = 'Test toast') => {
+    console.log('[useFlash] host exists:', !!document.getElementById('flash-host-root'))
+    console.log('[useFlash] current items:', flashState.items)
+    push('success', msg + ' at ' + new Date().toLocaleTimeString())
   }
+  window.flashClear = () => dismissAll()
 }

@@ -345,7 +345,7 @@ import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
 import Icon from '@/Components/Icon.vue'
-
+import { useFlash } from '@/Composables/useFlash'
 const props = defineProps({
   show:             { type: Boolean, default: false },
   contribution:     { type: Object,  default: null },
@@ -357,6 +357,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const flash = useFlash()
 const isEdit = computed(() => !!props.contribution?.id)
 const defaultScope = props.advisorySections.length > 0 ? 'section' : 'class'
 
@@ -429,15 +430,15 @@ function populate() {
       strand_id: '', grade_level: '11',
       school_year_id: props.schoolYears.find(sy => sy.is_active)?.id || '',
     }
-    selectedSectionIds.value = props.advisorySections.map(s => s.id)
+    selectedSectionIds.value = []
     selectedClassIds.value = []
   }
 }
 
-function toggleItem(arrRef, id) {
-  const i = arrRef.value.indexOf(id)
-  if (i >= 0) arrRef.value.splice(i, 1)
-  else arrRef.value.push(id)
+function toggleItem(arr, id) {
+  const i = arr.indexOf(id)
+  if (i >= 0) arr.splice(i, 1)
+  else arr.push(id)
 }
 
 function fieldError(field) {
@@ -471,14 +472,16 @@ async function submit() {
   submitting.value = true
   try {
     if (isEdit.value) {
-      await axios.put(route('teacher.contributions.update', props.contribution.id), form.value)
+      await axios.put(route('admin.contributions.update', props.contribution.id), form.value)
+      flash.success('Contribution updated.')
     } else {
       const payload = {
         ...form.value,
         section_ids: form.value.scope === 'section' ? selectedSectionIds.value : undefined,
         class_ids:   form.value.scope === 'class'   ? selectedClassIds.value   : undefined,
       }
-      await axios.post(route('teacher.contributions.store'), payload)
+      const { data } = await axios.post(route('admin.contributions.store'), payload)
+      flash.success(data?.message || `Contribution${selectedCount.value > 1 ? 's' : ''} created.`)
     }
     emit('saved')
     closeModal()

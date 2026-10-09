@@ -140,7 +140,7 @@
 
             <!-- Position Filter -->
             <div class="relative">
-              <select v-model="filters.position_id" @change="fetchUsers()"
+              <select v-model="filters.position_id" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[200px] truncate">
                 <option value="">All Positions</option>
                 <option v-for="p in positions" :key="p.id" :value="p.id">{{ p.name }}</option>
@@ -260,6 +260,11 @@
                         : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800'">
                       {{ user.status === 'active' ? 'Disable' : 'Reactivate' }}
                     </button>
+                    <button @click="openResetModal(user)" :disabled="user.is_primary"
+                      :title="user.is_primary ? 'Cannot reset primary admin' : ''"
+                      class="px-2.5 py-1 text-[10px] font-normal text-violet-700 dark:text-violet-300 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/50 rounded-lg border border-violet-200 dark:border-violet-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                      Reset Password
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -309,13 +314,16 @@
 
       <!-- Modals -->
       <UserFormModal :show="showFormModal" :user="selectedUser" :positions="positions"
-        @close="showFormModal = false; selectedUser = null" @saved="fetchUsers" />
+        @close="showFormModal = false" @saved="fetchUsers" />
 
-      <ViewUserModal :show="showViewModal" :user="selectedUser" @close="showViewModal = false; selectedUser = null"
-        @edit="fromViewToEdit" />
+      <ViewUserModal :show="showViewModal" :user="selectedUser"
+        @close="showViewModal = false" @edit="fromViewToEdit" />
 
       <ToggleStatusModal :show="showStatusModal" :user="selectedUser"
-        @close="showStatusModal = false; selectedUser = null" @changed="fetchUsers" />
+        @close="showStatusModal = false" @changed="fetchUsers" />
+      
+      <ResetPasswordModal :show="showResetModal" :user="resetTarget"
+        @close="showResetModal = false; resetTarget = null" />
     </div>
   </AdminLayout>
 </template>
@@ -327,12 +335,15 @@ import { usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import UserFormModal from './UserFormModal.vue'
 import ViewUserModal from './ViewUserModal.vue'
+import ResetPasswordModal from './ResetPasswordModal.vue'
 import ToggleStatusModal from './ToggleStatusModal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   positions: { type: Array, default: () => [] },
 })
 
+const flash = useFlash()
 const page = usePage()
 const currentUserId = computed(() => page.props.auth?.user?.id ?? null)
 
@@ -370,7 +381,7 @@ const fetchUsers = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load admin users:', e)
-    users.value = emptyPaginator()
+    flash.error(e.response?.data?.message || 'Failed to load admin users. Please refresh.')
   }
 }
 
@@ -445,6 +456,20 @@ const openStatusModal = (user) => {
 const fromViewToEdit = (user) => {
   showViewModal.value = false
   setTimeout(() => openEditModal(user), 220)
+}
+
+const showResetModal = ref(false)
+const resetTarget = ref(null)
+
+const openResetModal = (user) => {
+  if (user.is_primary) return
+  resetTarget.value = user
+  showResetModal.value = true
+}
+
+const resetAndFetch = () => {
+  filters.page = 1
+  fetchUsers()
 }
 
 onMounted(() => { fetchUsers() })

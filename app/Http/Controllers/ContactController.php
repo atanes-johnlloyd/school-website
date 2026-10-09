@@ -148,4 +148,56 @@ class ContactController extends Controller
 
         return response()->json(['message' => 'Message deleted.']);
     }
+
+    public function reply(Request $request, ContactMessage $contactMessage)
+    {
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:200'],
+            'body'    => ['required', 'string', 'max:5000'],
+        ]);
+
+        if (! $contactMessage->email) {
+            return response()->json([
+                'message' => 'This message has no reply-to email address.',
+            ], 422);
+        }
+
+        try {
+            app(\App\Services\Notification\NotificationService::class)->send(
+                $contactMessage->email,
+                $validated['subject'],
+                'contact-reply',
+                [
+                    'recipient_name'    => $contactMessage->name,
+                    'reply_body'        => $validated['body'],
+                    'original_excerpt'  => \Illuminate\Support\Str::limit($contactMessage->message, 300),
+                    'subject'           => $validated['subject'],
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Contact reply failed', [
+                'message_id' => $contactMessage->id,
+                'error'      => $e->getMessage(),
+            ]);
+            return response()->json([
+                'message' => 'Failed to send reply. Please try again.',
+            ], 500);
+        }
+
+        // Mark the original as read
+        if (! $contactMessage->is_read) {
+            $contactMessage->update(['is_read' => true]);
+        }
+
+        \App\Support\AuditContext::wrap('reply_contact_message', function () use ($contactMessage, $validated) {
+            // Audit context is captured around the update above; this block is for the reply metadata.
+        }, [
+            'message_id' => $contactMessage->id,
+            'subject'    => $validated['subject'],
+        ]);
+
+        return response()->json([
+            'message' => 'Reply sent to ' . $contactMessage->email,
+        ]);
+    }
 }

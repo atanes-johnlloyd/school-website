@@ -97,6 +97,20 @@ class SchoolYearController extends Controller
             'is_active'  => ['boolean'],
         ]);
 
+        // Guard: refuse to deactivate the last remaining active year
+        if (array_key_exists('is_active', $validated)
+            && ! $validated['is_active']
+            && $schoolYear->is_active
+            && ! SchoolYear::where('is_active', true)
+                ->where('id', '!=', $schoolYear->id)
+                ->exists()
+        ) {
+            return response()->json([
+                'message' => 'Cannot deactivate the only active school year. Activate another year first.',
+                'errors'  => ['is_active' => ['At least one school year must remain active.']],
+            ], 422);
+        }
+
         AuditContext::wrap('update_school_year', function () use ($schoolYear, $validated) {
             if (! empty($validated['is_active'])) {
                 SchoolYear::where('id', '!=', $schoolYear->id)

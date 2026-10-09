@@ -134,7 +134,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, reactive } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -144,6 +145,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 
+const flash = useFlash()
+const confirm = useConfirm()
 const showModal = ref(false)
 const editing   = ref(null)
 const saving    = ref(false)
@@ -164,7 +167,13 @@ const openModal = (track = null) => {
   showModal.value = true
 }
 
-const closeModal = () => { showModal.value = false; editing.value = null; error.value = '' }
+const closeModal = () => {
+  showModal.value = false
+  error.value = ''
+  // Do NOT reset editing / form here — the modal is still fading out and
+  // the title would flip from "Edit …" to "New …" mid-animation.
+  // openModal() fully resets on the next open.
+}
 
 const submit = async () => {
   saving.value = true
@@ -172,23 +181,35 @@ const submit = async () => {
   try {
     if (editing.value) await axios.put(`/admin/tracks/${editing.value.id}`, form)
     else               await axios.post('/admin/tracks', form)
+
+    flash.success(editing.value ? `Track ${form.name} updated.` : `Track ${form.name} created.`)
     closeModal()
     emit('changed')
   } catch (e) {
     if (e.response?.status === 422) error.value = Object.values(e.response.data.errors || {}).flat()[0]
     else                            error.value = e.response?.data?.message || 'Failed to save track.'
+    flash.error(error.value)
   } finally {
     saving.value = false
   }
 }
 
 const confirmDelete = async (track) => {
-  if (!await confirmAction(`Delete track "${track.name}"? Fails if strands are linked.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Track',
+    message: `Delete track "${track.name}"?`,
+    details: ['Fails if strands are still linked to this track.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/tracks/${track.id}`)
+    flash.success(`Track ${track.name} deleted.`)
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete track.')
+    flash.error(e.response?.data?.message || 'Cannot delete track.')
   }
 }
 </script>

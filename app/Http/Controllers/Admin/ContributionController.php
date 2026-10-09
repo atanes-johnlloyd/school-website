@@ -45,17 +45,48 @@ class ContributionController extends Controller
             ->map(fn (Contribution $c) => $this->transform($c));
 
         $stats = [
-            'total'     => $contributions->count(),
-            'active'    => $contributions->where('is_published', true)->count(),
-            'drafts'    => $contributions->where('is_published', false)->count(),
-            'collected' => $contributions->sum('collected'),
-            'students_paid' => ContributionAssignment::where('status', 'paid')->count(),
+            'total'          => $contributions->count(),
+            'active'         => $contributions->where('is_published', true)->count(),
+            'drafts'         => $contributions->where('is_published', false)->count(),
+            'collected'      => $contributions->sum('collected'),
+            'students_paid'  => ContributionAssignment::where('status', 'paid')->count(),
             'students_total' => ContributionAssignment::count(),
         ];
 
         return Inertia::render('Admin/Contributions/Index', [
             'contributions' => $contributions,
             'stats'         => $stats,
+
+            // ─── ADD THIS BLOCK (same shape as Teacher\ContributionController::create) ───
+            'advisorySections' => Section::with(['strand:id,code,name', 'schoolYear:id,label'])
+                ->withCount(['enrollments as students_count' => fn ($q) => $q->where('status', 'enrolled')])
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($s) => [
+                    'id'             => $s->id,
+                    'name'           => $s->name,
+                    'grade_level'    => $s->grade_level,
+                    'strand'         => $s->strand?->name,
+                    'strand_code'    => $s->strand?->code,
+                    'school_year'    => $s->schoolYear?->label,
+                    'students_count' => $s->students_count,
+                    'adviser_id'     => $s->adviser_id,
+                ]),
+
+            'classrooms' => ClassRoom::with(['subject:id,name', 'section:id,name,grade_level'])
+                ->get()
+                ->map(fn ($c) => [
+                    'id'             => $c->id,
+                    'subject'        => $c->subject?->name,
+                    'section'        => $c->section?->name,
+                    'grade_level'    => $c->section?->grade_level,
+                    'students_count' => $c->students()->count(),
+                ]),
+
+            'strands' => Strand::select('id', 'code', 'name')->orderBy('code')->get(),
+
+            'schoolYears' => SchoolYear::select('id', 'label', 'is_active')
+                ->orderByDesc('start_date')->get(),
         ]);
     }
 

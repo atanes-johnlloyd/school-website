@@ -259,7 +259,7 @@
 </template>
 
 <script setup>
-import { showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -272,6 +272,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'edit', 'changed'])
 
+const flash = useFlash()
 const contribution = ref(null)
 const assignments  = ref([])
 const isLoading    = ref(false)
@@ -348,10 +349,11 @@ async function resendConsent(a) {
   resendingId.value = a.id
   try {
     await axios.post(route('admin.contributions.notify-guardian', a.id))
+    flash.success(`Consent request sent to ${a.guardian_name || a.student_name}.`)
     await fetchDetails()
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not resend.')
+    flash.error(e.response?.data?.message || 'Could not resend.')
   } finally {
     resendingId.value = null
   }
@@ -361,10 +363,11 @@ async function markCashReceived(a) {
   busyId.value = a.id
   try {
     await axios.post(route('admin.contributions.mark-cash-received', a.id))
+    flash.success(`${a.student_name}'s cash payment confirmed.`)
     await fetchDetails()
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not mark as received.')
+    flash.error(e.response?.data?.message || 'Could not mark as received.')
   } finally {
     busyId.value = null
   }
@@ -377,17 +380,19 @@ function openOverride(a) {
 
 async function overrideConfirm() {
   if (!overrideReason.value.trim()) return
+  const student = overrideFor.value.student_name
   busyId.value = overrideFor.value.id
   try {
     await axios.post(
       route('admin.contributions.override-authorize', overrideFor.value.id),
       { reason: overrideReason.value }
     )
+    flash.success(`${student} marked as paid (override).`)
     overrideFor.value = null
     await fetchDetails()
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not override.')
+    flash.error(e.response?.data?.message || 'Could not override.')
   } finally {
     busyId.value = null
   }

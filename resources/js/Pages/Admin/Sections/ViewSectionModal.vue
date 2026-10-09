@@ -246,10 +246,11 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   show:    { type: Boolean, default: false },
@@ -258,6 +259,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'edit', 'changed'])
 
+const flash = useFlash()
+const confirm = useConfirm()
 const section      = ref(null)
 const students     = ref([])
 const classes      = ref([])
@@ -370,28 +373,41 @@ const submitEnroll = async () => {
   if (!selectedStudents.value.length) return
   enrollSaving.value = true
   const errors = []
+  let enrolled = 0
   for (const sid of selectedStudents.value) {
     try {
       await axios.post(`/admin/sections/${props.section.id}/enroll`, { student_id: sid })
+      enrolled++
     } catch (e) {
       errors.push(e.response?.data?.message || 'Failed to enroll a student.')
     }
   }
   enrollSaving.value = false
-  if (errors.length) generalError.value = errors[0]
+
+  if (enrolled > 0) flash.success(`Enrolled ${enrolled} student${enrolled === 1 ? '' : 's'}.`)
+  if (errors.length) flash.error(errors[0])
+
   closeEnrollModal()
   await fetchDetails()
   emit('changed')
 }
 
 const confirmRemove = async (student) => {
-  if (!await confirmAction(`Remove ${student.name} from this section?`)) return
+  const { confirmed } = await confirm({
+    title: 'Remove Student',
+    message: `Remove ${student.name} from this section?`,
+    details: ['They will be removed from all attached subject classrooms.'],
+    confirmLabel: 'Remove',
+    variant: 'danger',
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/admin/sections/${props.section.id}/students/${student.student_id}`)
+    flash.success(`${student.name} removed.`)
     await fetchDetails()
     emit('changed')
   } catch (e) {
-    generalError.value = e.response?.data?.message || 'Failed to remove student.'
+    flash.error(e.response?.data?.message || 'Failed to remove student.')
   }
 }
 

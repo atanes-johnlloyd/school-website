@@ -181,7 +181,11 @@ class SchoolWideAnnouncementController extends Controller
 
         AuditContext::wrap('update_announcement', function () use ($request, $announcement, $validated) {
             DB::transaction(function () use ($request, $announcement, $validated) {
-                if ($request->hasFile('image')) {
+            if ($request->boolean('remove_image') && ! $request->hasFile('image')) {
+                $this->uploader->delete($announcement->image_path);
+                $announcement->image_path = null;
+            }    
+            if ($request->hasFile('image')) {
                     $this->uploader->delete($announcement->image_path);
                     $announcement->image_path = $this->uploader->store($request->file('image'), 'school-news', 1200);
                 }

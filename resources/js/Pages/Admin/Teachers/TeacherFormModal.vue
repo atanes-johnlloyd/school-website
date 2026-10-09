@@ -161,12 +161,13 @@
 import { computed, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show:    { type: Boolean, default: false },
   teacher: { type: Object,  default: null },
 })
-
+const flash = useFlash()
 const emit = defineEmits(['close'])
 
 const isEditing = computed(() => !!props.teacher)

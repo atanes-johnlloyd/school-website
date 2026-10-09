@@ -69,6 +69,7 @@
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -77,6 +78,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'changed'])
 
+const flash = useFlash()
 const reason       = ref('')
 const isSaving     = ref(false)
 const generalError = ref('')
@@ -103,13 +105,15 @@ const submit = async () => {
   generalError.value = ''
 
   try {
-    await axios.put(`/admin/users/${props.user.id}/toggle-status`, {
+    const { data } = await axios.put(`/admin/users/${props.user.id}/toggle-status`, {
       reason: isDisabling.value ? reason.value.trim() : null,
     })
+    flash.success(data?.message || (isDisabling.value ? 'Admin disabled.' : 'Admin reactivated.'))
     emit('changed')
     closeModal()
   } catch (error) {
     generalError.value = error.response?.data?.message || 'Failed to update status.'
+    flash.error(generalError.value)
   } finally {
     isSaving.value = false
   }

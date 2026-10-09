@@ -420,7 +420,7 @@
             </button>
             <button type="button" :disabled="isDeactivating" @click="executeDeactivation"
               class="px-5 py-2 text-xs font-medium uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer">
-              {{ isDeactivating ? 'Deactivating…' : 'Confirm Deactivate' }}
+              {{ isDeactivating ? 'Removing…' : 'Confirm Removal' }}
             </button>
           </div>
         </div>
@@ -431,7 +431,6 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
@@ -611,7 +610,7 @@ const openEditModal = async (student) => {
     showFormModal.value = true
   } catch (e) {
     console.error(e)
-    showError('Failed to load student details. Please try again.')
+    flash.error('Failed to load student details. Please try again.')
   }
 }
 

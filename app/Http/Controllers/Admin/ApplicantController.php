@@ -22,9 +22,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Traits\ExportsCsv;
 
 class ApplicantController extends Controller
 {
+    use ExportsCsv;
     public function __construct(protected NotificationService $notifications) {}
 
     /* ═══════════════ INDEX ═══════════════ */
@@ -652,8 +654,8 @@ class ApplicantController extends Controller
                 foreach ($rows as $a) {
                     fputcsv($out, [
                         $a->first_name, $a->middle_name, $a->last_name, $a->extension_name,
-                        $a->lrn, $a->date_of_birth?->toDateString(), $a->sex, $a->religion,
-                        $a->contact_number, $a->email,
+                        $this->textCell($a->lrn), $a->date_of_birth?->toDateString(), $a->sex, $a->religion,
+                        $this->textCell($a->contact_number), $a->email,
                         $a->house_street, $a->barangay, $a->municipality, $a->province, $a->zip_code,
                         $a->prev_school_name, $a->prev_school_address, $a->prev_school_type, $a->last_school_year,
                         $a->applicant_type, $a->desired_grade_level,

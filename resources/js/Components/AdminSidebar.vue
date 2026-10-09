@@ -33,7 +33,7 @@
         <div class="mt-2.5 px-3 py-0.5 bg-black/25 dark:bg-black/40 rounded-full border border-white/10 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-[#F9C20C] animate-ping"></span>
           <span class="text-[10px] font-extrabold text-emerald-200 dark:text-emerald-300 uppercase tracking-wider">
-            {{ $page.props.auth?.user?.position?.name || 'System Admin' }}
+            {{ $page.props.auth?.user?.admin_position?.name || 'System Admin' }}
           </span>
         </div>
       </div>
@@ -43,20 +43,21 @@
         <span class="text-[10px] font-extrabold text-emerald-200/80 dark:text-emerald-300/70 tracking-widest uppercase">
           Academic Workspace
         </span>
-        <span class="text-[10px] font-black text-[#063B11] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-xs">
-          S.Y. 25-26
+        <span class="text-[10px] font-black text-[#063B11] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-xs whitespace-nowrap">
+          S.Y. {{ shortSchoolYear }}
         </span>
       </div>
     </div>
 
     <!-- 2. SCROLLABLE MIDDLE NAVIGATION AREA -->
-    <div class="relative z-10 flex-1 overflow-y-auto px-4 py-4 no-scrollbar space-y-4 text-xs font-semibold">
+    <div ref="scrollContainer" class="relative z-10 flex-1 overflow-y-auto px-4 py-4 no-scrollbar space-y-4 text-xs font-semibold">
       <nav class="space-y-4">
         
         <!-- MAIN DASHBOARD -->
         <div class="space-y-1">
           <Link
             :href="route('admin.dashboard')"
+            :data-nav-active="navAttr('admin.dashboard')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.dashboard')
@@ -81,6 +82,7 @@
           <Link
             v-if="can('manage-enrollment')"
             :href="route('admin.applicants.index')"
+            :data-nav-active="navAttr('admin.applicants.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.applicants.*')
@@ -98,6 +100,7 @@
           <Link
             v-if="can('manage-enrollment')"
             :href="route('admin.enrollments.index')"
+            :data-nav-active="navAttr('admin.enrollments.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.enrollments.*')
@@ -115,6 +118,7 @@
           <Link
             v-if="can('manage-enrollment')"
             :href="route('admin.entrance-exams.index')"
+            :data-nav-active="navAttr(['admin.entrance-exams.*', 'admin.exam-results.*'])"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.entrance-exams.*') || isRouteActive('admin.exam-results.*')
@@ -132,6 +136,7 @@
           <Link
             v-if="can('manage-enrollment')"
             :href="route('admin.exam-records.index')"
+            :data-nav-active="navAttr('admin.exam-records.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.exam-records.*')
@@ -149,6 +154,7 @@
           <Link
             v-if="can('manage-students')"
             :href="route('admin.students.index')"
+            :data-nav-active="navAttr('admin.students.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.students.*')
@@ -167,6 +173,7 @@
           <Link
             v-if="can('manage-teachers')"
             :href="route('admin.teachers.index')"
+            :data-nav-active="navAttr('admin.teachers.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.teachers.*')
@@ -184,6 +191,7 @@
           <Link
             v-if="can('manage-users')"
             :href="route('admin.users.index')"
+            :data-nav-active="navAttr('admin.users.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.users.*')
@@ -208,6 +216,7 @@
           <Link
             v-if="can('manage-school-years')"
             :href="route('admin.school-years.index')"
+            :data-nav-active="navAttr('admin.school-years.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.school-years.*')
@@ -225,6 +234,7 @@
           <Link
             v-if="can('manage-sections')"
             :href="route('admin.sections.index')"
+            :data-nav-active="navAttr('admin.sections.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.sections.*')
@@ -242,6 +252,7 @@
           <Link
             v-if="can('manage-tracks') || can('manage-strands') || can('manage-subjects')"
             :href="route('admin.curriculum.index')"
+            :data-nav-active="navAttr(['admin.curriculum.*', 'admin.tracks.*', 'admin.strands.*', 'admin.subjects.*'])"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.curriculum.*') || isRouteActive('admin.tracks.*') || isRouteActive('admin.strands.*') || isRouteActive('admin.subjects.*')
@@ -259,6 +270,7 @@
           <Link
             v-if="can('manage-rooms')"
             :href="route('admin.rooms.index')"
+            :data-nav-active="navAttr('admin.rooms.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.rooms.*')
@@ -283,6 +295,7 @@
           <Link
             v-if="can('manage-announcements')"
             :href="route('admin.school-news.index')"
+            :data-nav-active="navAttr('admin.school-news.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.school-news.*')
@@ -300,6 +313,7 @@
           <Link
             v-if="hasRole('admin')"
             :href="route('admin.contact-messages.index')"
+            :data-nav-active="navAttr('admin.contact-messages.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.contact-messages.*')
@@ -322,6 +336,7 @@
           <Link
             v-if="can('manage-contributions')"
             :href="route('admin.contributions.index')"
+            :data-nav-active="navAttr('admin.contributions.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.contributions.*')
@@ -346,6 +361,7 @@
           <Link
             v-if="can('view-reports')"
             :href="route('admin.reports.index')"
+            :data-nav-active="navAttr('admin.reports.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.reports.*')
@@ -360,9 +376,10 @@
             <span>Reports</span>
           </Link>
 
-          <Link
+          <!-- <Link
             v-if="can('manage-settings')"
             :href="route('admin.settings.index')"
+            :data-nav-active="isRouteActive('admin.dashboard') ? 'true' : undefined"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.settings.*')
@@ -370,17 +387,17 @@
                 : 'text-emerald-100/80 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:text-emerald-200/80 dark:hover:text-white'
             ]"
           >
-            <!-- Settings Gear Icon -->
             <svg class="w-5 h-5 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span>Settings</span>
-          </Link>
+          </Link> -->
 
           <Link
             v-if="can('view-audit-log')"
             :href="route('admin.audit-logs.index')"
+            :data-nav-active="navAttr('admin.audit-logs.*')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200',
               isRouteActive('admin.audit-logs.*')
@@ -434,13 +451,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 
 import sidebarBg from '@/../assets/img/newsidebarbg.png'
 import schoolLogo from '@/../assets/img/logo_trans.png'
 
 const page = usePage()
+const scrollContainer = ref(null)
 const unreadContactCount = computed(() => page.props.unreadContactCount ?? 0)
 
 const can = (permission) => {
@@ -461,6 +479,35 @@ const isRouteActive = (pattern) => {
     return false
   }
 }
+
+// Accepts a string or array of patterns; returns 'true' if any match, else undefined
+const navAttr = (patterns) => {
+  const list = Array.isArray(patterns) ? patterns : [patterns]
+  return list.some(p => isRouteActive(p)) ? 'true' : undefined
+}
+
+const shortSchoolYear = computed(() => {
+  const label = page.props.activeSchoolYear
+  if (!label) return '—'
+  const [y1, y2] = label.split('-')
+  return `${y1.slice(-2)}-${y2.slice(-2)}`
+})
+
+const scrollActiveIntoView = () => {
+  nextTick(() => {
+    if (!scrollContainer.value) return
+    const active = scrollContainer.value.querySelector('[data-nav-active="true"]')
+    if (active) {
+      active.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  })
+}
+
+// Run on first mount
+onMounted(scrollActiveIntoView)
+
+// Run on every Inertia navigation (URL change)
+watch(() => page.url, scrollActiveIntoView)
 </script>
 
 <style scoped>

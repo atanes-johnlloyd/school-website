@@ -98,6 +98,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show:      { type: Boolean, default: false },
@@ -107,6 +108,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const flash = useFlash()
 const isLoading    = ref(false)
 const generalError = ref('')
 const errors       = ref({})
@@ -156,7 +158,10 @@ const submit = async () => {
   try {
     const url = isEditing.value ? `/admin/users/${props.user.id}` : '/admin/users'
     const method = isEditing.value ? 'put' : 'post'
-    await axios[method](url, form)
+    const { data } = await axios[method](url, form)
+
+    flash.success(data?.message || (isEditing.value ? 'User updated.' : 'Admin user created.'))
+
     emit('saved')
     closeModal()
   } catch (error) {
@@ -166,6 +171,7 @@ const submit = async () => {
     } else {
       generalError.value = error.response?.data?.message || 'Failed to save user.'
     }
+    flash.error(generalError.value)
   } finally {
     isLoading.value = false
   }

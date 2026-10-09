@@ -10,6 +10,7 @@ use App\Services\Notification\NotificationService;
 use App\Listeners\RecordUserLogin;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
+use App\Support\PasswordPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,22 +21,13 @@ class AppServiceProvider extends ServiceProvider
     }
 
     public function boot(): void
-    {   
+    {
         Event::listen(Login::class, RecordUserLogin::class);
-        // Force HTTPS in production
+
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
 
-        // Password policy — applies everywhere Password::defaults() is used
-        Password::defaults(function () {
-            $rule = Password::min(12)->letters()->mixedCase()->numbers()->symbols();
-
-            if ($this->app->isProduction()) {
-                $rule = $rule->uncompromised();
-            }
-
-            return $rule;
-        });
+        Password::defaults(fn () => PasswordPolicy::rule());
     }
 }

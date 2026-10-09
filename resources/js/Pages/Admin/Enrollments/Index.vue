@@ -605,14 +605,13 @@ const formatDate = (iso) => {
 }
 
 const approve = async (e) => {
-  if (!await confirmAction(`Approve ${e.student_name}'s enrollment?`)) return
+  const { confirmed } = await confirm({ title, message, details, confirmLabel, variant }); if (!confirmed) return
   try {
     await axios.put(`/admin/enrollments/${e.id}/approve`)
     flash.success(`${e.student_name}'s enrollment approved.`)
     fetchList()
   } catch (err) {
     const msg = err.response?.data?.message || 'Failed to approve.'
-    showError(msg)
     flash.error(msg)
   }
 }
@@ -636,7 +635,6 @@ const confirmReject = async () => {
     fetchList()
   } catch (err) {
     const msg = err.response?.data?.message || 'Failed to reject.'
-    showError(msg)
     flash.error(msg)
   } finally {
     saving.value = false
@@ -662,7 +660,6 @@ const confirmAssign = async () => {
     fetchList()
   } catch (err) {
     const msg = err.response?.data?.message || 'Failed to assign section.'
-    showError(msg)
     flash.error(msg)
   } finally {
     saving.value = false

@@ -119,6 +119,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -127,6 +128,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
+const flash = useFlash()
 const isLoading    = ref(false)
 const generalError = ref('')
 
@@ -190,6 +192,7 @@ const submit = async () => {
     const url = isEditing.value ? `/admin/rooms/${props.room.id}` : '/admin/rooms'
     const method = isEditing.value ? 'put' : 'post'
     await axios[method](url, payload)
+    flash.success(isEditing.value ? `Room ${form.code} updated.` : `Room ${form.code} created.`)
     emit('saved')
     closeModal()
   } catch (e) {
@@ -198,6 +201,7 @@ const submit = async () => {
     } else {
       generalError.value = e.response?.data?.message || 'Failed to save room.'
     }
+    flash.error(generalError.value)
   } finally {
     isLoading.value = false
   }

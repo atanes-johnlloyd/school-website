@@ -212,6 +212,9 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::get('/contact-messages/{contactMessage}', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact-messages.show');
         Route::put('/contact-messages/{contactMessage}/read', [\App\Http\Controllers\ContactController::class, 'toggleRead'])->name('contact-messages.toggle-read');
         Route::delete('/contact-messages/{contactMessage}', [\App\Http\Controllers\ContactController::class, 'destroy'])->name('contact-messages.destroy');
+        Route::post('/contact-messages/{contactMessage}/reply',
+            [\App\Http\Controllers\ContactController::class, 'reply'])
+            ->name('contact-messages.reply');
 
         // ─── School-wide Announcements ───
         Route::middleware('permission:manage-announcements')->group(function () {
@@ -240,11 +243,11 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         });
 
         // ─── Settings ───
-        Route::middleware('permission:manage-settings')->group(function () {
-            Route::get('/settings', [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])->name('settings.index');
-            Route::put('/settings', [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])->name('settings.update');
-            Route::post('/settings/reset', [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])->name('settings.reset');
-        });
+        // Route::middleware('permission:manage-settings')->group(function () {
+        //     Route::get('/settings', [\App\Http\Controllers\Admin\SystemSettingController::class, 'index'])->name('settings.index');
+        //     Route::put('/settings', [\App\Http\Controllers\Admin\SystemSettingController::class, 'update'])->name('settings.update');
+        //     Route::post('/settings/reset', [\App\Http\Controllers\Admin\SystemSettingController::class, 'reset'])->name('settings.reset');
+        // });
 
         // ─── Audit Logs ───
         Route::middleware('permission:view-audit-log')->group(function () {

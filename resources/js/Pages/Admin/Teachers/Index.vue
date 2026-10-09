@@ -406,7 +406,6 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
@@ -415,11 +414,12 @@ import Modal from '@/Components/Modal.vue'
 import TeacherFormModal from './TeacherFormModal.vue'
 import ViewTeacherModal from './ViewTeacherModal.vue'
 import ImportTeachersModal from './ImportTeachersModal.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   departments: { type: Array, default: () => [] },
 })
-
+const flash = useFlash()
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
 const teachers = ref(emptyPaginator())
@@ -461,7 +461,7 @@ const fetchTeachers = async () => {
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load teachers:', e)
-    teachers.value = emptyPaginator()
+    flash.error(e.response?.data?.message || 'Failed to load faculty list. Please refresh.')
   }
 }
 
@@ -542,7 +542,7 @@ const openEditModal = async (teacher) => {
     showFormModal.value = true
   } catch (e) {
     console.error(e)
-    showError('Failed to load faculty details. Please try again.')
+    flash.error('Failed to load faculty details. Please try again.')
   }
 }
 
@@ -563,8 +563,16 @@ const openDeleteConfirmation = (teacher) => {
 
 const executeDeactivation = () => {
   if (!teacherToDelete.value) return
+  const name = teacherToDelete.value.name
   isDeactivating.value = true
   router.delete(route('admin.teachers.destroy', teacherToDelete.value.id), {
+    onSuccess: () => {
+      flash.success(`${name} deactivated.`)
+    },
+    onError: (err) => {
+      const msg = err?.message || 'Failed to deactivate faculty member.'
+      flash.error(msg)
+    },
     onFinish: () => {
       isDeactivating.value = false
       showDeleteModal.value = false

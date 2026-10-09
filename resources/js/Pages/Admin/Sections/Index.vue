@@ -144,7 +144,7 @@
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto lg:justify-end">
 
             <div class="relative">
-              <select v-model="filters.school_year_id" @change="fetchSections()"
+              <select v-model="filters.school_year_id" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All School Years</option>
                 <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">{{ sy.label }}</option>
@@ -152,7 +152,7 @@
             </div>
 
             <div class="relative">
-              <select v-model="filters.grade_level" @change="fetchSections()"
+              <select v-model="filters.grade_level" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
                 <option value="">All Grades</option>
                 <option value="11">Grade 11</option>
@@ -161,7 +161,7 @@
             </div>
 
             <div class="relative">
-              <select v-model="filters.strand_id" @change="fetchSections()"
+              <select v-model="filters.strand_id" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer max-w-[160px] truncate">
                 <option value="">All Strands</option>
                 <option v-for="s in strands" :key="s.id" :value="s.id">{{ s.code }}</option>
@@ -324,16 +324,15 @@
       <!-- Modals -->
       <SectionFormModal :show="showFormModal" :section="selectedSection" :strands="strands" :teachers="teachers"
         :school-years="schoolYears" :default-max-capacity="defaultMaxCapacity"
-        @close="showFormModal = false; selectedSection = null" @saved="fetchSections" />
+        @close="showFormModal = false" @saved="fetchSections" />
 
       <ViewSectionModal :show="showViewModal" :section="selectedSection"
-        @close="showViewModal = false; selectedSection = null" @edit="fromViewToEdit" @changed="fetchSections" />
+        @close="showViewModal = false" @edit="fromViewToEdit" @changed="fetchSections" />
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
@@ -378,11 +377,12 @@ const fetchSections = async () => {
   try {
     const { data } = await axios.get('/admin/sections/list', { params: filters })
     const p = data?.sections
-    sections.value = p && Array.isArray(p.data) ? p : emptyPaginator()
+    sections.value = p && Array.isArray(p.data) ? p : emptyPaginator()   // success: assign server data
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load sections:', e)
-    sections.value = emptyPaginator()
+    flash.error(e.response?.data?.message || 'Failed to load sections. Please refresh.')
+    // nothing assigned — table keeps showing its last-known rows
   }
 }
 
@@ -460,13 +460,26 @@ const fromViewToEdit = (s) => {
 }
 
 const confirmDelete = async (section) => {
-  if (!await confirmAction(`Delete section "${section.name}"? Fails if students are enrolled.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Section',
+    message: `Delete "${section.name}"?`,
+    details: ['Fails if students are enrolled in this section.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/admin/sections/${section.id}`)
+    flash.success(`Section ${section.name} deleted.`)
     fetchSections()
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete section.')
+    flash.error(e.response?.data?.message || 'Cannot delete section.')
   }
+}
+
+const resetAndFetch = () => {
+  filters.page = 1
+  fetchSections()
 }
 
 onMounted(() => { fetchSections() })

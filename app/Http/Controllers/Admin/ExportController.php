@@ -127,7 +127,7 @@ class ExportController extends Controller
                 $query->chunk(500, function ($rows) use ($handle) {
                     foreach ($rows as $e) {
                         fputcsv($handle, [
-                            $e->student?->lrn,
+                            $this->textCell($e->student?->lrn),
                             $e->student?->user?->name,
                             $e->section?->name,
                             $e->section?->strand?->name,
@@ -169,10 +169,10 @@ class ExportController extends Controller
                     foreach ($rows as $a) {
                         fputcsv($handle, [
                             $a->reference_number,
-                            $a->lrn,
+                            $this->textCell($a->lrn),
                             $a->full_name,
                             $a->email,
-                            $a->contact_number,
+                            $this->textCell($a->contact_number),
                             $a->desired_grade_level,
                             $a->strand?->name,
                             $a->status,
@@ -202,7 +202,7 @@ class ExportController extends Controller
                 $query->chunk(500, function ($rows) use ($handle) {
                     foreach ($rows as $s) {
                         fputcsv($handle, [
-                            $s->lrn,
+                            $this->textCell($s->lrn),
                             $s->user?->name,
                             $s->user?->email,
                             $s->sex,
@@ -267,6 +267,17 @@ class ExportController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Force a cell value to be treated as text by Excel/Sheets.
+     * Uses the ="..." formula trick so long digit strings (LRN, phone, etc.)
+     * don't get mangled into scientific notation.
+     */
+    protected function textCell(?string $value): string
+    {
+        if ($value === null || $value === '') return '';
+        return '="' . str_replace('"', '""', $value) . '"';
     }
 
     /**

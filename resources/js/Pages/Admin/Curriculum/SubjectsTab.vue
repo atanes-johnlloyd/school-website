@@ -212,7 +212,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, reactive, computed } from 'vue'
 import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
@@ -224,6 +225,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['changed'])
 
+const flash = useFlash()
+const confirm = useConfirm()
 const search       = ref('')
 const filterStrand = ref('')
 const filterGrade  = ref('')
@@ -279,7 +282,13 @@ const openModal = (subject = null) => {
   showModal.value = true
 }
 
-const closeModal = () => { showModal.value = false; editing.value = null; error.value = '' }
+const closeModal = () => {
+  showModal.value = false
+  error.value = ''
+  // Do NOT reset editing / form here — the modal is still fading out and
+  // the title would flip from "Edit …" to "New …" mid-animation.
+  // openModal() fully resets on the next open.
+}
 
 const submit = async () => {
   saving.value = true
@@ -292,23 +301,35 @@ const submit = async () => {
   try {
     if (editing.value) await axios.put(`/admin/subjects/${editing.value.id}`, payload)
     else               await axios.post('/admin/subjects', payload)
+
+    flash.success(editing.value ? `Subject ${form.name} updated.` : `Subject ${form.name} created.`)
     closeModal()
     emit('changed')
   } catch (e) {
     if (e.response?.status === 422) error.value = Object.values(e.response.data.errors || {}).flat()[0]
     else                            error.value = e.response?.data?.message || 'Failed to save subject.'
+    flash.error(error.value)
   } finally {
     saving.value = false
   }
 }
 
 const confirmDelete = async (subject) => {
-  if (!await confirmAction(`Delete subject "${subject.name}"? Fails if used in classes.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Subject',
+    message: `Delete subject "${subject.name}"?`,
+    details: ['Fails if the subject is used in any classes.'],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   try {
     await axios.delete(`/admin/subjects/${subject.id}`)
+    flash.success(`Subject ${subject.name} deleted.`)
     emit('changed')
   } catch (e) {
-    showError(e.response?.data?.message || 'Cannot delete subject.')
+    flash.error(e.response?.data?.message || 'Cannot delete subject.')
   }
 }
 </script>
