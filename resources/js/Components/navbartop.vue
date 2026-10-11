@@ -1,5 +1,5 @@
 <template>
-  <header class="flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 md:px-10 py-3.5 sm:py-5 bg-[#F9F7F1] dark:bg-[#232D26] sticky top-0 z-30 gap-3 md:gap-8 transition-colors duration-300 border-b md:border-b-0 border-gray-200/60 dark:border-[#3F4F43]">
+  <header class="flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 md:px-10 py-3.5 sm:py-5 bg-[#F9F7F1] dark:bg-[#232D26] sticky top-0 z-30 gap-3 md:gap-8 transition-colors duration-300 border-b md:border-b-0 border-gray-200/60 dark:border-[#3F4F43] print:hidden">
 
     <div class="flex items-center justify-between w-full md:w-auto gap-3">
       <button @click="$emit('open-sidebar')"
@@ -177,7 +177,7 @@
     </div>
   </header>
 
-  <div v-if="showNotifications || showProfile" @click="closeDropdowns" class="fixed inset-0 z-20"></div>
+  <div v-if="showNotifications || showProfile" @click="closeDropdowns" class="fixed inset-0 z-20 print:hidden"></div>
 </template>
 
 <script setup>

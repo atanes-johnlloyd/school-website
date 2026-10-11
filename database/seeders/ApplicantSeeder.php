@@ -11,378 +11,499 @@ use App\Models\SchoolYear;
 use App\Models\Strand;
 use App\Models\Track;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
+/**
+ * ApplicantSeeder
+ * ---------------
+ * Seeds the S.Y. 2026-2027 admissions pipeline for Salawag SHS.
+ *
+ * Depends on: ReferenceDataSeeder (school years, tracks, clusters),
+ *             UserAndStaffSeeder (registrar / sysadmin for reviewed_by).
+ *
+ * Produces:
+ *   • 32 applicants — every status represented:
+ *       pending (6) | under_review (5) | approved (6) |
+ *       rejected (3) | enrolled (7) | needs_resubmission (5)
+ *   • ~110 applicant contacts (father + mother + emergency per applicant,
+ *     plus a guardian for ~1/3)
+ *   • ~170 applicant documents with status matching the applicant state
+ *   • 6 entrance exams — all three lifecycle states
+ *   • ~20 entrance-exam results for reviewed applicants
+ *
+ * The 7 "enrolled" applicants intentionally leave `converted_student_id`
+ * NULL here; StudentConversionSeeder will create the students and
+ * back-fill those links so the applicant→student flow is real.
+ */
 class ApplicantSeeder extends Seeder
 {
-    /**
-     * Seeds the admissions pipeline. Every status EXCEPT "under_review"
-     * is represented:
-     *
-     *   pending | approved | rejected | enrolled | needs_resubmission
-     *
-     * Produces ~68 applicants, 8 entrance exams (all 3 lifecycle
-     * states), and one entrance-exam result per reviewed applicant —
-     * enough for the registrar/admin dashboard, funnel report, and
-     * exam-roster views to display realistic volume.
-     */
     public function run(): void
     {
-        $year    = SchoolYear::where('is_active', true)->firstOrFail();
-        $adminId = User::where('email', 'atanes.johnlloyd@ncst.edu.ph')->value('id') ?? 1;
+        $year = SchoolYear::where('is_active', true)->firstOrFail();
+        $this->command->info("  · Seeding applicants for SY {$year->label}");
 
-        $strandId = Strand::pluck('id', 'code');
-        $trackId  = Track::pluck('id', 'code');
+        // Users who act as reviewers (Registrar + System Admin).
+        $registrar = User::where('email', 'registrar@salawagshs.deped.gov.ph')->first()
+                  ?? User::where('email', 'sysadmin@salawagshs.deped.gov.ph')->first()
+                  ?? User::first();
 
-        // ═══════════════════════════════════════════════════════════
-        // ENTRANCE EXAMS — all three lifecycle statuses
-        // ═══════════════════════════════════════════════════════════
+        $clusterIds = Strand::pluck('id', 'code')->all();
+        $trackIds   = Track::pluck('id', 'code')->all();
+
+        // ─────────────────────────────────────────────────────────
+        // ENTRANCE EXAMS — all three lifecycle states
+        // ─────────────────────────────────────────────────────────
+        $exams = $this->seedEntranceExams($year, $trackIds);
+
+        // ─────────────────────────────────────────────────────────
+        // APPLICANTS — handcrafted core
+        // ─────────────────────────────────────────────────────────
+        $applicants = $this->seedApplicants($year, $clusterIds, $registrar);
+
+        // ─────────────────────────────────────────────────────────
+        // ENTRANCE EXAM RESULTS — only for reviewed applicants
+        // ─────────────────────────────────────────────────────────
+        $this->seedEntranceExamResults($applicants, $exams, $registrar);
+
+        $this->command->info('✔ Applicants seeded: '
+            . $applicants->count() . ' applicants, '
+            . count($exams) . ' entrance exams, '
+            . EntranceExamResult::count() . ' exam results.');
+    }
+
+    /* =================================================================
+     | ENTRANCE EXAMS
+     * ================================================================= */
+    protected function seedEntranceExams(SchoolYear $year, array $trackIds): array
+    {
+        $now = Carbon::now();
+
         $examData = [
-            ['SHS Entrance Exam — Batch 1 (Academic)',    '2026-05-10', '08:00:00', 'Computer Laboratory 1', 40, '11',  'Completed', $trackId['ACAD']    ?? null],
-            ['SHS Entrance Exam — Batch 2 (Tech-Pro)',    '2026-05-17', '08:00:00', 'Room 102',              40, '11',  'Completed', $trackId['TECHPRO'] ?? null],
-            ['SHS Entrance Exam — Batch 3 (All Strands)', '2026-05-24', '08:00:00', 'Room 101',              50, '11',  'Completed', null],
-            ['Grade 12 Transferee Exam — 1st Semester',   '2026-06-07', '13:00:00', 'Room 102',              25, '12',  'Completed', null],
-            ['SHS Entrance Exam — Late Applicants',       '2026-06-14', '09:00:00', 'Room 101',              30, 'All', 'Upcoming',  null],
-            ['SHS Entrance Exam — Batch 4 (STEM / ICT)',  '2026-06-21', '08:00:00', 'Computer Laboratory 1', 40, '11',  'Upcoming',  null],
-            ['Grade 12 Transferee Exam — 2nd Semester',   '2026-07-19', '13:00:00', 'Room 102',              20, '12',  'Upcoming',  null],
-            ['SHS Entrance Exam — Summer Special',        '2026-04-12', '08:00:00', 'Room 101',              25, '11',  'Cancelled', null],
+            [
+                'exam_name'    => 'SHS Entrance Exam — Academic Track (Batch 1)',
+                'exam_date'    => '2026-05-16',
+                'exam_time'    => '08:00:00',
+                'venue'        => 'Computer Laboratory 1',
+                'max_capacity' => 60,
+                'grade_level'  => '11',
+                'status'       => 'Completed',
+                'track_id'     => $trackIds['ACAD'] ?? null,
+            ],
+            [
+                'exam_name'    => 'SHS Entrance Exam — Technical-Professional Track (Batch 2)',
+                'exam_date'    => '2026-05-23',
+                'exam_time'    => '08:00:00',
+                'venue'        => 'Room 102',
+                'max_capacity' => 60,
+                'grade_level'  => '11',
+                'status'       => 'Completed',
+                'track_id'     => $trackIds['TECHPRO'] ?? null,
+            ],
+            [
+                'exam_name'    => 'SHS Entrance Exam — Open Batch (All Clusters)',
+                'exam_date'    => '2026-06-06',
+                'exam_time'    => '08:00:00',
+                'venue'        => 'Audio-Visual Room',
+                'max_capacity' => 80,
+                'grade_level'  => '11',
+                'status'       => 'Completed',
+                'track_id'     => null,
+            ],
+            [
+                'exam_name'    => 'Grade 12 Transferee Entrance Exam',
+                'exam_date'    => '2026-06-20',
+                'exam_time'    => '13:00:00',
+                'venue'        => 'Room 102',
+                'max_capacity' => 30,
+                'grade_level'  => '12',
+                'status'       => 'Completed',
+                'track_id'     => null,
+            ],
+            [
+                'exam_name'    => 'SHS Entrance Exam — Late Applicants',
+                'exam_date'    => '2026-07-11',
+                'exam_time'    => '09:00:00',
+                'venue'        => 'Audio-Visual Room',
+                'max_capacity' => 40,
+                'grade_level'  => 'All',
+                'status'       => 'Upcoming',
+                'track_id'     => null,
+            ],
+            [
+                'exam_name'    => 'SHS Entrance Exam — Final Batch',
+                'exam_date'    => '2026-07-25',
+                'exam_time'    => '08:00:00',
+                'venue'        => 'Room 101',
+                'max_capacity' => 40,
+                'grade_level'  => 'All',
+                'status'       => 'Upcoming',
+                'track_id'     => null,
+            ],
         ];
 
         $exams = [];
-        foreach ($examData as [$name, $date, $time, $venue, $cap, $gl, $status, $tid]) {
-            $exams[] = EntranceExam::create([
-                'school_year_id' => $year->id,
-                'track_id'       => $tid,
-                'exam_name'      => $name,
-                'exam_date'      => $date,
-                'exam_time'      => $time,
-                'venue'          => $venue,
-                'max_capacity'   => $cap,
-                'grade_level'    => $gl,
-                'status'         => $status,
-            ]);
+        foreach ($examData as $row) {
+            $exams[] = EntranceExam::updateOrCreate(
+                ['school_year_id' => $year->id, 'exam_name' => $row['exam_name']],
+                array_merge($row, [
+                    'school_year_id' => $year->id,
+                    'created_at'     => $now,
+                    'updated_at'     => $now,
+                ])
+            );
         }
-        [$batch1, $batch2, $batch3] = $exams;
 
-        // ═══════════════════════════════════════════════════════════
-        // APPLICANTS — handcrafted core + generated extras
-        // ═══════════════════════════════════════════════════════════
-        // [ref, first, middle, last, ext, sex, dob, type, grade,
-        //  strandCode, status, extras]
+        return $exams;
+    }
+
+    /* =================================================================
+     | APPLICANTS
+     |-----------------------------------------------------------------
+     | 32 handcrafted applicants so every cluster has representation
+     | and every status is populated.
+     * ================================================================= */
+    protected function seedApplicants(SchoolYear $year, array $clusterIds, ?User $registrar): \Illuminate\Support\Collection
+    {
+        // [ref_seq, first, middle, last, ext, sex, dob, type, desired_gl,
+        //  cluster_code, status, extra]
         $rows = [
-            // ── PENDING ──────────────────────────────────────────
-            ['APP-2026-0001','Juan Miguel','Santos','Dela Cruz',null,'Male','2009-02-14','Grade11','11','STEM','pending',['submitted_at'=>'2026-06-01 09:15:00']],
-            ['APP-2026-0002','Andrea','Reyes','Bautista',null,'Female','2009-05-22','Grade11','11','STEM','pending',['submitted_at'=>'2026-06-02 10:30:00']],
-            ['APP-2026-0003','Mark Joseph','Cruz','Ocampo',null,'Male','2009-08-09','Grade11','11','ICT','pending',['submitted_at'=>'2026-06-03 14:05:00']],
-            ['APP-2026-0004','Kristine Joy','Lim','Tan',null,'Female','2009-11-30','Grade11','11','HOSPITALITY','pending',['submitted_at'=>'2026-06-04 08:45:00']],
-            ['APP-2026-0005','Paolo','Garcia','Mendoza',null,'Male','2009-07-18','Grade11','11','BUSINESS-ENTREP','pending',['submitted_at'=>'2026-06-05 16:20:00']],
-            ['APP-2026-0006','Bea Angela','Torres','Villanueva',null,'Female','2009-04-02','Grade11','11','ARTS-SOC-HUM','pending',['submitted_at'=>'2026-06-06 11:00:00']],
-            ['APP-2026-0007','Sofia','Rivera','Castillo',null,'Female','2009-03-27','Grade11','11','HOSPITALITY','pending',['submitted_at'=>'2026-05-23 15:10:00']],
+            // ═══ PENDING (6) — submitted recently, no review yet ═══
+            [1, 'Juan Miguel', 'Santos',   'Dela Cruz',  null,  'Male',   '2010-02-14', 'Grade11',    '11', 'STEM',             'pending', ['submitted_at' => '2026-07-02 09:15:00']],
+            [2, 'Andrea',      'Reyes',    'Bautista',   null,  'Female', '2010-05-22', 'Grade11',    '11', 'STEM',             'pending', ['submitted_at' => '2026-07-02 10:30:00']],
+            [3, 'Mark Joseph', 'Cruz',     'Ocampo',     null,  'Male',   '2010-08-09', 'Grade11',    '11', 'ICT',              'pending', ['submitted_at' => '2026-07-03 14:05:00']],
+            [4, 'Kristine Joy','Lim',      'Tan',        null,  'Female', '2010-11-30', 'Grade11',    '11', 'HOSPITALITY',      'pending', ['submitted_at' => '2026-07-04 08:45:00']],
+            [5, 'Paolo',       'Garcia',   'Mendoza',    null,  'Male',   '2010-07-18', 'Grade11',    '11', 'BUSINESS-ENTREP',  'pending', ['submitted_at' => '2026-07-05 16:20:00']],
+            [6, 'Bea Angela',  'Torres',   'Villanueva', null,  'Female', '2010-04-02', 'Grade11',    '11', 'ARTS-SOC-HUM',     'pending', ['submitted_at' => '2026-07-06 11:00:00']],
 
-            // ── APPROVED ─────────────────────────────────────────
-            ['APP-2026-0008','Rafael','Domingo','Navarro','Jr.','Male','2009-01-25','Grade11','11','STEM','approved',['submitted_at'=>'2026-05-20 09:00:00','reviewed_at'=>'2026-05-25 10:00:00']],
-            ['APP-2026-0009','Camila','Aquino','Ramos',null,'Female','2009-09-12','Grade11','11','BUSINESS-ENTREP','approved',['submitted_at'=>'2026-05-21 13:30:00','reviewed_at'=>'2026-05-26 09:15:00']],
-            ['APP-2026-0010','Liza Marie','Cruz','Reyes',null,'Female','2009-05-08','Grade11','11','STEM','approved',['submitted_at'=>'2026-05-10 09:00:00','reviewed_at'=>'2026-05-15 10:00:00']],
-            ['APP-2026-0011','Marco','Bautista','Garcia',null,'Male','2009-10-21','Grade11','11','ICT','approved',['submitted_at'=>'2026-05-11 11:30:00','reviewed_at'=>'2026-05-16 13:00:00']],
-            ['APP-2026-0012','Isabella','Ocampo','Torres',null,'Female','2009-02-11','Grade11','11','ARTS-SOC-HUM','approved',['submitted_at'=>'2026-05-12 14:45:00','reviewed_at'=>'2026-05-17 09:20:00']],
-            ['APP-2026-0013','Lorenzo','Navarro','Domingo',null,'Male','2008-08-03','Grade12','12','HOSPITALITY','approved',['submitted_at'=>'2026-05-13 08:00:00','reviewed_at'=>'2026-05-18 15:30:00']],
-            ['APP-2026-0014','Patricia','Ramos','Aquino',null,'Female','2009-12-25','Grade11','11','BUSINESS-ENTREP','approved',['submitted_at'=>'2026-05-14 16:10:00','reviewed_at'=>'2026-05-19 10:45:00']],
+            // ═══ UNDER REVIEW (5) — being evaluated right now ═══
+            [7,  'Rafael',    'Domingo',  'Navarro',   'Jr.', 'Male',   '2010-01-25', 'Grade11',    '11', 'STEM',            'under_review', ['submitted_at' => '2026-06-28 09:00:00']],
+            [8,  'Camila',    'Aquino',   'Ramos',     null,  'Female', '2010-09-12', 'Grade11',    '11', 'BUSINESS-ENTREP', 'under_review', ['submitted_at' => '2026-06-28 13:30:00']],
+            [9,  'Lorenzo',   'Navarro',  'Domingo',   null,  'Male',   '2009-08-03', 'Transferee', '12', 'HOSPITALITY',     'under_review', ['submitted_at' => '2026-06-29 08:00:00']],
+            [10, 'Patricia',  'Ramos',    'Aquino',    null,  'Female', '2010-12-25', 'Grade11',    '11', 'ICT',             'under_review', ['submitted_at' => '2026-06-29 16:10:00']],
+            [11, 'Gabriel',   'Salazar',  'Pascual',   null,  'Male',   '2010-06-04', 'Grade11',    '11', 'SPORTS-WELLNESS', 'under_review', ['submitted_at' => '2026-06-30 10:20:00']],
 
-            // ── REJECTED ─────────────────────────────────────────
-            ['APP-2026-0015','Gabriel','Salazar','Pascual',null,'Male','2009-06-04','Grade11','11','ICT','rejected',['submitted_at'=>'2026-05-22 08:20:00','reviewed_at'=>'2026-05-27 14:00:00','rejection_reason'=>'Did not meet the minimum grade requirement for the ICT strand.']],
-            ['APP-2026-0016','Eduardo','Pascual','Salazar',null,'Male','2009-07-07','Grade11','11','STEM','rejected',['submitted_at'=>'2026-05-05 09:00:00','reviewed_at'=>'2026-05-10 10:00:00','rejection_reason'=>'LRN could not be verified with the previous school records.']],
-            ['APP-2026-0017','Rosa','Castillo','Rivera',null,'Female','2009-04-16','Grade11','11','HOSPITALITY','rejected',['submitted_at'=>'2026-05-06 13:00:00','reviewed_at'=>'2026-05-11 11:30:00','rejection_reason'=>'Incomplete requirements — Form 138 not submitted after two follow-ups.']],
-            ['APP-2026-0018','Miguel','Santos','Mendoza',null,'Male','2008-11-09','Transferee','11','ICT','rejected',['submitted_at'=>'2026-05-07 10:30:00','reviewed_at'=>'2026-05-12 14:00:00','rejection_reason'=>'Did not meet the minimum grade requirement for the ICT strand.']],
+            // ═══ APPROVED (6) — passed review, waiting to enroll ═══
+            [12, 'Liza Marie', 'Cruz',    'Reyes',     null,  'Female', '2010-05-08', 'Grade11',    '11', 'STEM',             'approved', ['submitted_at' => '2026-06-01 09:00:00', 'reviewed_at' => '2026-06-05 10:00:00']],
+            [13, 'Marco',      'Bautista','Garcia',    null,  'Male',   '2010-10-21', 'Grade11',    '11', 'ICT',              'approved', ['submitted_at' => '2026-06-02 11:30:00', 'reviewed_at' => '2026-06-06 13:00:00']],
+            [14, 'Isabella',   'Ocampo',  'Torres',    null,  'Female', '2010-02-11', 'Grade11',    '11', 'ARTS-SOC-HUM',     'approved', ['submitted_at' => '2026-06-03 14:45:00', 'reviewed_at' => '2026-06-07 09:20:00']],
+            [15, 'Rogelio',    'Villamor','Padilla',   null,  'Male',   '2010-09-09', 'Grade11',    '11', 'INDUSTRIAL',       'approved', ['submitted_at' => '2026-06-04 08:30:00', 'reviewed_at' => '2026-06-08 11:00:00']],
+            [16, 'Janine',     'Reyes',   'Soriano',   null,  'Female', '2010-07-27', 'Grade11',    '11', 'HOSPITALITY',      'approved', ['submitted_at' => '2026-06-05 10:15:00', 'reviewed_at' => '2026-06-09 14:30:00']],
+            [17, 'Miguel',     'Angeles', 'Diaz',      null,  'Male',   '2009-11-19', 'Transferee', '12', 'ICT',              'approved', ['submitted_at' => '2026-06-06 15:20:00', 'reviewed_at' => '2026-06-10 09:45:00']],
 
-            // ── ENROLLED (linked to existing students) ───────────
-            ['APP-2026-0019','Rosario','Cruz','Reyes',null,'Female','2008-04-18','Grade11','11','ARTS-SOC-HUM','enrolled',['submitted_at'=>'2026-04-01 08:00:00','reviewed_at'=>'2026-04-05 09:00:00','converted_student_id'=>1]],
-            ['APP-2026-0020','John Paul','Castillo','Santos',null,'Male','2008-10-12','Grade11','11','ICT','enrolled',['submitted_at'=>'2026-04-02 09:00:00','reviewed_at'=>'2026-04-06 10:00:00','converted_student_id'=>2]],
-            ['APP-2026-0021','Pedro','Mendoza','Garcia',null,'Male','2008-05-31','Grade11','11','STEM','enrolled',['submitted_at'=>'2026-04-03 10:00:00','reviewed_at'=>'2026-04-07 11:00:00','converted_student_id'=>3]],
-            ['APP-2026-0022','Maria','Lim','Tan',null,'Female','2010-04-26','Grade11','11','BUSINESS-ENTREP','enrolled',['submitted_at'=>'2026-04-04 11:00:00','reviewed_at'=>'2026-04-08 12:00:00','converted_student_id'=>4]],
-            ['APP-2026-0023','Emilio','Garcia','Navarro',null,'Male','2010-09-01','Grade11','11','HOSPITALITY','enrolled',['submitted_at'=>'2026-04-05 12:00:00','reviewed_at'=>'2026-04-09 13:00:00','converted_student_id'=>5]],
+            // ═══ REJECTED (3) ═══
+            [18, 'Eduardo', 'Pascual',  'Salazar',   null, 'Male',   '2010-07-07', 'Grade11', '11', 'STEM',        'rejected', ['submitted_at' => '2026-05-05 09:00:00', 'reviewed_at' => '2026-05-10 10:00:00', 'rejection_reason' => 'LRN could not be verified with the previous school records.']],
+            [19, 'Rosa',    'Castillo', 'Rivera',    null, 'Female', '2010-04-16', 'Grade11', '11', 'HOSPITALITY', 'rejected', ['submitted_at' => '2026-05-06 13:00:00', 'reviewed_at' => '2026-05-11 11:30:00', 'rejection_reason' => 'Incomplete requirements — Form 138 not submitted after two follow-ups.']],
+            [20, 'Miguel',  'Santos',   'Mendoza',   null, 'Male',   '2010-11-09', 'Transferee', '12', 'ICT',      'rejected', ['submitted_at' => '2026-05-07 10:30:00', 'reviewed_at' => '2026-05-12 14:00:00', 'rejection_reason' => 'Did not meet the minimum grade requirement for the ICT cluster.']],
 
-            // ── NEEDS RESUBMISSION ───────────────────────────────
-            ['APP-2026-0024','Diego','Mendoza','Santos',null,'Male','2008-12-19','Grade12','12','STEM','needs_resubmission',['submitted_at'=>'2026-05-24 10:00:00','reviewed_at'=>'2026-05-29 08:30:00','rejection_reason'=>'Form 137 from previous school is missing — please submit a certified true copy.']],
-            ['APP-2026-0025','Antonio','Reyes','Cruz',null,'Male','2009-06-13','Grade11','11','STEM','needs_resubmission',['submitted_at'=>'2026-05-25 09:00:00','reviewed_at'=>'2026-05-30 10:00:00','rejection_reason'=>'Birth certificate scan is unreadable — please re-upload.']],
-            ['APP-2026-0026','Bianca','Villanueva','Ocampo',null,'Female','2009-08-30','Grade11','11','ARTS-SOC-HUM','needs_resubmission',['submitted_at'=>'2026-05-26 10:30:00','reviewed_at'=>'2026-05-31 11:00:00','rejection_reason'=>'Good moral certificate missing.']],
-            ['APP-2026-0027','Rogelio','Navarro','Bautista',null,'Male','2008-03-05','Returning','12','ICT','needs_resubmission',['submitted_at'=>'2026-05-27 13:15:00','reviewed_at'=>'2026-06-01 09:45:00','rejection_reason'=>'Previous SHS records from another division still pending.']],
-            ['APP-2026-0028','Maricel','Torres','Domingo',null,'Female','2009-10-17','Grade11','11','HOSPITALITY','needs_resubmission',['submitted_at'=>'2026-05-28 14:00:00','reviewed_at'=>'2026-06-02 10:30:00','rejection_reason'=>'2x2 photo background must be plain white.']],
+            // ═══ ENROLLED (7) — approved AND converted to students.
+            //     converted_student_id left NULL here; StudentConversionSeeder
+            //     will create the students and back-fill the link.
+            [21, 'Rosario',   'Cruz',    'Reyes',    null, 'Female', '2009-04-18', 'Grade11', '11', 'ARTS-SOC-HUM',    'enrolled', ['submitted_at' => '2026-04-01 08:00:00', 'reviewed_at' => '2026-04-05 09:00:00', 'enroll_slot' => 1]],
+            [22, 'John Paul', 'Castillo','Santos',   null, 'Male',   '2009-10-12', 'Grade11', '11', 'ICT',             'enrolled', ['submitted_at' => '2026-04-02 09:00:00', 'reviewed_at' => '2026-04-06 10:00:00', 'enroll_slot' => 2]],
+            [23, 'Pedro',     'Mendoza', 'Garcia',   null, 'Male',   '2009-05-31', 'Grade11', '11', 'STEM',            'enrolled', ['submitted_at' => '2026-04-03 10:00:00', 'reviewed_at' => '2026-04-07 11:00:00', 'enroll_slot' => 3]],
+            [24, 'Maria',     'Lim',     'Tan',      null, 'Female', '2009-04-26', 'Grade11', '11', 'BUSINESS-ENTREP', 'enrolled', ['submitted_at' => '2026-04-04 11:00:00', 'reviewed_at' => '2026-04-08 12:00:00', 'enroll_slot' => 4]],
+            [25, 'Emilio',    'Garcia',  'Navarro',  null, 'Male',   '2009-09-01', 'Grade11', '11', 'HOSPITALITY',     'enrolled', ['submitted_at' => '2026-04-05 12:00:00', 'reviewed_at' => '2026-04-09 13:00:00', 'enroll_slot' => 5]],
+            [26, 'Beatriz',   'Uy',      'Ong',      null, 'Female', '2009-03-14', 'Grade11', '11', 'SPORTS-WELLNESS', 'enrolled', ['submitted_at' => '2026-04-06 13:00:00', 'reviewed_at' => '2026-04-10 14:00:00', 'enroll_slot' => 6]],
+            [27, 'Fernando',  'Reyes',   'Bautista', null, 'Male',   '2008-12-08', 'Transferee', '12', 'ICT',          'enrolled', ['submitted_at' => '2026-04-07 14:00:00', 'reviewed_at' => '2026-04-11 15:00:00', 'enroll_slot' => 7]],
+
+            // ═══ NEEDS RESUBMISSION (5) ═══
+            [28, 'Diego',   'Mendoza',  'Santos',   null, 'Male',   '2009-12-19', 'Grade12',    '12', 'STEM',         'needs_resubmission', ['submitted_at' => '2026-05-24 10:00:00', 'reviewed_at' => '2026-05-29 08:30:00', 'rejection_reason' => 'Form 137 from previous school is missing — please submit a certified true copy.']],
+            [29, 'Antonio', 'Reyes',    'Cruz',     null, 'Male',   '2010-06-13', 'Grade11',    '11', 'STEM',         'needs_resubmission', ['submitted_at' => '2026-05-25 09:00:00', 'reviewed_at' => '2026-05-30 10:00:00', 'rejection_reason' => 'Birth certificate scan is unreadable — please re-upload a clearer copy.']],
+            [30, 'Bianca',  'Villanueva','Ocampo',  null, 'Female', '2010-08-30', 'Grade11',    '11', 'ARTS-SOC-HUM', 'needs_resubmission', ['submitted_at' => '2026-05-26 10:30:00', 'reviewed_at' => '2026-05-31 11:00:00', 'rejection_reason' => 'Good moral certificate missing.']],
+            [31, 'Rogelio', 'Navarro',  'Bautista', null, 'Male',   '2009-03-05', 'Returning',  '12', 'ICT',          'needs_resubmission', ['submitted_at' => '2026-05-27 13:15:00', 'reviewed_at' => '2026-06-01 09:45:00', 'rejection_reason' => 'Previous SHS records from another division still pending.']],
+            [32, 'Maricel', 'Torres',   'Domingo',  null, 'Female', '2010-10-17', 'Grade11',    '11', 'HOSPITALITY',  'needs_resubmission', ['submitted_at' => '2026-05-28 14:00:00', 'reviewed_at' => '2026-06-02 10:30:00', 'rejection_reason' => '2x2 photo background must be plain white.']],
         ];
 
-        // ── Generated applicants for realistic demo volume ──────
-        $rows = array_merge($rows, $this->generateApplicants(count($rows)));
-
-        $allDocs = [
-            'Form 138 (Report Card)',
-            'PSA Birth Certificate',
-            'Good Moral Certificate',
-            '2x2 ID Picture',
-            'Certificate of Residency',
-            'NCAE Result',
-        ];
-
-        $created = [];
+        $created = collect();
 
         foreach ($rows as $idx => $row) {
-            [$ref, $first, $middle, $last, $ext, $sex, $dob, $type, $grade, $strandCode, $status, $extra] = $row;
+            [$seq, $first, $middle, $last, $ext, $sex, $dob, $type, $gl, $clusterCode, $status, $extra] = $row;
 
-            $applicant = Applicant::create([
-                'reference_number'    => $ref,
-                'school_year_id'      => $year->id,
-                'strand_id'           => $strandId[$strandCode] ?? null,
-                'applicant_type'      => $type,
-                'first_name'          => $first,
-                'middle_name'         => $middle,
-                'last_name'           => $last,
-                'extension_name'      => $ext,
-                'lrn'                 => '1234' . str_pad((string) (2000 + $idx), 8, '0', STR_PAD_LEFT),
-                'date_of_birth'       => $dob,
-                'sex'                 => $sex,
-                'religion'            => 'Roman Catholic',
-                'contact_number'      => '0917' . str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT),
-                'email'               => strtolower(str_replace([' ', '.'], ['.', ''], $first)) . '.' . strtolower($last) . $idx . '@example.com',
-                'house_street'        => 'Blk ' . random_int(1, 20) . ' Lot ' . random_int(1, 30),
-                'barangay'            => 'Barangay Salawag',
-                'municipality'        => 'Dasmariñas',
-                'province'            => 'Cavite',
-                'zip_code'            => '4114',
-                'prev_school_name'    => 'Salawag National High School',
-                'prev_school_address' => 'Dasmariñas, Cavite',
-                'prev_school_type'    => 'Public',
-                'last_school_year'    => '2025-2026',
-                'desired_grade_level' => $grade,
-                'status'              => $status,
-                'rejection_reason'    => $extra['rejection_reason'] ?? null,
-                'reviewed_by'         => isset($extra['reviewed_at']) ? $adminId : null,
-                'reviewed_at'         => $extra['reviewed_at'] ?? null,
-                'converted_student_id'=> $extra['converted_student_id'] ?? null,
-                'submitted_at'        => $extra['submitted_at'] ?? now(),
-            ]);
+            $ref   = sprintf('APP-2026-%04d', $seq);
+            $lrn   = $this->generateLrn($seq);
+            $email = strtolower(str_replace([' ', '.', "'"], ['.', '', ''], $first))
+                   . '.' . strtolower(str_replace(' ', '', $last)) . '@gmail.com';
 
-            $created[] = $applicant;
+            $applicant = Applicant::updateOrCreate(
+                ['reference_number' => $ref],
+                [
+                    'school_year_id'       => $year->id,
+                    'strand_id'            => $clusterIds[$clusterCode] ?? null,
+                    'applicant_type'       => $type,
+                    'first_name'           => $first,
+                    'middle_name'          => $middle,
+                    'last_name'            => $last,
+                    'extension_name'       => $ext,
+                    'lrn'                  => $lrn,
+                    'date_of_birth'        => $dob,
+                    'sex'                  => $sex,
+                    'religion'             => 'Roman Catholic',
+                    'contact_number'       => '0917' . str_pad((string) (1000000 + $seq), 7, '0', STR_PAD_LEFT),
+                    'email'                => $email,
+                    'house_street'         => 'Blk ' . (($seq % 20) + 1) . ' Lot ' . (($seq % 15) + 1) . ' Phase ' . (($seq % 4) + 1),
+                    'barangay'             => $this->pickBarangay($seq),
+                    'municipality'         => 'Dasmariñas',
+                    'province'             => 'Cavite',
+                    'zip_code'             => '4114',
+                    'prev_school_name'     => $this->pickPrevSchool($seq),
+                    'prev_school_address'  => 'Dasmariñas City, Cavite',
+                    'prev_school_type'     => 'Public',
+                    'last_school_year'     => '2025-2026',
+                    'desired_grade_level'  => $gl,
+                    'status'               => $status,
+                    'rejection_reason'     => $extra['rejection_reason'] ?? null,
+                    'reviewed_by'          => isset($extra['reviewed_at']) ? $registrar?->id : null,
+                    'reviewed_at'          => $extra['reviewed_at'] ?? null,
+                    'converted_student_id' => null, // set later by StudentConversionSeeder
+                    'submitted_at'         => $extra['submitted_at'] ?? now(),
+                ]
+            );
 
-            // ─── Contacts ────────────────────────────────────────
-            ApplicantContact::create([
-                'applicant_id'   => $applicant->id,
-                'role'           => 'father',
-                'full_name'      => "Ramon {$last}",
+            $this->seedContacts($applicant, $last, $seq);
+            $this->seedDocuments($applicant, $status, $registrar, $extra['reviewed_at'] ?? null);
+
+            $created->push($applicant);
+        }
+
+        return $created;
+    }
+
+    /* =================================================================
+     | CONTACTS
+     * ================================================================= */
+    protected function seedContacts(Applicant $applicant, string $lastName, int $seq): void
+    {
+        // Father
+        ApplicantContact::updateOrCreate(
+            ['applicant_id' => $applicant->id, 'role' => 'father'],
+            [
+                'full_name'      => $this->pickFatherName($seq) . ' ' . $lastName,
                 'relationship'   => 'Father',
-                'occupation'     => ['Tricycle Driver','Farmer','Construction Worker','Security Guard'][$idx % 4],
-                'contact_number' => '0918' . str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT),
-                'email'          => strtolower("ramon.{$last}{$idx}@example.com"),
-            ]);
-            ApplicantContact::create([
-                'applicant_id'   => $applicant->id,
-                'role'           => 'mother',
-                'full_name'      => "Teresita {$last}",
+                'occupation'     => ['Tricycle Driver', 'Construction Worker', 'Security Guard', 'Farmer', 'Welder', 'Electrician'][$seq % 6],
+                'contact_number' => '0918' . str_pad((string) (1000000 + $seq), 7, '0', STR_PAD_LEFT),
+                'email'          => null,
+            ]
+        );
+
+        // Mother
+        ApplicantContact::updateOrCreate(
+            ['applicant_id' => $applicant->id, 'role' => 'mother'],
+            [
+                'full_name'      => $this->pickMotherName($seq) . ' ' . $lastName,
                 'relationship'   => 'Mother',
-                'occupation'     => ['Housewife','Vendor','Laundrywoman','Sari-sari Store Owner'][$idx % 4],
-                'contact_number' => '0919' . str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT),
-                'email'          => strtolower("teresita.{$last}{$idx}@example.com"),
-            ]);
-            if ($idx % 3 === 0) {
-                ApplicantContact::create([
-                    'applicant_id'   => $applicant->id,
-                    'role'           => 'guardian',
-                    'full_name'      => 'Lola ' . $last,
-                    'relationship'   => 'Grandmother',
+                'occupation'     => ['Housewife', 'Sari-sari Store Owner', 'Market Vendor', 'Laundrywoman', 'Barangay Health Worker', 'Public School Teacher'][$seq % 6],
+                'contact_number' => '0919' . str_pad((string) (1000000 + $seq), 7, '0', STR_PAD_LEFT),
+                'email'          => null,
+            ]
+        );
+
+        // Guardian (every third applicant — grandmother or aunt/uncle)
+        if ($seq % 3 === 0) {
+            $guardianFirst = $seq % 2 === 0 ? 'Lola' : 'Tita';
+            $relation      = $seq % 2 === 0 ? 'Grandmother' : 'Aunt';
+
+            ApplicantContact::updateOrCreate(
+                ['applicant_id' => $applicant->id, 'role' => 'guardian'],
+                [
+                    'full_name'      => $guardianFirst . ' ' . $lastName,
+                    'relationship'   => $relation,
                     'occupation'     => 'Retired',
-                    'contact_number' => '0920' . str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT),
-                    'email'          => strtolower("lola.{$last}{$idx}@example.com"),
-                ]);
-            }
-            ApplicantContact::create([
-                'applicant_id'   => $applicant->id,
-                'role'           => 'emergency',
+                    'contact_number' => '0920' . str_pad((string) (1000000 + $seq), 7, '0', STR_PAD_LEFT),
+                    'email'          => null,
+                ]
+            );
+        }
+
+        // Emergency — Barangay Health Center (fixed local contact).
+        ApplicantContact::updateOrCreate(
+            ['applicant_id' => $applicant->id, 'role' => 'emergency'],
+            [
                 'full_name'      => 'Barangay Salawag Health Center',
                 'relationship'   => 'Emergency Contact',
                 'occupation'     => null,
-                'contact_number' => '046-555-' . str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT),
+                'contact_number' => '(046) 555-0145',
                 'email'          => null,
-            ]);
-
-            // ─── Documents (status reflects applicant status) ────
-            $docsToCreate = $status === 'pending'
-                ? array_slice($allDocs, 0, 3)
-                : $allDocs;
-
-            foreach ($docsToCreate as $dIdx => $docType) {
-                $docStatus = match (true) {
-                    $status === 'pending'                       => $dIdx < 2 ? 'received' : 'pending',
-                    in_array($status, ['approved','enrolled'])  => 'verified',
-                    $status === 'rejected'                      => $dIdx === 0 ? 'incomplete' : 'verified',
-                    $status === 'needs_resubmission'            => $dIdx === 0 ? 'rejected' : 'received',
-                    default                                     => 'pending',
-                };
-
-                ApplicantDocument::create([
-                    'applicant_id' => $applicant->id,
-                    'document_type'=> $docType,
-                    'file_path'    => "applicants/{$ref}/" . strtolower(str_replace([' ', '(', ')', '/'], ['_','','','_'], $docType)) . '.pdf',
-                    'file_name'    => $docType . '.pdf',
-                    'file_size'    => random_int(120_000, 2_400_000),
-                    'mime_type'    => 'application/pdf',
-                    'status'       => $docStatus,
-                    'remarks'      => $docStatus === 'rejected'
-                        ? 'Unreadable scan — please re-upload a clearer copy.'
-                        : ($docStatus === 'incomplete' ? 'Missing page 2.' : null),
-                    'verified_by'  => in_array($docStatus, ['verified','incomplete','rejected']) ? $adminId : null,
-                    'verified_at'  => in_array($docStatus, ['verified','incomplete','rejected'])
-                        ? $extra['reviewed_at'] ?? now()
-                        : null,
-                ]);
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // ENTRANCE EXAM RESULTS
-        // ═══════════════════════════════════════════════════════════
-        $reviewedApplicants = collect($created)->filter(
-            fn ($a) => ! in_array($a->status, ['pending', 'needs_resubmission'])
-        )->values();
-
-        $examPool = [$batch1, $batch2, $batch3];
-
-        foreach ($reviewedApplicants as $i => $applicant) {
-            $exam = $examPool[$i % count($examPool)];
-
-            $result = match ($i % 6) {
-                0       => 'Passed',
-                1       => 'Passed',
-                2       => 'For Interview',
-                3       => 'Failed',
-                4       => 'Absent',
-                default => 'Pending',
-            };
-
-            EntranceExamResult::create([
-                'entrance_exam_id' => $exam->id,
-                'applicant_id'     => $applicant->id,
-                'score'            => in_array($result, ['Passed','Failed','For Interview'])
-                    ? random_int(45, 98)
-                    : null,
-                'result'           => $result,
-                'remarks'          => match ($result) {
-                    'For Interview' => 'Schedule interview with the strand coordinator.',
-                    'Failed'        => 'Score below the strand cut-off.',
-                    'Absent'        => 'Did not show up on the scheduled exam date.',
-                    default         => null,
-                },
-                'recorded_by'      => $adminId,
-                'recorded_at'      => $exam->exam_date->copy()->addDays(3)->setTime(9, 0),
-            ]);
-        }
-
-        $this->command->info('✅ Applicants seeded:');
-        $this->command->info('   ' . count($rows) . ' applicants (pending/approved/rejected/enrolled/needs_resubmission)');
-        $this->command->info('   ' . count($exams) . ' entrance exams');
-        $this->command->info('   ' . $reviewedApplicants->count() . ' entrance exam results');
+            ]
+        );
     }
 
-    /**
-     * Generate additional realistic applicant rows. Every status
-     * EXCEPT "under_review" is represented.
-     *
-     * @param  int  $startIdx  Number of explicit rows already present.
-     */
-    private function generateApplicants(int $startIdx): array
+    /* =================================================================
+     | DOCUMENTS
+     |-----------------------------------------------------------------
+     | Document set + status mirrors the applicant's workflow state.
+     * ================================================================= */
+    protected function seedDocuments(Applicant $applicant, string $status, ?User $reviewer, ?string $reviewedAt): void
     {
-        $firstM = ['Juan','Jose','Pedro','Mark','Carlo','Angelo','Rafael','Miguel','Gabriel','Emilio','Andres','Rico','Rogelio','Antonio','Lorenzo','Diego','Marco','Paolo','Eduardo','Fernando'];
-        $firstF = ['Maria','Ana','Rosa','Andrea','Sofia','Isabella','Camila','Bianca','Angelica','Jasmine','Kristine','Liza','Maricel','Rosario','Josefina','Patricia','Beatrice','Lourdes','Teresita','Gloria'];
-        $middle = ['Santos','Reyes','Cruz','Bautista','Ocampo','Garcia','Mendoza','Torres','Villanueva','Aquino','Castillo','Ramos','Domingo','Navarro','Salazar','Rivera','Pascual','Del Rosario','Lim','Tan'];
-        $last   = ['Rivera','Pascual','Del Rosario','Lim','Tan','Dela Cruz','Bautista','Navarro','Ocampo','Salazar','Villanueva','Ramos','Domingo','Aquino','Castillo','Garcia','Torres','Mendoza','Reyes','Cruz'];
-
-        $strandPool = ['STEM','ICT','HOSPITALITY','BUSINESS-ENTREP','ARTS-SOC-HUM','STEM','ICT','HOSPITALITY','BUSINESS-ENTREP','STEM'];
-
-        $rejReasons = [
-            'LRN could not be verified with the previous school records.',
-            'Incomplete requirements — Form 138 not submitted after two follow-ups.',
-            'Did not meet the minimum grade requirement for the strand.',
-            'Good moral certificate could not be authenticated.',
-            'PSA birth certificate is missing from the submission.',
-            'Did not appear for the scheduled entrance examination.',
+        // [document_type, required?]
+        $docSet = [
+            ['Form 138 (Report Card)',           true],
+            ['PSA Birth Certificate',            true],
+            ['Good Moral Certificate',           true],
+            ['2x2 ID Picture',                   true],
+            ['Certificate of Residency',         false],
+            ['NCAE Result',                      false],
         ];
 
-        $resubReasons = [
-            'Birth certificate scan is unreadable — please re-upload.',
-            'Good moral certificate missing.',
-            '2x2 photo background must be plain white.',
-            'Form 137 missing — please submit a certified true copy.',
-            'PSA birth certificate blurry — a clearer scan is required.',
-            'House street address incomplete — please provide the full address.',
-        ];
-
-        // [status, count] — no under_review anywhere.
-        $plan = [
-            ['pending',            12],
-            ['approved',           10],
-            ['rejected',            4],
-            ['enrolled',            5],
-            ['needs_resubmission',  9],
-        ];
-
-        $rows       = [];
-        $refIdx     = $startIdx;
-        $studentIdx = 6;  // students 1–5 already used by explicit rows
-
-        foreach ($plan as [$status, $count]) {
-            for ($i = 0; $i < $count; $i++) {
-                $refIdx++;
-                $sex   = $refIdx % 2 === 0 ? 'Male' : 'Female';
-                $first = $sex === 'Male'
-                    ? $firstM[$refIdx % count($firstM)]
-                    : $firstF[$refIdx % count($firstF)];
-
-                $grade = $refIdx % 3 === 0 ? '12' : '11';
-                $dob   = $grade === '12'
-                    ? sprintf('200%d-%02d-%02d', 7 + ($refIdx % 2), ($refIdx % 12) + 1, ($refIdx % 27) + 1)
-                    : sprintf('200%d-%02d-%02d', 9 - ($refIdx % 2), ($refIdx % 12) + 1, ($refIdx % 27) + 1);
-
-                $type = match (true) {
-                    $status === 'enrolled' && $refIdx % 4 === 0 => 'Transferee',
-                    $refIdx % 7 === 0                             => 'Returning',
-                    $refIdx % 5 === 0                             => 'Transferee',
-                    default                                       => $grade === '12' ? 'Grade12' : 'Grade11',
-                };
-
-                $strandCode = $strandPool[$refIdx % count($strandPool)];
-
-                $submittedAt = now()->subDays(40 - ($refIdx % 30))->setTime(9, 0);
-                $extra = ['submitted_at' => $submittedAt->format('Y-m-d H:i:s')];
-
-                if (in_array($status, ['approved', 'rejected', 'enrolled', 'needs_resubmission'])) {
-                    $extra['reviewed_at'] = $submittedAt->copy()->addDays(3)->format('Y-m-d H:i:s');
-                }
-
-                if ($status === 'rejected') {
-                    $extra['rejection_reason'] = $rejReasons[$refIdx % count($rejReasons)];
-                }
-
-                if ($status === 'needs_resubmission') {
-                    $extra['rejection_reason'] = $resubReasons[$refIdx % count($resubReasons)];
-                }
-
-                if ($status === 'enrolled') {
-                    $extra['converted_student_id'] = $studentIdx++;
-                }
-
-                $rows[] = [
-                    sprintf('APP-2026-%04d', $refIdx),
-                    $first,
-                    $middle[$refIdx % count($middle)],
-                    $last[$refIdx % count($last)],
-                    null,
-                    $sex,
-                    $dob,
-                    $type,
-                    $grade,
-                    $strandCode,
-                    $status,
-                    $extra,
-                ];
+        foreach ($docSet as $i => [$docType, $required]) {
+            // Skip optional docs for pending applicants.
+            if (! $required && $status === 'pending') {
+                continue;
             }
+
+            $docStatus = match (true) {
+                $status === 'pending'                  => $i < 2 ? 'received' : 'pending',
+                $status === 'under_review'             => $i < 3 ? 'received' : 'pending',
+                in_array($status, ['approved', 'enrolled']) => 'verified',
+                $status === 'rejected'                 => $i === 0 ? 'incomplete' : 'received',
+                $status === 'needs_resubmission'       => $i === 0 ? 'rejected' : 'received',
+                default                                => 'pending',
+            };
+
+            $verifiedBy = null;
+            $verifiedAt = null;
+            if (in_array($docStatus, ['verified', 'incomplete', 'rejected'])) {
+                $verifiedBy = $reviewer?->id;
+                $verifiedAt = $reviewedAt ? Carbon::parse($reviewedAt) : now();
+            }
+
+            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '_', $docType));
+
+            ApplicantDocument::updateOrCreate(
+                ['applicant_id' => $applicant->id, 'document_type' => $docType],
+                [
+                    'file_path'   => "applicants/{$applicant->reference_number}/{$slug}.pdf",
+                    'file_name'   => "{$docType}.pdf",
+                    'file_size'   => 200_000 + (($applicant->id * 37 + $i * 91) % 1_800_000),
+                    'mime_type'   => 'application/pdf',
+                    'status'      => $docStatus,
+                    'remarks'     => match ($docStatus) {
+                        'rejected'   => 'Unreadable scan — please re-upload a clearer copy.',
+                        'incomplete' => 'Missing page 2.',
+                        default      => null,
+                    },
+                    'verified_by' => $verifiedBy,
+                    'verified_at' => $verifiedAt,
+                ]
+            );
+        }
+    }
+
+    /* =================================================================
+     | ENTRANCE EXAM RESULTS
+     |-----------------------------------------------------------------
+     | Only reviewed applicants receive a result. Determined by a
+     | deterministic formula on the applicant ID so re-runs are stable.
+     * ================================================================= */
+    protected function seedEntranceExamResults(\Illuminate\Support\Collection $applicants, array $exams, ?User $recorder): void
+    {
+        // Completed exams are the only ones we can record results against.
+        $completed = array_values(array_filter(
+            $exams,
+            fn ($e) => in_array($e->status, ['Completed'], true)
+        ));
+
+        if (empty($completed)) {
+            return;
         }
 
-        return $rows;
+        $reviewed = $applicants->filter(
+            fn ($a) => ! in_array($a->status, ['pending', 'under_review'], true)
+        )->values();
+
+        foreach ($reviewed as $i => $applicant) {
+            // Deterministic result based on position.
+            $result = match ($i % 6) {
+                0, 1 => 'Passed',
+                2    => 'Passed',
+                3    => 'For Interview',
+                4    => 'Failed',
+                default => 'Absent',
+            };
+
+            // Only "Passed" applicants should be in the approved/enrolled
+            // buckets — flip any mismatches so data stays coherent.
+            if ($applicant->status === 'rejected' && $result === 'Passed') {
+                $result = 'Failed';
+            }
+            if (in_array($applicant->status, ['approved', 'enrolled'], true)
+                && in_array($result, ['Failed', 'Absent'], true)) {
+                $result = 'Passed';
+            }
+
+            $exam = $completed[$i % count($completed)];
+
+            EntranceExamResult::updateOrCreate(
+                ['entrance_exam_id' => $exam->id, 'applicant_id' => $applicant->id],
+                [
+                    'score'       => in_array($result, ['Passed', 'Failed', 'For Interview'], true)
+                        ? 45 + (($applicant->id * 7) % 54)   // 45–98
+                        : null,
+                    'result'      => $result,
+                    'remarks'     => match ($result) {
+                        'For Interview' => 'Schedule interview with the cluster coordinator.',
+                        'Failed'        => 'Score below the cluster cut-off.',
+                        'Absent'        => 'Did not show up on the scheduled exam date.',
+                        default         => null,
+                    },
+                    'recorded_by' => $recorder?->id,
+                    'recorded_at' => Carbon::parse($exam->exam_date)->addDays(3)->setTime(9, 0),
+                ]
+            );
+        }
+    }
+
+    /* =================================================================
+     | HELPERS
+     * ================================================================= */
+
+    /**
+     * Produce a plausible 12-digit DepEd LRN unique within this school year.
+     * Prefix "136" mimics a Region IV-A school.
+     */
+    protected function generateLrn(int $seq): string
+    {
+        return '136' . str_pad((string) (200000000 + $seq * 137), 9, '0', STR_PAD_LEFT);
+    }
+
+    protected function pickBarangay(int $seq): string
+    {
+        $barangays = [
+            'Barangay Salawag',
+            'Barangay Salawag',
+            'Barangay Salawag',
+            'Barangay San Agustin',
+            'Barangay Paliparan III',
+            'Barangay Burol II',
+            'Barangay Zone IV',
+        ];
+
+        return $barangays[$seq % count($barangays)];
+    }
+
+    protected function pickPrevSchool(int $seq): string
+    {
+        $schools = [
+            'Salawag National High School',
+            'Dasmariñas East Integrated High School',
+            'Paliparan National High School',
+            'Burol National High School',
+            'Dasmariñas National High School',
+            'San Agustin Integrated National High School',
+        ];
+
+        return $schools[$seq % count($schools)];
+    }
+
+    protected function pickFatherName(int $seq): string
+    {
+        $names = ['Ramon', 'Ernesto', 'Rogelio', 'Antonio', 'Fidel', 'Renato', 'Mario', 'Ricardo', 'Rodel', 'Melchor'];
+        return $names[$seq % count($names)];
+    }
+
+    protected function pickMotherName(int $seq): string
+    {
+        $names = ['Teresita', 'Luzviminda', 'Rosario', 'Gloria', 'Marilou', 'Josefina', 'Aurora', 'Editha', 'Elena', 'Corazon'];
+        return $names[$seq % count($names)];
     }
 }

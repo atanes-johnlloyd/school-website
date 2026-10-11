@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace database\seeder;
 
 use App\Models\ClassRoom;
 use App\Models\Enrollment;
