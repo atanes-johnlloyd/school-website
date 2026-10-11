@@ -52,7 +52,7 @@ class ClassController extends Controller
         // ──────────────────────────────────────────────────────
         $query = ClassRoom::query() //[cite: 22]
             ->with([ //[cite: 22]
-                'subject:id,code,name', //[cite: 22]
+                'subject:id,code,name,image_path,color,icon', //[cite: 22]
                 'section:id,name,grade_level,strand_id', //[cite: 22]
                 'section.strand:id,code,name', //[cite: 22]
                 'teacher.user:id,name', //[cite: 22]
@@ -108,16 +108,19 @@ class ClassController extends Controller
 
         $classes = $query->paginate($perPage)->withQueryString(); //[cite: 22]
 
-        $classes->getCollection()->transform(fn (ClassRoom $k) => [ //[cite: 22]
-            'id'            => $k->id, //[cite: 22]
-            'subject'       => $k->subject?->name, //[cite: 22]
-            'subject_code'  => $k->subject?->code, //[cite: 22]
-            'section'       => $k->section?->name, //[cite: 22]
-            'grade_level'   => $k->section?->grade_level, //[cite: 22]
-            'strand'        => $k->section?->strand?->name, //[cite: 22]
-            'teacher'       => $k->teacher?->user?->name, //[cite: 22]
-            'term'          => $k->term?->name, //[cite: 22]
-            'assignments_count' => $k->assignments_count, //[cite: 22]
+        $classes->getCollection()->transform(fn (ClassRoom $k) => [
+            'id'            => $k->id,
+            'subject'       => $k->subject?->name,
+            'subject_code'  => $k->subject?->code,
+            'subject_image_url' => $k->subject?->image_url,
+            'subject_icon'  => $k->subject?->icon,
+            'subject_color' => $k->subject?->color,
+            'section'       => $k->section?->name,
+            'grade_level'   => $k->section?->grade_level,
+            'strand'        => $k->section?->strand?->name,
+            'teacher'       => $k->teacher?->user?->name,
+            'term'          => $k->term?->name,
+            'assignments_count' => $k->assignments_count,
         ]);
 
         $payload = [

@@ -233,28 +233,17 @@ let timerHandle = null
 function initTimer() {
   if (!hasTimer.value) return
   const expires = new Date(props.attempt.expires_at).getTime()
+
   const tick = () => {
     const now = Date.now()
     secondsLeft.value = Math.max(0, Math.floor((expires - now) / 1000))
-    const secondsLeft = ref(0)
-    const hasTimer = computed(() => !!props.attempt.expires_at)
-    let timerHandle = null
-
-    function initTimer() {
-      if (!hasTimer.value) return
-      const expires = new Date(props.attempt.expires_at).getTime()
-      const tick = () => {
-        const now = Date.now()
-        secondsLeft.value = Math.max(0, Math.floor((expires - now) / 1000))
-        if (secondsLeft.value <= 0) {
-          clearInterval(timerHandle)
-          submitAttempt(true) // ✅ FIX: Trigger backend submission instead of just navigating
-        }
-      }
-      tick()
-      timerHandle = setInterval(tick, 1000)
+    if (secondsLeft.value <= 0) {
+      clearInterval(timerHandle)
+      timerHandle = null
+      submitAttempt(true)
     }
   }
+
   tick()
   timerHandle = setInterval(tick, 1000)
 }
@@ -266,20 +255,29 @@ const formattedTimeLeft = computed(() => {
 })
 
 // ─── Autosave ───────────────────────────────────────
-let saveTimer = null
-function scheduleSave() {
+// One timer per question, so navigating before the debounce fires
+// doesn't cancel the previous question's save, and doesn't save the
+// wrong question's answer against the current index.
+const pendingSaves = new Map() // question_id -> timeoutId
+
+function scheduleSave(question) {
+  if (!question) return
   saveStatus.value = 'saving'
-  clearTimeout(saveTimer)
-  saveTimer = setTimeout(persistAnswer, 600)
+  const existing = pendingSaves.get(question.id)
+  if (existing) clearTimeout(existing)
+  const timer = setTimeout(() => {
+    pendingSaves.delete(question.id)
+    persistAnswer(question)
+  }, 600)
+  pendingSaves.set(question.id, timer)
 }
 
-async function persistAnswer() {
-  const q = currentQuestion.value
-  if (!q) return
-  const a = answers.value[q.id]
+async function persistAnswer(question) {
+  const a = answers.value[question.id]
+  if (!a) return
   try {
     await axios.post(route('student.quiz-attempts.answer', props.attempt.id), {
-      question_id: q.id,
+      question_id: question.id,
       question_option_id: a.question_option_id,
       answer_text: a.answer_text,
     })
@@ -288,6 +286,17 @@ async function persistAnswer() {
   } catch (e) {
     saveStatus.value = 'error'
   }
+}
+
+async function flushPendingSaves() {
+  const promises = []
+  for (const [qId, timer] of pendingSaves.entries()) {
+    clearTimeout(timer)
+    const q = props.questions.find(x => x.id === qId)
+    if (q) promises.push(persistAnswer(q))
+  }
+  pendingSaves.clear()
+  await Promise.allSettled(promises)
 }
 
 const saveStatusLabel = computed(() => ({
@@ -301,14 +310,14 @@ function selectOption(optionId) {
   const q = currentQuestion.value
   if (!q) return
   answers.value[q.id] = { question_option_id: optionId, answer_text: null }
-  scheduleSave()
+  scheduleSave(q)
 }
 
 function setText(value) {
   const q = currentQuestion.value
   if (!q) return
   answers.value[q.id] = { question_option_id: null, answer_text: value }
-  scheduleSave()
+  scheduleSave(q)
 }
 
 // ─── Anti-cheat ─────────────────────────────────────
@@ -321,7 +330,14 @@ function handleFullscreenChange() {
   if (!document.fullscreenElement) registerViolation()
 }
 
+let lastViolationAt = 0
+const VIOLATION_COOLDOWN_MS = 2500
+
 async function registerViolation() {
+  const now = Date.now()
+  if (now - lastViolationAt < VIOLATION_COOLDOWN_MS) return
+  lastViolationAt = now
+
   try {
     const res = await axios.post(route('student.quiz-attempts.warning', props.attempt.id))
     warningCount.value = res.data.warning_count ?? (warningCount.value + 1)
@@ -356,15 +372,14 @@ function confirmSubmit() { showConfirmModal.value = true }
 
 async function submitAttempt(isTimeout = false) {
   try {
-    if (!isTimeout) {
-      showConfirmModal.value = false
-    }
-    
-    // ✅ FIX: Send the reason to the backend so it can mark the attempt as 'expired' vs 'manual'
+    if (!isTimeout) showConfirmModal.value = false
+
+    await flushPendingSaves()
+
     await axios.post(route('student.quiz-attempts.submit', props.attempt.id), {
-      reason: isTimeout ? 'expired' : 'manual'
+      reason: isTimeout ? 'expired' : 'manual',
     })
-    
+
     exitLockdown()
     router.visit(route('student.quiz-attempts.result', props.attempt.id))
   } catch (e) {
@@ -389,6 +404,10 @@ function questionTypeLabel(type) {
 
 // ─── Lifecycle ──────────────────────────────────────
 onMounted(() => {
+  if (props.attempt.submitted_at) {
+    router.visit(route('student.quiz-attempts.result', props.attempt.id), { replace: true })
+    return
+  }
   requestFullscreen()
   initTimer()
   window.addEventListener('blur', handleBlur)
@@ -398,8 +417,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearInterval(timerHandle)
-  clearTimeout(saveTimer)
+
+  if (timerHandle) clearInterval(timerHandle)
+  pendingSaves.forEach(t => clearTimeout(t))
+  pendingSaves.clear()
   window.removeEventListener('blur', handleBlur)
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
   document.removeEventListener('contextmenu', preventContextMenu)

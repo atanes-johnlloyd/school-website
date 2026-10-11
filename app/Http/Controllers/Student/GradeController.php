@@ -40,8 +40,8 @@ class GradeController extends Controller
                 'written_work'     => $computed['written_work'],
                 'performance_task' => $computed['performance_task'],
                 'quarterly_exam'   => $computed['quarterly_exam'],
-                'final_grade'      => $computed['final_grade'],
-                'remarks'          => $computed['remarks'],
+                'final_grade'      => $computed['is_complete'] ? $computed['final_grade'] : null,
+                'remarks'          => $computed['is_complete'] ? $computed['remarks'] : null,
                 'is_complete'      => $computed['is_complete'],
             ];
         });
@@ -98,8 +98,8 @@ class GradeController extends Controller
                 'written_work'     => $computed['written_work'],
                 'performance_task' => $computed['performance_task'],
                 'quarterly_exam'   => $computed['quarterly_exam'],
-                'final_grade'      => $computed['final_grade'],
-                'remarks'          => $computed['remarks'],
+                'final_grade'      => $computed['is_complete'] ? $computed['final_grade'] : null,
+                'remarks'          => $computed['is_complete'] ? $computed['remarks'] : null,
                 'is_complete'      => $computed['is_complete'],
             ],
             'weights'     => $computed['weights'],

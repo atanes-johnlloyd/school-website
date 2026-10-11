@@ -63,7 +63,7 @@
           >Student Workspace</span>
           <span
             class="text-[10px] font-black text-[#006907] dark:text-[#232D26] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-xs"
-          >S.Y. 25-26</span>
+          >S.Y. {{ shortSchoolYear }}</span>
         </div>
       </div>
 
@@ -267,10 +267,19 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
 import sidebarBg from '@/../assets/img/newsidebarbg.png'
 import schoolLogo from '@/../assets/img/logo_trans.png'
+
+const page = usePage()
+const shortSchoolYear = computed(() => {
+  const label = page.props.activeSchoolYear
+  if (! label) return '—'
+  const [y1, y2] = label.split('-')
+  return `${y1.slice(-2)}-${y2.slice(-2)}`
+})
 
 defineProps({
   isOpen: {

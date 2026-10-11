@@ -16,6 +16,8 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Admin\SchoolYearController;
 use App\Http\Controllers\Webhook\PaymongoWebhookController;
 
+use App\Http\Controllers\NotificationController;
+
 // ─────────────────────────────────────────────────────────────
 // Public / Landing Pages
 // ─────────────────────────────────────────────────────────────
@@ -499,6 +501,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');
     Route::put('/password/change', [PasswordChangeController::class, 'update'])->name('password.change.update');
+
+    Route::get('/notifications',            [NotificationController::class, 'index'])       ->name('notifications.index');
+    Route::post('/notifications/read-all',  [NotificationController::class, 'markAllRead']) ->name('notifications.mark-all-read');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])    ->name('notifications.mark-read');
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -560,16 +566,5 @@ Route::middleware(['auth', 'password.changed'])
             'reportCard',
         ])->name('students.report-card');
     });
-
-// ─────────────────────────────────────────────────────────────
-// School Years (legacy duplicate block — kept for compatibility)
-// ─────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/school-years', [SchoolYearController::class, 'index'])->name('school-years.index');
-    Route::post('/school-years', [SchoolYearController::class, 'store'])->name('school-years.store');
-    Route::put('/school-years/{schoolYear}', [SchoolYearController::class, 'update'])->name('school-years.update');
-    Route::delete('/school-years/{schoolYear}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
-    Route::post('/school-years/{schoolYear}/set-active', [SchoolYearController::class, 'setActive'])->name('school-years.set-active');
-});
 
 require __DIR__ . '/auth.php';

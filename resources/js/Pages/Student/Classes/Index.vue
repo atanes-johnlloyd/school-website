@@ -2,17 +2,8 @@
 
   <Head title="My Classes - Salawag LMS" />
 
-  <div :class="[
-    'min-h-screen flex bg-[#e8f5e9] dark:bg-[#232D26] font-[\'Inter\'] relative transition-colors duration-300',
-    `text-scale-${fontSizeMode}`
-  ]">
-    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
-
-    <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop searchPlaceholder="Search enrolled subjects, codes, or faculty..." @open-sidebar="isSidebarOpen = true"
-        @font-size-changed="(size) => fontSizeMode = size" />
-
-      <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
+  <StudentLayout>
+    <div class="space-y-6 pb-10 font-['Inter'] min-w-0">
 
         <!-- Hero Banner -->
         <div v-observe
@@ -80,7 +71,7 @@
                   <p class="text-white/90 text-xs font-medium">
                     <span class="font-black text-[#F9C20C]">{{ classList.length }}</span> Active {{ classList.length ===
                       1 ? 'Subject' : 'Subjects' }}
-                    • School Year <span class="font-bold">2026–2027</span>
+                    • School Year <span class="font-bold">{{ activeYear }}</span>
                   </p>
                 </div>
               </div>
@@ -182,7 +173,19 @@
               class="subject-card bg-white dark:bg-[#2D3A31] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-200/80 dark:border-[#3F4F43] flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 group cursor-pointer">
               <div
                 class="relative h-36 bg-gradient-to-br from-amber-100 via-emerald-50 to-teal-100 dark:from-[#232D26] dark:via-[#1B281F] dark:to-[#152B1C] p-4 flex flex-col justify-between overflow-hidden">
+
+                <!-- Real image when available -->
+                <img
+                  v-if="klass.subject_image_url"
+                  :src="klass.subject_image_url"
+                  :alt="klass.subject || 'Subject'"
+                  class="absolute inset-0 w-full h-full object-cover z-0"
+                />
+                <div v-if="klass.subject_image_url" class="absolute inset-0 z-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                <!-- Fallback graphic when no image -->
                 <div
+                  v-else
                   class="absolute inset-0 opacity-30 dark:opacity-10 flex items-center justify-center pointer-events-none">
                   <svg class="w-48 h-48 text-[#005506] dark:text-[#86EFAC]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4l7 3.82 7-3.82v-4L12 17l-7-3.82z" />
@@ -200,7 +203,7 @@
                   </div>
                 </div>
 
-                <div class="relative z-10 flex justify-center -mb-2">
+                <div v-if="!klass.subject_image_url" class="relative z-10 flex justify-center -mb-2">
                   <div class="flex items-end gap-1.5 opacity-90">
                     <div class="w-6 h-8 bg-orange-500 rounded-t-full"></div>
                     <div class="w-6 h-10 bg-amber-400 rounded-t-full"></div>
@@ -256,17 +259,16 @@
         </div>
 
       </div>
-    </main>
-  </div>
+  </StudentLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import Sidebar from '@/Components/Sidebar.vue'
-import navbartop from '@/Components/navbartop.vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/studentsubject.png'
+
 
 const props = defineProps({
   classes: { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0 }) },
@@ -276,11 +278,12 @@ const props = defineProps({
   filterOptions: { type: Object, default: () => ({ terms: [] }) },
 })
 
-const isSidebarOpen = ref(false)
-const fontSizeMode = ref('base')
+const page = usePage()
 
 const searchQuery = ref(props.filters?.search || '')
 const sortBy = ref(props.filters?.sort || 'subject')
+
+const activeYear = computed(() => page.props.activeSchoolYear || '—')
 
 /* ─── Data ────────────────────────────────────────────── */
 const classList = computed(() => props.classes?.data ?? [])

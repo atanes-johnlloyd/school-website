@@ -11,29 +11,34 @@ use Illuminate\Support\Facades\DB;
 class ClassScheduleSeeder extends Seeder
 {
     /**
-     * Realistic Philippine SHS bell schedule.
+     * Follows the DepEd Strengthened SHS Curriculum sample class programs
+     * (DO No. 17, s. 2026; OM-LS-2026-247).
      *
-     * GRADE 11 — MORNING SHIFT
-     *   07:30 – 08:30  Period 1
-     *   08:30 – 09:30  Period 2
-     *   09:30 – 09:45  Recess (15 min)
-     *   09:45 – 10:45  Period 3
-     *   10:45 – 11:45  Period 4
-     *   11:45 – 12:00  Homeroom / Advisory
+     *   • Core subjects meet 1 hour per session, 4 days per week (Mon–Thu),
+     *     at a FIXED time slot — the same hour every meeting.
+     *   • Friday is reserved for Homeroom Guidance Program (HGP), electives,
+     *     and co-curricular activities — no core classes.
+     *   • A 15-minute Health Break sits between the 2nd and 3rd slots.
+     *   • The three-term calendar and per-term instructional blocks are
+     *     handled by the Term model, not by this seeder.
      *
-     * GRADE 12 — AFTERNOON SHIFT
-     *   13:00 – 14:00  Period 1
-     *   14:00 – 15:00  Period 2
-     *   15:00 – 15:15  Recess (15 min)
-     *   15:15 – 16:15  Period 3
-     *   16:15 – 17:15  Period 4
-     *   17:15 – 17:30  Homeroom / Advisory
+     * No rotation. A class that meets Mon 07:00 meets Tue/Wed/Thu 07:00 too.
      *
-     * Each section has 5 classes (one per core/strand subject). Across
-     * 5 weekdays × 4 periods = 20 slots, each class meets exactly 4×
-     * per week using a staggered Latin-square rotation — so no class
-     * doubles up on the same day, and every subject appears in the
-     * "Today's Schedule" widget at least once during the week.
+     *   GRADE 11 — MORNING SHIFT
+     *     07:00–08:00  Slot 1
+     *     08:00–09:00  Slot 2
+     *     09:00–09:15  Health Break
+     *     09:15–10:15  Slot 3
+     *     10:15–11:15  Slot 4
+     *     11:15–12:15  Slot 5
+     *
+     *   GRADE 12 — AFTERNOON SHIFT
+     *     13:00–14:00  Slot 1
+     *     14:00–15:00  Slot 2
+     *     15:00–15:15  Health Break
+     *     15:15–16:15  Slot 3
+     *     16:15–17:15  Slot 4
+     *     17:15–18:15  Slot 5
      */
     public function run(): void
     {
@@ -43,29 +48,34 @@ class ClassScheduleSeeder extends Seeder
             return;
         }
 
-        $morningPeriods = [
-            ['07:30:00', '08:30:00'],
-            ['08:30:00', '09:30:00'],
-            ['09:45:00', '10:45:00'],   // after 15-min recess
-            ['10:45:00', '11:45:00'],
+        $morningSlots = [
+            ['07:00:00', '08:00:00'],
+            ['08:00:00', '09:00:00'],
+            ['09:15:00', '10:15:00'],   // after 09:00–09:15 Health Break
+            ['10:15:00', '11:15:00'],
+            ['11:15:00', '12:15:00'],
         ];
 
-        $afternoonPeriods = [
+        $afternoonSlots = [
             ['13:00:00', '14:00:00'],
             ['14:00:00', '15:00:00'],
-            ['15:15:00', '16:15:00'],   // after 15-min recess
+            ['15:15:00', '16:15:00'],   // after 15:00–15:15 Health Break
             ['16:15:00', '17:15:00'],
+            ['17:15:00', '18:15:00'],
         ];
 
-        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        // Core subjects meet Mon–Thu. Friday is HGP / electives only.
+        $coreMeetingDays    = ['monday', 'tuesday', 'wednesday', 'thursday'];
+        $electiveMeetingDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 
         $sections = Section::orderBy('id')->get();
-        $totalSlots = 0;
-        $morningSections = 0;
-        $afternoonSections = 0;
+
+        $coreSlots     = 0;
+        $electiveSlots = 0;
 
         foreach ($sections as $sIdx => $section) {
-            $classes = ClassRoom::where('section_id', $section->id)
+            $classes = ClassRoom::with('subject')
+                ->where('section_id', $section->id)
                 ->orderBy('id')
                 ->get()
                 ->values();
@@ -74,33 +84,35 @@ class ClassScheduleSeeder extends Seeder
                 continue;
             }
 
-            // Grade 11 = morning shift, Grade 12 = afternoon shift.
             $isMorning = $section->grade_level === '11';
-            $periods   = $isMorning ? $morningPeriods : $afternoonPeriods;
+            $slots     = $isMorning ? $morningSlots : $afternoonSlots;
 
-            if ($isMorning) {
-                $morningSections++;
-            } else {
-                $afternoonSections++;
-            }
+            // One home room per section — no rotating rooms across days.
+            $homeRoomId = $rooms[$sIdx % count($rooms)];
 
-            $rotation = $this->buildWeeklyRotation($classes->count());
+            $coreIdx     = 0;
+            $electiveIdx = 0;
 
-            foreach ($days as $dayIdx => $day) {
-                $daySlots = $rotation[$dayIdx] ?? [];
+            foreach ($classes as $class) {
+                $isCore = (bool) $class->subject?->is_core;
 
-                foreach ($daySlots as $pIdx => $classIdx) {
-                    $class = $classes[$classIdx] ?? null;
-                    if (! $class || ! isset($periods[$pIdx])) {
-                        continue;
-                    }
+                if ($isCore) {
+                    // Core subjects get a fixed slot Mon–Thu.
+                    $slotIdx = $coreIdx % count($slots);
+                    [$start, $end] = $slots[$slotIdx];
+                    $days = $coreMeetingDays;
+                    $coreIdx++;
+                } else {
+                    // Electives get a fixed slot. If the section has more
+                    // electives than remaining slots, wrap around — schools
+                    // normally cap electives so this is an edge case.
+                    $slotIdx = ($coreIdx + $electiveIdx) % count($slots);
+                    [$start, $end] = $slots[$slotIdx];
+                    $days = $electiveMeetingDays;
+                    $electiveIdx++;
+                }
 
-                    [$start, $end] = $periods[$pIdx];
-
-                    // Deterministic room rotation — avoids double-booking
-                    // the same room in the same slot across sections.
-                    $roomId = $rooms[($sIdx * 4 + $pIdx + $dayIdx) % count($rooms)];
-
+                foreach ($days as $day) {
                     DB::table('class_schedules')->updateOrInsert(
                         [
                             'class_id'    => $class->id,
@@ -108,48 +120,23 @@ class ClassScheduleSeeder extends Seeder
                             'time_start'  => $start,
                         ],
                         [
-                            'room_id'    => $roomId,
+                            'room_id'    => $homeRoomId,
                             'time_end'   => $end,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]
                     );
 
-                    $totalSlots++;
+                    $isCore ? $coreSlots++ : $electiveSlots++;
                 }
             }
         }
 
-        $this->command->info("✅ Class schedules seeded: {$totalSlots} slots");
-        $this->command->info("   Grade 11 (morning):   {$morningSections} sections @ 07:30–12:00");
-        $this->command->info("   Grade 12 (afternoon): {$afternoonSections} sections @ 13:00–17:30");
-    }
-
-    /**
-     * Build a 5-day, 4-period rotation for N classes.
-     *
-     *   • Every class meets exactly 4× per week when N = 5.
-     *   • No two periods in the same day share the same class.
-     *   • Every period slot is used every day (no empty rows).
-     *
-     * Formula `(day*4 + p) % N` naturally produces a Latin-square
-     * rotation for any N, and is exact for the 5-class common case.
-     */
-    private function buildWeeklyRotation(int $numClasses): array
-    {
-        if ($numClasses < 1) {
-            return [];
-        }
-
-        $grid = [];
-        for ($day = 0; $day < 5; $day++) {
-            $dayRow = [];
-            for ($p = 0; $p < 4; $p++) {
-                $dayRow[] = ($day * 4 + $p) % $numClasses;
-            }
-            $grid[] = $dayRow;
-        }
-
-        return $grid;
+        $this->command->info('✅ Class schedules seeded:');
+        $this->command->info("   {$coreSlots} core-subject slots (Mon–Thu, fixed time per subject)");
+        $this->command->info("   {$electiveSlots} elective slots (Mon–Fri)");
+        $this->command->info('   Sample pattern:');
+        $this->command->info('     G11 AM  07:00–12:15  (5 one-hour slots + 15-min break)');
+        $this->command->info('     G12 PM  13:00–18:15  (5 one-hour slots + 15-min break)');
     }
 }

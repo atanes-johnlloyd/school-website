@@ -2,17 +2,8 @@
 
   <Head :title="`${classroom.subject} - Salawag LMS`" />
 
-  <div :class="[
-    'min-h-screen flex bg-[#e8f5e9] dark:bg-[#232D26] font-[\'Inter\'] relative transition-colors duration-300',
-    `text-scale-${fontSizeMode}`
-  ]">
-    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false" />
-
-    <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
-      <navbartop searchPlaceholder="Search announcements, assignments, materials..."
-        @open-sidebar="isSidebarOpen = true" @font-size-changed="(size) => fontSizeMode = size" />
-
-      <div class="relative z-10 p-4 sm:p-6 md:p-8 space-y-6 flex-1 pb-16">
+  <StudentLayout>
+    <div class="space-y-6 pb-10 font-['Inter'] min-w-0">
 
         <!-- Hero Banner -->
         <div
@@ -414,9 +405,7 @@
             </div>
           </div>
         </div>
-
       </div>
-    </main>
 
     <!-- ANNOUNCEMENT MODAL -->
     <div v-if="selectedAnnouncement"
@@ -460,14 +449,13 @@
       </div>
     </div>
 
-  </div>
+  </StudentLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import Sidebar from '@/Components/Sidebar.vue'
-import navbartop from '@/Components/navbartop.vue'
+import StudentLayout from '@/Layouts/StudentLayout.vue'
 
 const props = defineProps({
   classroom: { type: Object, default: () => ({}) },
@@ -476,8 +464,6 @@ const props = defineProps({
   gradesSummary: { type: Object, default: () => ({}) },
 })
 
-const isSidebarOpen = ref(false)
-const fontSizeMode = ref('base')
 const activeTab = ref('announcements')
 const assignmentFilter = ref('all')
 

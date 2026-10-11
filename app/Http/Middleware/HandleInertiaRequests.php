@@ -54,9 +54,31 @@ class HandleInertiaRequests extends Middleware
             ? \App\Models\ContactMessage::where('is_read', false)->count()
             : 0,
             'passwordRule' => PasswordPolicy::toArray(),
-            'activeSchoolYear' => fn () => $request->user() && $request->user()->hasRole('admin')
+            'activeSchoolYear' => fn () => $request->user()
             ? \App\Models\SchoolYear::where('is_active', true)->value('label')
             : null,
+            'notificationCount' => fn () => $request->user()
+                ? $request->user()->unreadNotifications()->count()
+                : 0,
+
+            'notifications' => fn () => $request->user()
+                ? $request->user()
+                    ->notifications()
+                    ->latest()
+                    ->limit(10)
+                    ->get()
+                    ->map(fn ($n) => [
+                        'id'         => $n->id,
+                        'title'      => $n->data['title'] ?? 'Notification',
+                        'body'       => $n->data['body'] ?? '',
+                        'url'        => $n->data['url'] ?? null,
+                        'kind'       => $n->data['kind'] ?? 'info',
+                        'read_at'    => $n->read_at?->toIso8601String(),
+                        'created_at' => $n->created_at->diffForHumans(),
+                    ])
+                    ->values()
+                : [],
+            
         ];
     }
 }

@@ -55,22 +55,54 @@ class StudentRecordsController extends Controller
             ->with([
                 'subject:id,code,name,hours',
                 'teacher.user:id,name',
+                'schedules' => fn ($q) => $q->orderByRaw(
+                    "FIELD(day_of_week, 'monday','tuesday','wednesday','thursday','friday','saturday')"
+                )->orderBy('time_start'),
                 'schedules.room:id,code,name',
             ])
             ->get()
             ->map(function (ClassRoom $c) {
-                $sched = $c->schedules->first();
+                $schedules = $c->schedules;
+
+                // Under the fixed-slot DepEd SHS schedule, every meeting of a subject
+                // happens at the same time and room, only the day changes. Collapse
+                // into a single line: "Mon, Tue, Wed, Thu" / "07:00 – 08:00" / "Room 101".
+                // If times or rooms differ across days (rotation), fall back to a
+                // bullet-separated list of the distinct values.
+                $days = $schedules->pluck('day_of_week')->unique()->map(
+                    fn ($d) => ucfirst($d)
+                );
+
+                $times = $schedules->map(
+                    fn ($s) => substr($s->time_start, 0, 5) . ' – ' . substr($s->time_end, 0, 5)
+                )->unique();
+
+                $rooms = $schedules->map(fn ($s) => $s->room?->name)->filter()->unique();
+
+                $dayShort = $schedules->pluck('day_of_week')->unique()->map(
+                    fn ($d) => ucfirst(substr($d, 0, 3))
+                );
+
+                $collapsed = $times->count() === 1 && $rooms->count() <= 1;
+
                 return [
-                    'id'           => $c->id,
-                    'code'         => $c->subject?->code,
-                    'title'        => $c->subject?->name,
-                    'units'        => $c->subject?->hours ? round($c->subject->hours / 40, 1) : 3.0, // rough unit estimate
-                    'teacher'      => $c->teacher?->user?->name,
-                    'days'         => $sched ? ucfirst($sched->day_of_week) : '—',
-                    'time'         => $sched
-                        ? substr($sched->time_start, 0, 5) . ' – ' . substr($sched->time_end, 0, 5)
-                        : '—',
-                    'room'         => $sched?->room?->name ?? '—',
+                    'id'      => $c->id,
+                    'code'    => $c->subject?->code,
+                    'title'   => $c->subject?->name,
+                    'units'   => $c->subject?->hours ? round($c->subject->hours / 40, 1) : 3.0,
+                    'teacher' => $c->teacher?->user?->name,
+
+                    'days'    => $schedules->isEmpty()
+                        ? '—'
+                        : ($collapsed ? $dayShort->implode(', ') : $days->implode(' • ')),
+
+                    'time'    => $schedules->isEmpty()
+                        ? '—'
+                        : ($collapsed ? $times->first() : $times->implode(' • ')),
+
+                    'room'    => $rooms->isEmpty()
+                        ? '—'
+                        : ($rooms->count() === 1 ? $rooms->first() : $rooms->implode(' / ')),
                 ];
             });
 

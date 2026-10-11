@@ -1,49 +1,47 @@
-<script setup>
-import { Link, usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
-
-const page = usePage()
-const user = computed(() => page.props.auth.user)
-
-const nav = [
-    { label: 'My Classes', route: 'student.classes.index' },
-    { label: 'Profile',    route: 'profile.edit' },
-]
-</script>
-
 <template>
-    <div class="min-h-screen bg-gray-100">
-        <nav class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center gap-8">
-                        <Link :href="route('student.classes.index')" class="font-bold text-lg text-emerald-600">
-                            Salawag SHS
-                        </Link>
-                        <div class="hidden sm:flex gap-6">
-                            <Link
-                                v-for="item in nav"
-                                :key="item.route"
-                                :href="route(item.route)"
-                                class="text-sm font-medium text-gray-700 hover:text-emerald-600"
-                            >
-                                {{ item.label }}
-                            </Link>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm text-gray-500">{{ user.name }}</span>
-                        <Link :href="route('logout')" method="post" as="button"
-                                class="text-sm text-gray-500 hover:text-red-600">
-                            Log out
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <slot />
-        </main>
+  <div class="min-h-screen flex bg-[#e8f5e9] dark:bg-[#232D26] font-['Inter'] transition-colors duration-300">
+    <!-- Wrapper divs, not classes on the components, because multi-root
+         components (Sidebar, navbartop) don't inherit class attributes in Vue 3. -->
+    <div class="print:hidden">
+      <Sidebar :is-open="sidebarOpen" @close-sidebar="sidebarOpen = false" />
     </div>
+    <main class="flex-1 flex flex-col min-w-0">
+      <div class="print:hidden">
+        <navbartop
+          search-placeholder="Search subjects, assessments, grades..."
+          @open-sidebar="sidebarOpen = true"
+          @font-size-changed="onFontSizeChanged"
+        />
+      </div>
+      <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
+        <slot />
+      </div>
+    </main>
+  </div>
 </template>
+
+<script setup>
+import { ref, watch } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+import Sidebar from '@/Components/Sidebar.vue'
+import navbartop from '@/Components/navbartop.vue'
+import { useFlash } from '@/Composables/useFlash'
+
+const page  = usePage()
+const flash = useFlash()
+const sidebarOpen = ref(false)
+
+watch(
+  () => page.props.flash,
+  (f) => {
+    if (! f) return
+    if (f.success) flash.success(f.success)
+    if (f.error)   flash.error(f.error)
+    if (f.info)    flash.info(f.info)
+    if (f.warning) flash.error(f.warning)
+  },
+  { deep: true }
+)
+
+const onFontSizeChanged = () => {}
+</script>

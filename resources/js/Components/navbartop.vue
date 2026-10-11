@@ -20,12 +20,28 @@
 
       <!-- Font size -->
       <div class="flex items-center bg-[#EAE7DF] dark:bg-[#3F4F43] rounded-full p-1 gap-1">
-        <button @click="decreaseFont" class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">A-</button>
-        <button @click="resetFont"
-          :class="fontSizeMode === 'base' ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-300'"
-          class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black">A</button>
-        <button @click="increaseFont" class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">A+</button>
-      </div>
+      <button
+        @click="decreaseFont"
+        :class="fontSizeMode === 'sm'
+          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
+      >A-</button>
+      <button
+        @click="resetFont"
+        :class="fontSizeMode === 'base'
+          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black transition-colors"
+      >A</button>
+      <button
+        @click="increaseFont"
+        :class="fontSizeMode === 'lg'
+          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
+      >A+</button>
+    </div>
 
       <!-- Theme toggle -->
       <button @click="toggleDarkMode"
@@ -50,15 +66,78 @@
         </button>
 
         <div v-if="showNotifications"
-          class="absolute right-0 mt-3 w-64 sm:w-72 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
-          <div class="p-3 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50 dark:bg-[#232D26] flex items-center justify-between">
+        class="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
+
+        <!-- Header -->
+        <div class="p-3 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50 dark:bg-[#232D26] flex items-center justify-between">
+          <div class="flex items-center gap-2">
             <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-white">Notifications</h4>
-            <span v-if="notificationCount > 0" class="text-[10px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full">{{ notificationCount }}</span>
+            <span v-if="notificationCount > 0"
+              class="text-[10px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full">
+              {{ notificationCount }}
+            </span>
           </div>
-          <div class="p-6 text-center">
-            <p class="text-xs text-gray-500 dark:text-gray-400">No new notifications.</p>
-          </div>
+          <button
+            v-if="genericNotificationCount > 0"
+            @click="markAllRead"
+            class="text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:underline"
+          >
+            Mark all read
+          </button>
         </div>
+
+        <!-- Admin-only: unread contact messages -->
+        <Link
+          v-if="isAdmin && unreadContactCount > 0"
+          :href="route('admin.contact-messages.index')"
+          @click="showNotifications = false"
+          class="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-[#3F4F43] hover:bg-gray-50 dark:hover:bg-white/5"
+        >
+          <div class="min-w-0">
+            <p class="text-xs font-medium text-gray-900 dark:text-white truncate">
+              {{ unreadContactCount }} unread contact message{{ unreadContactCount === 1 ? '' : 's' }}
+            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">From the public contact form</p>
+          </div>
+        </Link>
+
+        <!-- Generic notifications (all roles) -->
+        <ul v-if="notifications.length" class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-[#3F4F43]">
+          <li v-for="n in notifications" :key="n.id">
+            <button
+              @click="openNotification(n)"
+              class="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              :class="!n.read_at ? 'bg-[#006907]/[0.04] dark:bg-[#86EFAC]/[0.06]' : ''"
+            >
+              <span class="mt-1.5 w-2 h-2 rounded-full shrink-0" :class="kindDot(n.kind)"></span>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center justify-between gap-2">
+                  <span class="text-xs text-gray-900 dark:text-white truncate" :class="!n.read_at ? 'font-bold' : 'font-semibold'">
+                    {{ n.title }}
+                  </span>
+                  <span class="text-[10px] text-gray-400 shrink-0">{{ n.created_at }}</span>
+                </span>
+                <span class="block text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mt-0.5">
+                  {{ n.body }}
+                </span>
+              </span>
+            </button>
+          </li>
+        </ul>
+        <div v-else-if="!(isAdmin && unreadContactCount > 0)" class="p-6 text-center">
+          <p class="text-xs text-gray-500 dark:text-gray-400">No new notifications.</p>
+        </div>
+
+        <div v-if="notifications.length" class="border-t border-gray-100 dark:border-[#3F4F43]">
+          <Link
+            :href="route('notifications.index')"
+            @click="showNotifications = false"
+            class="block px-4 py-2.5 text-center text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:bg-gray-50 dark:hover:bg-white/5"
+          >
+            View all notifications
+          </Link>
+        </div>
+      </div>
       </div>
 
       <!-- Profile -->
@@ -135,7 +214,13 @@ const initials = computed(() => {
   return name.substring(0, 2).toUpperCase()
 })
 
-const notificationCount = computed(() => isAdmin.value ? unreadContactCount.value : 0)
+const notifications = computed(() => page.props.notifications ?? [])
+const genericNotificationCount = computed(() => page.props.notificationCount ?? 0)
+
+const notificationCount = computed(() => {
+  if (isAdmin.value) return unreadContactCount.value + genericNotificationCount.value
+  return genericNotificationCount.value
+})
 
 // --- DIRECT DOM FONT SCALING ---
 const fontSizeMode = ref('base')
@@ -195,6 +280,34 @@ const toggleDarkMode = () => {
     localStorage.setItem('theme', 'light')
   }
 }
+
+const openNotification = (n) => {
+  showNotifications.value = false
+  const go = () => { if (n.url) router.visit(n.url) }
+
+  if (n.read_at) return go()
+
+  router.post(route('notifications.mark-read', n.id), {}, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: go,
+  })
+}
+
+const markAllRead = () => {
+  if (genericNotificationCount.value === 0) return
+  router.post(route('notifications.mark-all-read'), {}, {
+    preserveScroll: true,
+    preserveState: true,
+  })
+}
+
+const kindDot = (kind) => ({
+  info:    'bg-blue-500',
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  danger:  'bg-red-500',
+}[kind] || 'bg-gray-400')
 
 onMounted(() => {
   // Restore Font Scale Choice

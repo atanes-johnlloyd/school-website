@@ -50,7 +50,7 @@ class DashboardController extends Controller
                     ->whereIn('class_id', $classroomIds)
                     ->published()
                     ->notSubmittedBy($student->id)
-                    ->where('due_at', '>', now())
+                    ->whereBetween('due_at', [now(), now()->addDays(7)])
                     ->count()
                 +
                 \App\Models\Quiz::query()
@@ -59,8 +59,7 @@ class DashboardController extends Controller
                     ->whereDoesntHave('attempts', fn ($q) => $q
                         ->where('student_id', $student->id)
                         ->whereIn('status', ['submitted', 'graded']))
-                    ->where(fn ($q) => $q->whereNull('available_until')
-                                    ->orWhere('available_until', '>', now()))
+                    ->whereBetween('available_until', [now(), now()->addDays(7)])
                     ->count(),
             'grades_available' => \App\Models\AssignmentSubmission::query()
                 ->where('student_id', $student->id)

@@ -2,21 +2,8 @@
 
   <Head title="Student Dashboard - Salawag LMS" />
 
-  <!-- ROOT WRAPPER: Locked to screen height to ensure sticky sidebar behavior -->
-  <div :class="[
-    'h-screen w-full flex bg-[#e8f5e9] dark:bg-[#232D26] font-[\'Inter\'] relative transition-colors duration-300 overflow-hidden',
-    `text-scale-${fontSizeMode}`
-  ]">
-    <!-- SIDEBAR CONTAINER -->
-    <Sidebar :is-open="isSidebarOpen" @close-sidebar="isSidebarOpen = false"
-      class="sticky top-0 h-screen shrink-0 z-30" />
-
-    <!-- MAIN SCROLLABLE AREA -->
-    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden min-w-0 flex flex-col justify-between w-full">
-      <navbartop searchPlaceholder="Search subjects, assignments, quiz hub tasks.." @open-sidebar="isSidebarOpen = true"
-        @font-size-changed="(size) => fontSizeMode = size" />
-
-      <div class="relative z-10 p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 flex-1 pb-16 min-w-0">
+  <StudentLayout>
+    <div class="space-y-4 sm:space-y-6 pb-10 font-['Inter'] min-w-0">
 
         <!-- Hero Banner -->
         <div v-observe
@@ -90,10 +77,8 @@
                     LRN: <span class="text-[#F9C20C]">{{ student?.lrn || '—' }}</span>
                   </h2>
                   <p class="text-white/90 text-[11px] sm:text-xs font-medium truncate">
-                    <span v-if="student?.grade_level">Grade <span class="font-bold">{{ student.grade_level
-                        }}</span></span>
-                    <span v-if="student?.section"> - <span class="font-bold">{{ student.section }}</span></span>
-                    • S.Y. 2026–2027
+                    <span v-if="student?.section"><span class="font-bold">{{ student.section }}</span></span>
+                    • S.Y. {{ activeYear }}
                   </p>
                 </div>
               </div>
@@ -471,15 +456,13 @@
         </div>
 
       </div>
-    </main>
-  </div>
+  </StudentLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
-import Sidebar from '@/Components/Sidebar.vue'
-import navbartop from '@/Components/navbartop.vue'
+import { Head, Link, usePage } from '@inertiajs/vue3'
+import StudentLayout from '@/Layouts/StudentLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../assets/img/local/studentdashboard.png'
 
@@ -493,12 +476,15 @@ const props = defineProps({
   active_term: { type: String, default: null },
 })
 
-// 2. UI STATE
-const isSidebarOpen = ref(false)
-const fontSizeMode = ref('base')
+const page = usePage()
 
-// 3. UPCOMING DEADLINES FILTER STATE
+// 2. UPCOMING DEADLINES FILTER STATE
 const activeDeadlineFilter = ref('all') // Options: 'all' | 'quiz' | 'assignment'
+
+// 3. SHARED ACTIVE SCHOOL YEAR
+const activeYear = computed(
+  () => page.props.activeSchoolYear || props.student?.school_year || '—'
+)
 
 // 4. COMPUTED PROPERTIES
 const classList = computed(() => props.classes?.data ?? [])
