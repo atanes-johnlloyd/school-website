@@ -71,31 +71,31 @@ class UserAndStaffSeeder extends Seeder
                 'name'        => 'Juan Carlo R. Mendoza',
                 'email'       => 'sysadmin@salawagshs.deped.gov.ph',
                 'position'    => 'System Admin',
-                'avatar'      => '/images/staff/sysadmin-mendoza.jpg',
+                'avatar'      => 'staff/sysadmin-mendoza.jpg',
             ],
             [
                 'name'        => 'Dr. Marilou T. Santiago',
                 'email'       => 'principal@salawagshs.deped.gov.ph',
                 'position'    => 'School Head',
-                'avatar'      => '/images/staff/principal-santiago.jpg',
+                'avatar'      => 'staff/principal-santiago.jpg',
             ],
             [
                 'name'        => 'Fernando L. Bautista',
                 'email'       => 'coordinator@salawagshs.deped.gov.ph',
                 'position'    => 'Curriculum Coordinator',
-                'avatar'      => '/images/staff/coordinator-bautista.jpg',
+                'avatar'      => 'staff/coordinator-bautista.jpg',
             ],
             [
                 'name'        => 'Cristina A. Delos Reyes',
                 'email'       => 'registrar@salawagshs.deped.gov.ph',
                 'position'    => 'Registrar',
-                'avatar'      => '/images/staff/registrar-delosreyes.jpg',
+                'avatar'      => 'staff/registrar-delosreyes.jpg',
             ],
             [
                 'name'        => 'Elizabeth T. Soriano',
                 'email'       => 'staff@salawagshs.deped.gov.ph',
                 'position'    => 'Staff',
-                'avatar'      => '/images/staff/staff-soriano.jpg',
+                'avatar'      => 'staff/staff-soriano.jpg',
             ],
         ];
 
@@ -162,7 +162,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2015-06-08',
                 'department'      => 'English / Communication',
                 'specialization'  => 'Effective Communication, Creative Writing, 21st Century Literature',
-                'avatar'          => '/images/teachers/jocelyn-fernandez.jpg',
+                'avatar'          => 'teachers/jocelyn-fernandez.jpg',
             ],
             [
                 'name'            => 'Antonio D. Cruz',
@@ -174,7 +174,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2016-06-06',
                 'department'      => 'Mathematics',
                 'specialization'  => 'General Mathematics, Pre-Calculus, Basic Calculus',
-                'avatar'          => '/images/teachers/antonio-cruz.jpg',
+                'avatar'          => 'teachers/antonio-cruz.jpg',
             ],
             [
                 'name'            => 'Rebecca S. Luna',
@@ -186,7 +186,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2017-06-05',
                 'department'      => 'Science',
                 'specialization'  => 'General Science, Biology, Chemistry',
-                'avatar'          => '/images/teachers/rebecca-luna.jpg',
+                'avatar'          => 'teachers/rebecca-luna.jpg',
             ],
             [
                 'name'            => 'Benjamin T. Ocampo',
@@ -198,7 +198,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2015-06-08',
                 'department'      => 'Life and Career Skills',
                 'specialization'  => 'Life and Career Skills, Personal Development, Guidance',
-                'avatar'          => '/images/teachers/benjamin-ocampo.jpg',
+                'avatar'          => 'teachers/benjamin-ocampo.jpg',
             ],
             [
                 'name'            => 'Lourdes M. Santos',
@@ -210,7 +210,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2014-06-09',
                 'department'      => 'Araling Panlipunan / KASP',
                 'specialization'  => 'Kasaysayan at Lipunang Pilipino, UCSP, Philippine Politics',
-                'avatar'          => '/images/teachers/lourdes-santos.jpg',
+                'avatar'          => 'teachers/lourdes-santos.jpg',
             ],
 
             // ─── STEM cluster ────────────────────────────────────
@@ -224,7 +224,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2013-06-10',
                 'department'      => 'STEM – Mathematics',
                 'specialization'  => 'Pre-Calculus, Basic Calculus, Advanced Mathematics',
-                'avatar'          => '/images/teachers/ramon-villareal.jpg',
+                'avatar'          => 'teachers/ramon-villareal.jpg',
             ],
             [
                 'name'            => 'Marilou V. Aquino',
@@ -236,7 +236,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2018-06-04',
                 'department'      => 'STEM – Sciences',
                 'specialization'  => 'Biology 1-4, Chemistry 1-4, Research Methods',
-                'avatar'          => '/images/teachers/marilou-aquino.jpg',
+                'avatar'          => 'teachers/marilou-aquino.jpg',
             ],
 
             // ─── ARTS-SOC-HUM cluster ────────────────────────────
@@ -250,7 +250,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2016-06-06',
                 'department'      => 'Humanities / Social Sciences',
                 'specialization'  => 'World Religions, Philippine Politics, Community Engagement',
-                'avatar'          => '/images/teachers/ricardo-aquino.jpg',
+                'avatar'          => 'teachers/ricardo-aquino.jpg',
             ],
             [
                 'name'            => 'Hannah Kris A. Bautista',
@@ -262,7 +262,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2020-06-01',
                 'department'      => 'Arts and Design',
                 'specialization'  => 'Visual Arts, Media Arts, Creative Industries',
-                'avatar'          => '/images/teachers/hannah-bautista.jpg',
+                'avatar'          => 'teachers/hannah-bautista.jpg',
             ],
 
             // ─── BUSINESS-ENTREP cluster ─────────────────────────
@@ -276,7 +276,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2016-06-06',
                 'department'      => 'Business and Entrepreneurship',
                 'specialization'  => 'Basic Accounting, Business Finance, Entrepreneurship',
-                'avatar'          => '/images/teachers/elizabeth-reyes.jpg',
+                'avatar'          => 'teachers/elizabeth-reyes.jpg',
             ],
 
             // ─── SPORTS-WELLNESS cluster ─────────────────────────
@@ -290,7 +290,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2018-06-04',
                 'department'      => 'Sports / PE and Health',
                 'specialization'  => 'Sports Science, Sports Coaching, PE and Health',
-                'avatar'          => '/images/teachers/daniel-lim.jpg',
+                'avatar'          => 'teachers/daniel-lim.jpg',
             ],
 
             // ─── ICT cluster ─────────────────────────────────────
@@ -304,7 +304,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2019-06-03',
                 'department'      => 'ICT',
                 'specialization'  => 'Computer Systems Servicing NC II, Programming (Java) NC III',
-                'avatar'          => '/images/teachers/mark-reyes.jpg',
+                'avatar'          => 'teachers/mark-reyes.jpg',
             ],
             [
                 'name'            => 'Christian L. Bautista',
@@ -316,7 +316,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2020-06-01',
                 'department'      => 'ICT',
                 'specialization'  => 'Programming (.NET) NC III, Broadband Installation, Contact Center Services',
-                'avatar'          => '/images/teachers/christian-bautista.jpg',
+                'avatar'          => 'teachers/christian-bautista.jpg',
             ],
 
             // ─── HOSPITALITY cluster ─────────────────────────────
@@ -330,7 +330,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2017-06-05',
                 'department'      => 'Hospitality and Tourism',
                 'specialization'  => 'Cookery NC II, Bread and Pastry Production NC II, FBS NC II',
-                'avatar'          => '/images/teachers/marilou-delacruz.jpg',
+                'avatar'          => 'teachers/marilou-delacruz.jpg',
             ],
             [
                 'name'            => 'Ernesto B. Padilla',
@@ -342,7 +342,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2018-06-04',
                 'department'      => 'Hospitality and Tourism',
                 'specialization'  => 'Bartending NC II, Housekeeping NC II, Events Management',
-                'avatar'          => '/images/teachers/ernesto-padilla.jpg',
+                'avatar'          => 'teachers/ernesto-padilla.jpg',
             ],
 
             // ─── Industrial / Automotive / Construction clusters ─
@@ -356,7 +356,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2015-06-08',
                 'department'      => 'Industrial Technologies',
                 'specialization'  => 'Air-Conditioning Installation NC III, Electrical Installation, Photovoltaic Systems',
-                'avatar'          => '/images/teachers/rodolfo-villamor.jpg',
+                'avatar'          => 'teachers/rodolfo-villamor.jpg',
             ],
             [
                 'name'            => 'Mario C. Villanueva',
@@ -368,7 +368,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2016-06-06',
                 'department'      => 'Automotive and Construction',
                 'specialization'  => 'Automotive Servicing NC II, Carpentry NC II, Masonry NC II',
-                'avatar'          => '/images/teachers/mario-villanueva.jpg',
+                'avatar'          => 'teachers/mario-villanueva.jpg',
             ],
 
             // ─── Agri-Fishery cluster ────────────────────────────
@@ -382,7 +382,7 @@ class UserAndStaffSeeder extends Seeder
                 'date_hired'      => '2017-06-05',
                 'department'      => 'Agri-Fishery',
                 'specialization'  => 'Agricultural Crops Production NC II, Aquaculture NC II, Agro-Entrepreneurship',
-                'avatar'          => '/images/teachers/rogelio-fernandez.jpg',
+                'avatar'          => 'teachers/rogelio-fernandez.jpg',
             ],
         ];
 

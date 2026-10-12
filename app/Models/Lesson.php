@@ -46,7 +46,14 @@ class Lesson extends Model
 
     public function getThumbnailUrlAttribute(): ?string
     {
-        return $this->thumbnail_path ? asset('storage/' . $this->thumbnail_path) : null;
+        if (! $this->thumbnail_path) {
+            return null;
+        }
+
+        $path = ltrim($this->thumbnail_path, '/');
+        $path = preg_replace('#^storage/#', '', $path);
+
+        return $path ? asset('storage/' . $path) : null;
     }
 
     protected $appends = ['thumbnail_url'];

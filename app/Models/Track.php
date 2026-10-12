@@ -17,7 +17,14 @@ class Track extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        if (! $this->image_path) {
+            return null;
+        }
+
+        $path = ltrim($this->image_path, '/');
+        $path = preg_replace('#^storage/#', '', $path);
+
+        return $path ? asset('storage/' . $path) : null;
     }
 
     protected $appends = ['image_url'];

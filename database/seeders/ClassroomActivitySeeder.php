@@ -277,7 +277,7 @@ class ClassroomActivitySeeder extends Seeder
                             'class_module_id' => $module->id,
                             'title'           => "Lesson {$m}.{$l} — " . $this->lessonTitle($l),
                             'body'            => "In this lesson, learners will explore {$this->lessonTopic($l)}. Review the attached handout and complete the practice items at the end of the section.",
-                            'thumbnail_path'  => "/images/lessons/{$class->id}-m{$m}l{$l}.jpg",
+                            'thumbnail_path'  => "lessons/{$class->id}-m{$m}l{$l}.jpg",
                             'is_published'    => true,
                         ]
                     );
@@ -530,7 +530,7 @@ class ClassroomActivitySeeder extends Seeder
                 [
                     'class_id'       => null,
                     'body'           => $body,
-                    'image_path'     => '/images/announcements/' . md5($title) . '.jpg',
+                    'image_path'     => 'announcements/' . md5($title) . '.jpg',
                     'is_pinned'      => $pinned,
                     'is_school_wide' => true,
                     'priority'       => $priority,
