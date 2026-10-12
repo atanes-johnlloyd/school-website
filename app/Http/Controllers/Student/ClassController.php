@@ -209,6 +209,18 @@ class ClassController extends Controller
                 'category'     => 'General',
             ]);
 
+        $lessons = $classroom->lessons()
+            ->published()
+            ->orderBy('position')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (\App\Models\Lesson $l) => [
+                'id'           => $l->id,
+                'title'        => $l->title,
+                'body_preview' => \Str::limit(strip_tags($l->body ?? ''), 120),
+                'created_at'   => $l->created_at?->toIso8601String(),
+            ]);
+
         return Inertia::render('Student/Classes/Show', [
             'classroom' => [
                 'id'           => $classroom->id,
@@ -220,6 +232,7 @@ class ClassController extends Controller
             ],
             'announcements' => $announcements,
             'assignments'   => $assignments,
+            'lessons'       => $lessons,
         ]);
     }
 }

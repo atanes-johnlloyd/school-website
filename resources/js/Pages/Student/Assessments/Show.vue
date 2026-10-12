@@ -8,7 +8,7 @@
       <div v-observe
         class="anim-fade-down relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[260px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
         <img
-          :src="heroImage || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1600&auto=format&fit=crop'"
+          src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1600&auto=format&fit=crop"
           alt="Assessment Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
 
         <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply"></div>
@@ -23,10 +23,7 @@
             <div class="space-y-2 max-w-2xl">
               <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
                 <div class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+                  <Icon icon="clipboard-list" size="xs" />
                   ASSESSMENT DETAILS
                 </div>
 
@@ -51,7 +48,8 @@
               type="button"
               @click="goBack"
               class="inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-black/40 backdrop-blur-md text-white border border-white/20 font-bold px-4 py-2.5 rounded-xl transition-all active:scale-95 text-xs sm:text-sm cursor-pointer shadow-sm shrink-0 self-start">
-              <span>← Back</span>
+              <Icon icon="arrow-left" size="xs" />
+              <span>Back</span>
             </button>
           </div>
 
@@ -375,13 +373,13 @@ function handleFileChange(event) {
 
 async function submit() {
   if (props.submission) {
-    const ok = await confirm.open({
+    const { confirmed } = await confirm({
       title: 'Resubmit assignment?',
       message: 'This replaces your previous submission. The previously uploaded file (if any) will be deleted.',
       confirmLabel: 'Resubmit',
-      tone: 'warning',
+      variant: 'warning',
     })
-    if (!ok) return
+    if (! confirmed) return
   }
 
   form.post(route('student.assignments.submit', props.assignment.id), {

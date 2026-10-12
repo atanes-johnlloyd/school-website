@@ -14,7 +14,7 @@
         @open-sidebar="sidebarOpen = true"
         @font-size-changed="onFontSizeChanged"
       />
-      <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
+      <div class="flex-1 p-6 md:p-8 w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
         <slot />
       </div>
     </main>
