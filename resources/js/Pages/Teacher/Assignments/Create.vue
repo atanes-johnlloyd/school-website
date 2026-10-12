@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search assignments, tasks, rubric..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -141,10 +141,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
 import BackButton from '@/Components/BackButton.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   classroom: { type: Object, default: () => ({}) },
 })
+
+const flash = useFlash()
 
 const form = useForm({
   title: '',
@@ -157,7 +160,10 @@ const form = useForm({
 })
 
 function submit() {
-  form.post(route('teacher.classes.assignments.store', props.classroom.id))
+  form.post(route('teacher.classes.assignments.store', props.classroom.id), {
+    onSuccess: () => flash.success('Assignment created.'),
+    onError: () => flash.error('Please fix the highlighted fields.'),
+  })
 }
 
 const vObserve = {

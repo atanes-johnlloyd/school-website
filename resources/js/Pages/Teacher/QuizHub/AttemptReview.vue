@@ -2,7 +2,7 @@
   <Head :title="`${attempt.student_name} — ${attempt.quiz_title} — Salawag LMS`" />
 
   <AuthenticatedLayout searchPlaceholder="Search attempts, questions..">
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2 max-w-full">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -238,7 +238,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -251,6 +251,8 @@ const props = defineProps({
   attempt: { type: Object, required: true },
   answers: { type: Array,  default: () => [] },
 })
+
+const flash = useFlash()
 
 const grades = ref({})
 const gradingId = ref(null)
@@ -331,12 +333,15 @@ function gradeAnswer(answer) {
 
   gradingId.value = answer.id
   axios.put(route('teacher.quiz-answers.grade', answer.id), { points_awarded: pts })
-    .then(() => router.reload({
-      only: ['attempt', 'answers'],
-      preserveScroll: true,
-      preserveState: true,
-    }))
-    .catch(e => showError(e.response?.data?.message || 'Grading failed.'))
+    .then(() => {
+      flash.success('Points awarded.')
+      router.reload({
+        only: ['attempt', 'answers'],
+        preserveScroll: true,
+        preserveState: true,
+      })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Grading failed.'))
     .finally(() => { gradingId.value = null })
 }
 

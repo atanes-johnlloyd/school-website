@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search lessons, resources..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -134,16 +134,19 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import BackButton from '@/Components/BackButton.vue'
 import heroImage from '../../../../assets/img/local/lessons-hero.jpg'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   classroom: { type: Object, default: () => ({}) },
 })
+
+const flash = useFlash()
 
 const form = useForm({
   title: '',
@@ -173,6 +176,8 @@ function submit() {
   form.post(route('teacher.classes.lessons.store', props.classroom.id), {
     forceFormData: true,
     preserveScroll: true,
+    onSuccess: () => flash.success('Lesson created.'),
+    onError: () => flash.error('Please fix the highlighted fields.'),
   })
 }
 

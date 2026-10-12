@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search assignments, tasks, rubric..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -119,10 +119,12 @@
 
         <!-- Actions + Danger -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-[#3F4F43]">
-          <button type="button" @click="destroy" :disabled="form.processing"
-            class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 transition-colors self-start sm:self-auto flex items-center gap-1.5 disabled:opacity-60">
+          <button type="button" @click="destroy"
+            :disabled="form.processing || hasGradedSubmissions"
+            :title="hasGradedSubmissions ? 'Cannot delete: some submissions have already been graded.' : 'Delete assignment'"
+            class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 transition-colors self-start sm:self-auto flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-rose-600">
             <Icon icon="trash" size="xs" />
-            Delete Assignment
+            {{ hasGradedSubmissions ? 'Cannot delete (graded)' : 'Delete Assignment' }}
           </button>
 
           <div class="flex items-center gap-2">
@@ -144,18 +146,22 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { computed } from 'vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
 import BackButton from '@/Components/BackButton.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   classroom:  { type: Object, default: () => ({}) },
   assignment: { type: Object, default: () => ({}) },
 })
 
+const flash = useFlash()
+const confirm = useConfirm()
 const form = useForm({
   title:        props.assignment.title ?? '',
   category:     props.assignment.category ?? 'written_work',
@@ -166,13 +172,38 @@ const form = useForm({
   is_published: props.assignment.is_published ?? false,
 })
 
+const hasGradedSubmissions = computed(() => (props.assignment?.graded_count ?? 0) > 0)
+
 function submit() {
-  form.put(route('teacher.assignments.update', props.assignment.id))
+  form.put(route('teacher.assignments.update', props.assignment.id), {
+    onSuccess: () => flash.success('Assignment updated.'),
+    onError: () => flash.error('Please fix the highlighted fields.'),
+  })
 }
 
 async function destroy() {
-  if (!await confirmAction('Delete this assignment? This action cannot be undone.')) return
-  form.delete(route('teacher.assignments.destroy', props.assignment.id))
+  if (hasGradedSubmissions.value) {
+    flash.error('Cannot delete: some submissions have already been graded. Unpublish instead.')
+    return
+  }
+
+  const { confirmed } = await confirm({
+    title: 'Delete Assignment',
+    message: `Delete "${props.assignment.title}"?`,
+    details: [
+      'This action cannot be undone.',
+      'The assignment will be hidden. Student submissions are preserved in the database.',
+    ],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
+  form.delete(route('teacher.assignments.destroy', props.assignment.id), {
+    onSuccess: () => flash.success('Assignment deleted.'),
+    onError: (err) => flash.error(err?.message || 'Failed to delete assignment.'),
+    onFinish: () => {},
+  })
 }
 
 const vObserve = {

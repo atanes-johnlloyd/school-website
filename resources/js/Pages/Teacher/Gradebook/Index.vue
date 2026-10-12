@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search grade records, student LRN, competencies..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- EMPTY STATE: no classes -->
       <div v-if="!classroom" class="bg-white dark:bg-[#2D3A31] rounded-3xl p-12 shadow-sm border border-dashed border-slate-300 dark:border-[#3F4F43] text-center space-y-3 mt-8">
@@ -29,11 +29,20 @@
               <span class="bg-[#F9C20C] text-[#2C3E2D] text-[10px] sm:text-[11px] md:text-xs font-black uppercase tracking-wider px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm flex items-center gap-1">
                 <span>🏛️</span> DEPED REGION IV-A • SDO DASMARIÑAS
               </span>
+
+              <!-- UPDATED: policy badge reflects the active DepEd rule -->
               <span class="bg-white/15 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-[11px] md:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm">
-                🛡️ DepEd Order No. 8, s. 2015 Compliant
+                🛡️ {{ policyLabel }}
               </span>
+
               <span class="bg-white/15 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-[11px] md:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm">
                 🎓 {{ classroom.subject || 'Subject' }} • {{ classroom.section || 'Section' }}
+              </span>
+
+              <!-- NEW: subject type badge -->
+              <span v-if="subjectTypeLabel"
+                class="bg-white/15 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-[11px] md:text-xs font-semibold px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm">
+                📚 {{ subjectTypeLabel }}
               </span>
             </div>
 
@@ -42,9 +51,8 @@
                 Official Electronic Class Record (E-Class Record)
               </h2>
               <p class="text-white/90 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
-                Automated computation for Senior High School STEM Strand. Live score transmutation,
-                continuous transmuted MPS analytics, and direct export to DepEd SF-9 (Report Card) and
-                SF-10.
+                Automated computation aligned with the Strengthened SHS Curriculum and DepEd DM 074, s. 2025.
+                Live score transmutation, continuous MPS analytics, and direct export to DepEd SF-9 (Report Card) and SF-10.
               </p>
             </div>
           </div>
@@ -97,7 +105,7 @@
             style="animation-delay: 200ms;">
             <div class="flex items-start justify-between">
               <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[130px] leading-tight">
-                SUBMISSIONS COMPLETE
+                LEARNERS COMPLETE
               </span>
               <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100/70 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -112,7 +120,7 @@
                 <span class="text-xs sm:text-base font-bold text-slate-500 dark:text-slate-400">/{{ submissionsCard.total }}</span>
               </div>
               <span class="bg-[#FEF9E7] dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-xl sm:rounded-2xl border border-amber-200/60 dark:border-amber-900/40 text-center leading-tight">
-                {{ submissionsCard.percent }}%<br><span class="font-normal text-[9px] sm:text-[10px]">Logged</span>
+                {{ submissionsCard.percent }}%<br><span class="font-normal text-[9px] sm:text-[10px]">Complete</span>
               </span>
             </div>
 
@@ -137,7 +145,7 @@
             </div>
 
             <div class="flex items-center gap-1.5 sm:gap-2">
-              <span class="text-2xl sm:text-4xl font-black text-rose-600 dark:text-rose-400">{{ summary.failing || 0 }}</span>
+              <span class="text-2xl sm:text-4xl font-black text-rose-600 dark:text-rose-400">{{ failingCount }}</span>
               <span class="bg-rose-100/80 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-200/60 dark:border-rose-900/40">
                 Intervention
               </span>
@@ -151,33 +159,40 @@
             </div>
           </div>
 
-          <!-- SCORE SYNC STATUS -->
+          <!-- ★ REPLACED: GRADE ENTRY PROGRESS (was "Score Sync Status") ★ -->
           <div v-observe
             class="anim-slide-up col-span-1 bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-200/60 dark:border-[#3F4F43] flex flex-col justify-between space-y-3 sm:space-y-4"
             style="animation-delay: 400ms;">
             <div class="flex items-start justify-between">
               <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 max-w-[130px] leading-tight">
-                SCORE SYNC STATUS
+                GRADE ENTRY PROGRESS
               </span>
               <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-100/70 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] flex items-center justify-center shrink-0">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+                  <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                 </svg>
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1.5 sm:gap-2">
-              <span class="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                Auto-<br>saved
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
+                {{ gradeEntryProgress.entered }}
               </span>
-              <span class="bg-[#005506] text-white text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm">
-                Secure
+              <span class="text-xs sm:text-base font-bold text-slate-500 dark:text-slate-400">
+                /{{ gradeEntryProgress.total }}
               </span>
             </div>
 
+            <div class="w-full h-2 sm:h-2.5 bg-slate-100 dark:bg-[#232D26] rounded-full overflow-hidden">
+              <div class="h-full bg-[#005506] dark:bg-[#86EFAC] rounded-full transition-all"
+                :style="{ width: gradeEntryProgress.percent + '%' }"></div>
+            </div>
+
             <div class="flex flex-wrap items-center justify-between text-[10px] sm:text-xs font-bold pt-2 border-t border-slate-100 dark:border-[#3F4F43] gap-1">
-              <span class="text-slate-500 dark:text-slate-400">Live compute</span>
-              <span class="text-slate-900 dark:text-white font-black">{{ students.length }} rows</span>
+              <span class="text-slate-500 dark:text-slate-400">Assessment cells filled</span>
+              <span class="text-[#005506] dark:text-[#86EFAC] font-black">
+                {{ gradeEntryProgress.percent }}%
+              </span>
             </div>
           </div>
 
@@ -192,7 +207,6 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 flex-1">
 
-            <!-- Class selector -->
             <div>
               <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
                 Select Class
@@ -210,7 +224,6 @@
               </div>
             </div>
 
-            <!-- Subject code -->
             <div>
               <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
                 Subject Code
@@ -220,7 +233,6 @@
               </div>
             </div>
 
-            <!-- Term -->
             <div>
               <label class="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
                 Term Horizon
@@ -233,9 +245,14 @@
 
           <!-- Weight scheme -->
           <div class="bg-[#F9F7F1] dark:bg-[#232D26] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] space-y-1.5 sm:space-y-2 shrink-0">
-            <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-              WEIGHT SCHEME
-            </span>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                WEIGHT SCHEME
+              </span>
+              <span v-if="subjectTypeLabel" class="text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                {{ subjectTypeLabel }}
+              </span>
+            </div>
             <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span class="bg-emerald-100/80 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[11px] sm:text-xs font-extrabold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#005506] dark:bg-[#86EFAC]"></span>
@@ -245,9 +262,14 @@
                 <span class="w-2 h-2 rounded-full bg-amber-600"></span>
                 Performance ({{ weights.performance_task }}%)
               </span>
-              <span class="bg-emerald-100/80 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[11px] sm:text-xs font-extrabold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40 flex items-center gap-1.5">
+              <span v-if="!isWorkImmersion"
+                class="bg-emerald-100/80 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[11px] sm:text-xs font-extrabold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-emerald-200/60 dark:border-emerald-900/40 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-[#005506] dark:bg-[#86EFAC]"></span>
                 Exam ({{ weights.quarterly_exam }}%)
+              </span>
+              <span v-else
+                class="bg-slate-100 dark:bg-[#232D26] text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-extrabold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-slate-200/60 dark:border-[#3F4F43] flex items-center gap-1.5 italic">
+                Exam: not applicable (Work Immersion)
               </span>
             </div>
           </div>
@@ -263,7 +285,6 @@
           <!-- Toolbar -->
           <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#F9F7F1] dark:bg-[#232D26] p-3 rounded-2xl border border-slate-200/80 dark:border-[#3F4F43] print:hidden">
 
-            <!-- Search -->
             <div class="relative flex-1 w-full min-w-0">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <Icon icon="search" size="sm" />
@@ -272,10 +293,8 @@
                 class="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-[#2D3A31] border border-slate-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#005506] text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm" />
             </div>
 
-            <!-- Actions: use flex-wrap, NO overflow, so absolute dropdowns render -->
             <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
 
-              <!-- Filter dropdown — wrapped in a non-clipping parent -->
               <div class="relative">
                 <button @click="showFilterMenu = !showFilterMenu"
                   class="w-9 h-9 rounded-xl bg-white dark:bg-[#2D3A31] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#3F4F43] flex items-center justify-center transition-colors shadow-sm"
@@ -303,14 +322,12 @@
                 </div>
               </div>
 
-              <!-- Export -->
               <a :href="route('exports.gradebook', classroom.id)" target="_blank"
                 class="bg-white dark:bg-[#2D3A31] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-extrabold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-200 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors shadow-sm">
                 <Icon icon="download" size="xs" class="text-slate-500" />
                 Export
               </a>
 
-              <!-- Print -->
               <button @click="printGradebook"
                 class="bg-white dark:bg-[#2D3A31] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-extrabold px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-200 dark:border-[#3F4F43] flex items-center gap-1.5 transition-colors shadow-sm">
                 <svg class="w-3.5 h-3.5 fill-current text-slate-500" viewBox="0 0 24 24">
@@ -385,7 +402,7 @@
                   ]">
 
                   <td class="py-3 px-2 sm:px-3 font-bold border-r border-slate-200/80 dark:border-[#3F4F43]"
-                    :class="student.remarks === 'did_not_meet_expectations' ? 'text-rose-700 dark:text-rose-400' : ''">
+                    :class="deriveRemarks(student) === 'did_not_meet_expectations' ? 'text-rose-700 dark:text-rose-400' : ''">
                     {{ String((page - 1) * perPage + idx + 1).padStart(2, '0') }}
                   </td>
 
@@ -435,9 +452,9 @@
                   </td>
 
                   <td class="py-3 px-3 sm:px-4">
-                    <span :class="remarksBadge(student.remarks)"
+                    <span :class="remarksBadge(deriveRemarks(student))"
                       class="text-[10px] sm:text-[11px] font-extrabold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1 border whitespace-nowrap">
-                      {{ remarksLabel(student.remarks) }}
+                      {{ remarksLabel(deriveRemarks(student)) }}
                     </span>
                   </td>
                 </tr>
@@ -465,7 +482,6 @@
           <div v-if="filteredStudents.length > 0"
             class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-2 print:hidden">
 
-            <!-- Rows-per-page selector -->
             <div class="flex items-center gap-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-semibold">
               <span>Show</span>
               <div class="relative">
@@ -484,7 +500,6 @@
               <span>rows</span>
             </div>
 
-            <!-- Count text -->
             <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium text-center order-last sm:order-none w-full sm:w-auto">
               Showing <strong class="text-slate-800 dark:text-white">{{ pageStart }}</strong>
               to <strong class="text-slate-800 dark:text-white">{{ pageEnd }}</strong>
@@ -494,7 +509,6 @@
               </span>
             </p>
 
-            <!-- Page numbers -->
             <div v-if="totalPages > 1" class="flex items-center gap-1 sm:gap-1.5">
               <button @click="page = Math.max(1, page - 1)" :disabled="page === 1"
                 :class="[
@@ -527,7 +541,6 @@
               </button>
             </div>
 
-            <!-- Class Average -->
             <div class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0 order-last sm:order-none">
               Avg:
               <strong class="text-[#005506] dark:text-[#86EFAC]">
@@ -561,7 +574,7 @@
               </div>
 
               <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                Transmuted distributions based on DepEd DO 8, s. 2015 standards.
+                Transmuted distributions based on {{ policyLabel }}.
               </p>
 
               <div class="space-y-3 sm:space-y-4 pt-1 sm:pt-2">
@@ -589,7 +602,7 @@
                 </span>
               </span>
               <span class="font-bold text-slate-500 dark:text-slate-400">
-                {{ summary.failing || 0 }} below threshold
+                {{ failingCount }} below threshold
               </span>
             </div>
           </div>
@@ -616,13 +629,16 @@
                 </div>
               </div>
 
+              <!-- NEW: policy note under the title -->
               <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                Standard DepEd Conversion scale from Initial Grade to Transmuted Quarterly Grade.
+                Active rule: <strong class="text-slate-700 dark:text-slate-300">{{ policyLabel }}</strong>.
+                {{ policyNote }}
               </p>
 
-              <div class="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-[#3F4F43]">
+              <div v-if="transmutationRows.length"
+                class="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-[#3F4F43] max-h-[380px] overflow-y-auto">
                 <table class="w-full text-left border-collapse text-xs font-medium">
-                  <thead>
+                  <thead class="sticky top-0">
                     <tr class="bg-[#F9F7F1] dark:bg-[#232D26] text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-slate-200/60 dark:border-[#3F4F43]">
                       <th class="py-2.5 sm:py-3 px-3 sm:px-4">Initial Score Range</th>
                       <th class="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Transmuted Grade</th>
@@ -640,12 +656,19 @@
                   </tbody>
                 </table>
               </div>
+
+              <div v-else class="bg-[#F9F7F1] dark:bg-[#232D26] rounded-2xl p-6 text-center border border-dashed border-slate-300 dark:border-[#3F4F43]">
+                <p class="text-xs font-bold text-slate-700 dark:text-white">No transmutation applied</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  Raw grade equals final grade under the current policy.
+                </p>
+              </div>
             </div>
 
             <div class="pt-4 sm:pt-6 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[11px] sm:text-xs">
-              <span class="text-slate-500 dark:text-slate-400">Base 60 Transmutation</span>
+              <span class="text-slate-500 dark:text-slate-400">{{ policyFootnote }}</span>
               <span class="font-extrabold text-[#005506] dark:text-[#86EFAC]">
-                DepEd DO 8, s. 2015
+                {{ policyReference }}
               </span>
             </div>
           </div>
@@ -677,7 +700,62 @@ const props = defineProps({
   students:    { type: Array,  default: () => [] },
   summary:     { type: Object, default: () => ({ total_students: 0, passing: 0, failing: 0, class_average: null }) },
   activeTerm:  { type: String, default: null },
+
+  /* NEW — controller should pass this based on the active school year.
+     Accepted values: 'do8_2015' (default, current pilot) | 'do15_2026' (adjusted) | 'none' (post-SY2027-2028). */
+  transmutationRule: { type: String, default: 'do8_2015' },
+
+  /* NEW — optional subject type hint from the controller.
+     'core' | 'academic_elective' | 'academic_elective_field' | 'techpro_elective' | 'work_immersion' */
+  subjectType: { type: String, default: null },
 })
+
+/* ═══════════════════════════════════════════════════════ */
+/* POLICY LABEL / NOTE / FOOTNOTE                           */
+/* ═══════════════════════════════════════════════════════ */
+const policyLabel = computed(() => {
+  return {
+    do8_2015:  'DepEd Order No. 8, s. 2015 Compliant',
+    do15_2026: 'DepEd Order No. 15, s. 2026 — Adjusted Table',
+    none:      'Non-Transmutation (Raw = Final)',
+  }[props.transmutationRule] || 'DepEd Order No. 8, s. 2015 Compliant'
+})
+
+const policyNote = computed(() => {
+  return {
+    do8_2015:  'Raw score 60 maps to a passing 75 for SY 2025-2026 pilot implementation.',
+    do15_2026: 'Raw score 70 maps to a passing 75 for SY 2026-2027 transition.',
+    none:      'A raw score of 75 is required to pass. No transmutation applied.',
+  }[props.transmutationRule] || ''
+})
+
+const policyFootnote = computed(() => {
+  return {
+    do8_2015:  'Base 60 Transmutation',
+    do15_2026: 'Base 70 Transmutation',
+    none:      'Direct reporting',
+  }[props.transmutationRule] || ''
+})
+
+const policyReference = computed(() => {
+  return {
+    do8_2015:  'DepEd DO 8, s. 2015',
+    do15_2026: 'DepEd DO 15, s. 2026',
+    none:      'DepEd DO 15, s. 2026',
+  }[props.transmutationRule] || 'DepEd DO 8, s. 2015'
+})
+
+const subjectTypeLabel = computed(() => {
+  return {
+    core:                      'Core Subject',
+    academic_elective:         'Academic Elective',
+    academic_elective_field:   'Academic Elective — Field Exp / Sports / Arts',
+    techpro_elective:          'TechPro Elective',
+    work_immersion:            'TechPro — Work Immersion',
+  }[props.subjectType] || null
+})
+
+const isWorkImmersion = computed(() => props.subjectType === 'work_immersion')
 
 /* ═══════════════════════════════════════════════════════ */
 /* CLASS SWITCHING                                          */
@@ -700,11 +778,19 @@ const search = ref('')
 const remarkFilter = ref('all')
 const showFilterMenu = ref(false)
 
-const remarkFilterOptions = computed(() => [
-  { id: 'all',     label: 'All Learners',  count: props.students.length },
-  { id: 'passing', label: 'Passing',       count: props.students.filter(s => s.remarks && s.remarks !== 'did_not_meet_expectations').length },
-  { id: 'failing', label: 'At Risk',       count: props.students.filter(s => s.remarks === 'did_not_meet_expectations').length },
-])
+const remarkFilterOptions = computed(() => {
+  const counts = { passing: 0, failing: 0 }
+  props.students.forEach(s => {
+    const r = deriveRemarks(s)
+    if (r === 'did_not_meet_expectations') counts.failing++
+    else if (r) counts.passing++
+  })
+  return [
+    { id: 'all',     label: 'All Learners',  count: props.students.length },
+    { id: 'passing', label: 'Passing',       count: counts.passing },
+    { id: 'failing', label: 'At Risk',       count: counts.failing },
+  ]
+})
 
 const filteredStudents = computed(() => {
   let list = props.students
@@ -716,9 +802,12 @@ const filteredStudents = computed(() => {
     )
   }
   if (remarkFilter.value === 'passing') {
-    list = list.filter(s => s.remarks && s.remarks !== 'did_not_meet_expectations')
+    list = list.filter(s => {
+      const r = deriveRemarks(s)
+      return r && r !== 'did_not_meet_expectations'
+    })
   } else if (remarkFilter.value === 'failing') {
-    list = list.filter(s => s.remarks === 'did_not_meet_expectations')
+    list = list.filter(s => deriveRemarks(s) === 'did_not_meet_expectations')
   }
   return list
 })
@@ -734,7 +823,6 @@ function resetFilters() {
 const perPage = ref(10)
 const page = ref(1)
 
-// Reset to page 1 whenever filters change
 watch([search, remarkFilter, perPage], () => { page.value = 1 })
 watch(() => props.classroom?.id, () => { page.value = 1 })
 
@@ -791,7 +879,8 @@ const categoryGroups = computed(() => {
       weight: props.weights?.[c.key] ?? 0,
       assignments: props.assignments.filter(a => a.category === c.key),
     }))
-    .filter(c => c.assignments.length > 0)
+    // Hide exam category for Work Immersion
+    .filter(c => c.assignments.length > 0 && !(isWorkImmersion.value && c.key === 'quarterly_exam'))
 })
 
 function categoryPossible(cat) {
@@ -845,23 +934,49 @@ const submissionsCard = computed(() => {
   return { complete, total, percent }
 })
 
+/* NEW — grade entry progress card */
+const gradeEntryProgress = computed(() => {
+  const total = props.students.length * props.assignments.length
+  if (total === 0) return { entered: 0, total: 0, percent: 0 }
+
+  let entered = 0
+  props.students.forEach(s => {
+    props.assignments.forEach(a => {
+      const g = s.grades?.[a.id]
+      if (g && g.grade !== null && g.grade !== undefined && g.grade !== '') entered++
+    })
+  })
+
+  return {
+    entered,
+    total,
+    percent: Math.round((entered / total) * 100),
+  }
+})
+
 /* ═══════════════════════════════════════════════════════ */
-/* COHORT DISTRIBUTION                                      */
+/* COHORT DISTRIBUTION — uses TRANSMUTED grades             */
 /* ═══════════════════════════════════════════════════════ */
 const cohortDistribution = computed(() => {
   const buckets = [
-    { label: '95 – 100', sub: 'Highest Honors',    color: 'bg-[#005506] dark:bg-[#86EFAC]', text: 'text-[#005506] dark:text-[#86EFAC]', min: 95, max: 100.01 },
+    { label: '95 – 100', sub: 'Highest Honors',    color: 'bg-[#005506] dark:bg-[#86EFAC]', text: 'text-[#005506] dark:text-[#86EFAC]', min: 95, max: 101 },
     { label: '90 – 94',  sub: 'With Honors',       color: 'bg-[#F9C20C]',                   text: 'text-amber-700 dark:text-amber-400', min: 90, max: 95 },
     { label: '85 – 89',  sub: 'Very Satisfactory', color: 'bg-emerald-600',                 text: 'text-emerald-700 dark:text-emerald-400', min: 85, max: 90 },
     { label: '80 – 84',  sub: 'Satisfactory',      color: 'bg-slate-400',                   text: 'text-slate-600 dark:text-slate-400', min: 80, max: 85 },
     { label: 'Below 80', sub: 'Did Not Meet',      color: 'bg-red-600',                     text: 'text-red-600 dark:text-red-400', min: -1, max: 80 },
   ]
+
   const total = props.students.length
+
   return buckets.map(b => {
     const count = props.students.filter(s => {
-      const g = parseFloat(s.final_grade)
-      return !isNaN(g) && g >= b.min && g < b.max
+      const t = transmute(s.final_grade)   // ← transmuted, not raw
+      if (t === '—') return false
+      const num = parseFloat(t)
+      if (isNaN(num)) return false
+      return num >= b.min && num < b.max
     }).length
+
     return { ...b, count, percent: total > 0 ? Math.round((count / total) * 100) : 0 }
   })
 })
@@ -869,34 +984,56 @@ const cohortDistribution = computed(() => {
 const passingRate = computed(() => {
   const total = props.students.length
   if (total === 0) return 0
-  const passing = props.students.filter(s => s.remarks && s.remarks !== 'did_not_meet_expectations').length
+  const passing = props.students.filter(s => {
+    const r = deriveRemarks(s)
+    return r && r !== 'did_not_meet_expectations'
+  }).length
   return Math.round((passing / total) * 100)
 })
 
 /* ═══════════════════════════════════════════════════════ */
-/* TRANSMUTATION                                            */
+/* TRANSMUTATION — rule-aware                              */
 /* ═══════════════════════════════════════════════════════ */
-const transmutationRows = computed(() => [
-  { range: '100.00',         grade: 100 },
-  { range: '98.40 – 99.99',  grade: 99  },
-  { range: '96.80 – 98.39',  grade: 98  },
-  { range: '95.20 – 96.79',  grade: 97  },
-  { range: '93.60 – 95.19',  grade: 96  },
-  { range: '92.00 – 93.59',  grade: 95  },
-  { range: '90.40 – 91.99',  grade: 94  },
-  { range: '88.80 – 90.39',  grade: 93  },
-  { range: '87.20 – 88.79',  grade: 92  },
-  { range: '85.60 – 87.19',  grade: 91  },
-  { range: '84.00 – 85.59',  grade: 90  },
-])
-
 function transmute(initial) {
   if (initial === null || initial === undefined || initial === '') return '—'
   let n = parseFloat(initial)
   if (isNaN(n)) return '—'
+
+  const rule = props.transmutationRule
+
+  if (rule === 'none') {
+    // Post-SY 2027-2028: raw = final, no adjustment
+    return Math.round(n)
+  }
+
   if (n >= 100) return 100
+
+  if (rule === 'do15_2026') {
+    // Adjusted table: raw 70 → 75
+    if (n < 70) n = 70
+    return Math.max(75, 100 - Math.ceil((100 - n) / 1.2))
+  }
+
+  // Default: DO 8, s. 2015. Raw 60 → 75.
   if (n < 60) n = 60
   return Math.max(60, 100 - Math.ceil((100 - n) / 1.6))
+}
+
+/**
+ * Derive DepEd remarks from the transmuted grade.
+ * Thresholds per DO 8, s. 2015 / DM 074, s. 2025.
+ */
+function deriveRemarks(student) {
+  const t = transmute(student.final_grade)
+  if (t === '—') return null
+  const n = parseFloat(t)
+  if (isNaN(n)) return null
+
+  if (n >= 90) return 'outstanding'
+  if (n >= 85) return 'very_satisfactory'
+  if (n >= 80) return 'satisfactory'
+  if (n >= 75) return 'fairly_satisfactory'
+  return 'did_not_meet_expectations'
 }
 
 function transmutedClass(student) {
@@ -909,6 +1046,40 @@ function transmutedClass(student) {
   return 'text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/60'
 }
 
+/* Transmutation table rows — generated to match the active rule. */
+const transmutationRows = computed(() => {
+  const rule = props.transmutationRule
+  if (rule === 'none') return []
+
+  const rows = []
+  if (rule === 'do15_2026') {
+    // Raw 70 → 75, step 1.2 raw points per 1 grade
+    for (let grade = 75; grade <= 100; grade++) {
+      const lowRaw = grade === 75 ? 70 : 70 + (grade - 75) * 1.2
+      const highRaw = grade === 100 ? 100 : 70 + (grade - 74) * 1.2 - 0.01
+      const range = grade === 100
+        ? '100.00'
+        : `${lowRaw.toFixed(2)} – ${highRaw.toFixed(2)}`
+      rows.push({ range, grade })
+    }
+  } else {
+    // DO 8, s. 2015: raw 60 → 75, step 1.6 raw points per 1 grade
+    for (let grade = 75; grade <= 100; grade++) {
+      const lowRaw = grade === 75 ? 60 : 60 + (grade - 75) * 1.6
+      const highRaw = grade === 100 ? 100 : 60 + (grade - 74) * 1.6 - 0.01
+      const range = grade === 100
+        ? '100.00'
+        : `${lowRaw.toFixed(2)} – ${highRaw.toFixed(2)}`
+      rows.push({ range, grade })
+    }
+  }
+  // Return descending (highest first) so it matches the original UX
+  return rows.reverse()
+})
+
+const failingCount = computed(() =>
+  props.students.filter(s => deriveRemarks(s) === 'did_not_meet_expectations').length
+)
 /* ═══════════════════════════════════════════════════════ */
 /* HELPERS                                                  */
 /* ═══════════════════════════════════════════════════════ */
@@ -990,22 +1161,4 @@ const vObserve = {
 @media print {
   .print\:hidden { display: none !important; }
 }
-
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-sm :deep(.text-lg)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-sm :deep(.text-xl)   { font-size: 1.125rem !important; line-height: 1.75rem !important; }
-.text-scale-sm :deep(.text-3xl)  { font-size: 1.5rem !important; line-height: 2rem !important; }
-.text-scale-sm :deep(.sm\:text-4xl) { font-size: 1.875rem !important; line-height: 2.25rem !important; }
-.text-scale-sm :deep(.md\:text-5xl) { font-size: 2.25rem !important; line-height: 1 !important; }
-
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
-.text-scale-lg :deep(.text-lg)   { font-size: 1.25rem !important; line-height: 1.75rem !important; }
-.text-scale-lg :deep(.text-xl)   { font-size: 1.5rem !important; line-height: 2rem !important; }
-.text-scale-lg :deep(.text-3xl)  { font-size: 2.25rem !important; line-height: 2.5rem !important; }
-.text-scale-lg :deep(.sm\:text-4xl) { font-size: 2.75rem !important; line-height: 1 !important; }
-.text-scale-lg :deep(.md\:text-5xl) { font-size: 3.5rem !important; line-height: 1 !important; }
 </style>

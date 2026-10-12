@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search announcements...">
 
-    <div class="relative z-10 px-4 sm:px-6 md:px-10 pb-24 flex-1 mt-4">
+    <div class="space-y-4 sm:space-y-6">
       <div class="max-w-5xl mx-auto w-full space-y-6">
 
         <!-- ─────────── TOP ACTION BAR ─────────── -->
@@ -194,7 +194,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -206,6 +206,8 @@ const props = defineProps({
   classroom:    { type: Object, default: () => ({}) },
 })
 
+const flash = useFlash()
+
 /* ─── ACTIONS ─────────────────────────────────────────── */
 const pinning       = ref(false)
 const confirmDelete = ref(false)
@@ -214,16 +216,22 @@ const deleting      = ref(false)
 function togglePin() {
   pinning.value = true
   axios.put(route('teacher.announcements.toggle-pin', props.announcement.id))
-    .then(() => router.reload({ only: ['announcement'], preserveScroll: true, preserveState: true }))
-    .catch(e => showError(e.response?.data?.message || 'Could not toggle pin.'))
+    .then(() => {
+      flash.success(props.announcement.is_pinned ? 'Unpinned.' : 'Pinned to top of class feed.')
+      router.reload({ only: ['announcement'], preserveScroll: true, preserveState: true })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Could not toggle pin.'))
     .finally(() => { pinning.value = false })
 }
 
 function destroyConfirmed() {
   deleting.value = true
   axios.delete(route('teacher.announcements.destroy', props.announcement.id))
-    .then(() => router.visit(route('teacher.announcements.index')))
-    .catch(e => showError(e.response?.data?.message || 'Delete failed.'))
+    .then(() => {
+      flash.success('Announcement deleted.')
+      router.visit(route('teacher.announcements.index'))
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Delete failed.'))
     .finally(() => { deleting.value = false })
 }
 

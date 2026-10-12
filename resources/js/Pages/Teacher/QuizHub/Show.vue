@@ -2,7 +2,7 @@
   <Head :title="`${quiz.title} - Quiz Manager - Salawag LMS`" />
 
   <AuthenticatedLayout searchPlaceholder="Search quiz questions, bank items..">
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2 max-w-full">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO (unchanged) -->
       <div v-observe
@@ -208,7 +208,6 @@
 <!-- Attach from bank -->
 <div
   @dragover.prevent="onBankPanelDragOver"
-  @dragleave="onBankPanelDragLeave"
   @drop.prevent="onBankPanelDrop"
   :class="[
     'lg:col-span-4 bg-white dark:bg-[#2D3A31] rounded-2xl p-4 sm:p-6 shadow-sm border space-y-4 sticky top-4 transition-all',
@@ -318,7 +317,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, computed, watch, onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -331,6 +330,8 @@ const props = defineProps({
   quiz:      { type: Object, default: () => ({}) },
   questions: { type: Array,  default: () => [] },
 })
+
+const flash = useFlash()
 
 const publishing = ref(false)
 const deleting = ref(false)
@@ -384,8 +385,8 @@ function toggleSetting(key) {
       router.reload({ only: ['quiz'], preserveScroll: true, preserveState: true })
     })
     .catch(e => {
-      settingOverrides.value = { ...settingOverrides.value, [key]: current }
-      showError(e.response?.data?.message || 'Could not update setting.')
+      flash.error(e.response?.data?.message || 'Reorder failed — restoring order.')
+      localQuestions.value = [...props.questions]
     })
     .finally(() => { togglingKey.value = null })
 }
@@ -436,36 +437,48 @@ onMounted(loadBank)
 // ── publish / delete ────────────────────────────────────────
 function togglePublish() {
   publishing.value = true
+  const wasPublished = props.quiz.is_published
   axios.put(route('teacher.quizzes.toggle-publish', props.quiz.id))
-    .then(() => router.reload({ only: ['quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => showError(e.response?.data?.message || 'Action failed.'))
+    .then(() => {
+      flash.success(wasPublished ? 'Quiz unpublished.' : 'Quiz published.')
+      router.reload({ only: ['quiz'], preserveScroll: true, preserveState: true })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Action failed.'))
     .finally(() => { publishing.value = false })
 }
 
 function destroyQuiz() {
   deleting.value = true
   router.delete(route('teacher.quizzes.destroy', props.quiz.id), {
+    onSuccess: () => flash.success('Quiz deleted.'),
+    onError: (errs) => flash.error(errs?.message || 'Failed to delete quiz.'),
     onFinish: () => { deleting.value = false },
   })
 }
 
 // ── attach / detach ─────────────────────────────────────────
 function attachQuestion(bq) {
-  if (!bq || isAttached(bq.id)) return
+  if (!bq || isAttached(bq.id) || attachingId.value === bq.id) return
   attachingId.value = bq.id
   axios.post(route('teacher.quizzes.attach-questions', props.quiz.id), {
     question_ids: [bq.id],
   })
-    .then(() => router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => showError(e.response?.data?.message || 'Attach failed.'))
+    .then(() => {
+      flash.success('Question attached.')
+      router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Attach failed.'))
     .finally(() => { attachingId.value = null })
 }
 
 function detachQuestion(q) {
   if (!q) return
   axios.delete(route('teacher.quizzes.detach-question', { quiz: props.quiz.id, question: q.id }))
-    .then(() => router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true }))
-    .catch(e => showError(e.response?.data?.message || 'Detach failed.'))
+    .then(() => {
+      flash.success('Question removed from quiz.')
+      router.reload({ only: ['questions', 'quiz'], preserveScroll: true, preserveState: true })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Detach failed.'))
 }
 
 // ── drag: bank item ─────────────────────────────────────────
@@ -529,7 +542,7 @@ function onBankPanelDragOver() {
     // allowed
   }
 }
-function onBankPanelDragLeave() {}
+
 function onBankPanelDrop() {
   if (draggingType.value === 'quiz' && draggingQuizId.value != null) {
     const q = localQuestions.value.find(x => x.id === draggingQuizId.value)

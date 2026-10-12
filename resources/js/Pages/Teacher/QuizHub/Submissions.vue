@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search student attempts..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2 max-w-full">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe

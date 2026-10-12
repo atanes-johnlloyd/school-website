@@ -46,8 +46,6 @@
               class="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white border border-white/20 px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all">
               Back
             </BackButton>
-            <Link :href="route('teacher.contributions.create')"
-              class="hidden"></Link>
           </div>
         </div>
       </div>
@@ -205,7 +203,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -218,6 +216,8 @@ const props = defineProps({
   contribution: { type: Object, default: () => ({}) },
   assignments:  { type: Array,  default: () => [] },
 })
+
+const flash = useFlash()
 
 const statusFilter = ref('all')
 const resendingId  = ref(null)
@@ -261,10 +261,11 @@ const filteredAssignments = computed(() =>
 async function resendConsent(a) {
   resendingId.value = a.id
   try {
-    await axios.post(route('teacher.contributions.resend-consent', a.id))
+    await axios.post(route('teacher.contributions.notify-guardian', { assignment: a.id }))
+    flash.success(`Consent request sent for ${a.student_name}.`)
     router.reload({ only: ['assignments'], preserveScroll: true })
   } catch (e) {
-    showError(e.response?.data?.message || 'Could not resend.')
+    flash.error(e.response?.data?.message || 'Could not resend.')
   } finally {
     resendingId.value = null
   }

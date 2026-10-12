@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search questions, banks, categories..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2 max-w-full">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -235,7 +235,7 @@
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 border-2 border-[#005506] dark:border-[#86EFAC] text-[#005506] dark:text-[#86EFAC] shadow-sm'
                     : 'bg-[#F9F7F1] dark:bg-[#232D26] border border-slate-200 dark:border-[#3F4F43] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#3F4F43]'
                 ]">
-                <span>{{ t.icon }}</span>
+                <Icon :icon="t.icon" size="xs" />
                 {{ t.label }}
               </button>
             </div>
@@ -371,7 +371,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, reactive, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -384,6 +384,8 @@ const props = defineProps({
   questions:  { type: Object, default: () => ({ data: [], links: [] }) },
   subjects:   { type: Array,  default: () => [] },
 })
+
+const flash = useFlash()
 
 /* ─── Filters ─────────────────────────────────────────── */
 const subjectFilter = ref('all')
@@ -541,16 +543,18 @@ async function submit() {
     options:       form.options,
   }
 
-  try {
-    if (modal.mode === 'create') {
-      await axios.post(route('teacher.questions.store'), payload)
-    } else {
-      await axios.put(route('teacher.questions.update', modal.editingId), payload)
-    }
-    modal.open = false
-    resetForm()
-    router.reload({ only: ['questions', 'subjects'] })
-  } catch (e) {
+    try {
+      if (modal.mode === 'create') {
+        await axios.post(route('teacher.questions.store'), payload)
+        flash.success('Question added to bank.')
+      } else {
+        await axios.put(route('teacher.questions.update', modal.editingId), payload)
+        flash.success('Question updated.')
+      }
+      modal.open = false
+      resetForm()
+      router.reload({ only: ['questions', 'subjects'] })
+    } catch (e) {
     if (e.response?.status === 422) {
       const errs = e.response.data?.errors || {}
       const first = Object.values(errs)[0]
@@ -565,13 +569,15 @@ async function submit() {
 
 async function destroyConfirmed() {
   if (!confirmDelete.value) return
+  const title = confirmDelete.value.question_text?.substring(0, 60) ?? 'Question'
   deleting.value = true
   try {
     await axios.delete(route('teacher.questions.destroy', confirmDelete.value.id))
     confirmDelete.value = null
+    flash.success(`"${title}" deleted.`)
     router.reload({ only: ['questions', 'subjects'] })
   } catch (e) {
-    showError(e.response?.data?.message || 'Delete failed.')
+    flash.error(e.response?.data?.message || 'Delete failed.')
   } finally {
     deleting.value = false
   }
@@ -603,10 +609,10 @@ function typeBadgeClass(type) {
 }
 
 const typeOptions = [
-  { id: 'multiple_choice', label: 'Multiple Choice', icon: '🔘' },
-  { id: 'true_false',      label: 'True / False',    icon: '💬' },
-  { id: 'short_answer',    label: 'Short Answer',    icon: '✏️' },
-  { id: 'essay',           label: 'Essay',           icon: '📝' },
+  { id: 'multiple_choice', label: 'Multiple Choice', icon: 'check-circle' },
+  { id: 'true_false',      label: 'True / False',    icon: 'info' },
+  { id: 'short_answer',    label: 'Short Answer',    icon: 'edit' },
+  { id: 'essay',           label: 'Essay',           icon: 'document-text' },
 ]
 
 const vObserve = {

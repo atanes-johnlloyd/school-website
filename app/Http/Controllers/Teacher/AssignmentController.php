@@ -12,12 +12,20 @@ use Inertia\Inertia;
 
 class AssignmentController extends Controller
 {
+    /* ═══════════════════════════════════════════════════════════ */
+    /* INDEX — per-class listing                                    */
+    /* ═══════════════════════════════════════════════════════════ */
     public function index(Request $request, ClassRoom $classroom)
     {
         abort_unless($classroom->isTaughtBy($request->user()), 403);
 
         $assignments = $classroom->assignments()
-            ->withCount('submissions')
+            ->withCount([
+                'submissions',
+                'submissions as submitted_count' => fn ($q) => $q->whereIn('status', ['submitted', 'late', 'graded']),
+                'submissions as pending_count'   => fn ($q) => $q->whereIn('status', ['submitted', 'late']),
+                'submissions as graded_count'    => fn ($q) => $q->whereNotNull('graded_at'),
+            ])
             ->orderByDesc('due_at')
             ->get()
             ->map(fn (Assignment $a) => [
@@ -26,9 +34,13 @@ class AssignmentController extends Controller
                 'category'          => $a->category,
                 'due_at'            => $a->due_at?->toIso8601String(),
                 'points'            => $a->points,
-                'is_published'      => $a->is_published,
-                'allow_late'        => $a->allow_late,
-                'submissions_count' => $a->submissions_count,
+                'is_published'      => (bool) $a->is_published,
+                'allow_late'        => (bool) $a->allow_late,
+                'submissions_count' => (int) $a->submissions_count,
+                'submitted_count'   => (int) $a->submitted_count,
+                'pending_count'     => (int) $a->pending_count,
+                'graded_count'      => (int) $a->graded_count,
+                'students_count'    => $classroom->students()->count(),
             ]);
 
         $payload = [
@@ -47,6 +59,9 @@ class AssignmentController extends Controller
         return redirect()->route('teacher.tasks.index');
     }
 
+    /* ═══════════════════════════════════════════════════════════ */
+    /* STORE                                                        */
+    /* ═══════════════════════════════════════════════════════════ */
     public function store(StoreAssignmentRequest $request, ClassRoom $classroom)
     {
         abort_unless($classroom->isTaughtBy($request->user()), 403);
@@ -74,6 +89,9 @@ class AssignmentController extends Controller
             ->with('success', 'Assignment created.');
     }
 
+    /* ═══════════════════════════════════════════════════════════ */
+    /* SHOW — detail with submissions + stats                       */
+    /* ═══════════════════════════════════════════════════════════ */
     public function show(Request $request, Assignment $assignment)
     {
         abort_unless($assignment->classroom->isTaughtBy($request->user()), 403);
@@ -91,8 +109,8 @@ class AssignmentController extends Controller
                 'feedback'     => $s->feedback,
                 'graded_at'    => $s->graded_at?->toIso8601String(),
                 'text_content' => $s->text_content,
-                'file_path' => $s->file_path,
-                'has_file'  => (bool) $s->file_path,
+                'file_path'    => $s->file_path,
+                'has_file'     => (bool) $s->file_path,
                 'download_url' => $s->file_path ? route('teacher.submissions.download', $s->id) : null,
             ]);
 
@@ -103,9 +121,10 @@ class AssignmentController extends Controller
                 'instructions' => $assignment->instructions,
                 'due_at'       => $assignment->due_at?->toIso8601String(),
                 'points'       => $assignment->points,
-                'allow_late'   => $assignment->allow_late,
-                'is_published' => $assignment->is_published,
+                'allow_late'   => (bool) $assignment->allow_late,
+                'is_published' => (bool) $assignment->is_published,
                 'classroom_id' => $assignment->class_id,
+                'category'     => $assignment->category,
                 'subject'      => $assignment->classroom?->subject?->name,
                 'section'      => $assignment->classroom?->section?->name,
             ],
@@ -124,6 +143,9 @@ class AssignmentController extends Controller
         return Inertia::render('Teacher/Assignments/Show', $payload);
     }
 
+    /* ═══════════════════════════════════════════════════════════ */
+    /* UPDATE                                                       */
+    /* ═══════════════════════════════════════════════════════════ */
     public function update(UpdateAssignmentRequest $request, Assignment $assignment)
     {
         abort_unless($assignment->classroom->isTaughtBy($request->user()), 403);
@@ -140,9 +162,22 @@ class AssignmentController extends Controller
         return back()->with('success', 'Assignment updated.');
     }
 
+    /* ═══════════════════════════════════════════════════════════ */
+    /* DESTROY — with guard against graded submissions              */
+    /* ═══════════════════════════════════════════════════════════ */
     public function destroy(Request $request, Assignment $assignment)
     {
         abort_unless($assignment->classroom->isTaughtBy($request->user()), 403);
+
+        // Guard: block if any submission has already been graded.
+        if ($assignment->submissions()->whereNotNull('graded_at')->exists()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Cannot delete: some submissions have already been graded. Unpublish the assignment instead.',
+                ], 422);
+            }
+            return back()->with('error', 'Cannot delete: some submissions have already been graded.');
+        }
 
         $classroomId = $assignment->class_id;
         $assignment->delete();
@@ -156,7 +191,9 @@ class AssignmentController extends Controller
             ->with('success', 'Assignment deleted.');
     }
 
-    // ─── UI-only endpoints (no JSON variants needed) ───────
+    /* ═══════════════════════════════════════════════════════════ */
+    /* CREATE — UI shell                                            */
+    /* ═══════════════════════════════════════════════════════════ */
     public function create(Request $request, ClassRoom $classroom)
     {
         abort_unless($classroom->isTaughtBy($request->user()), 403);
@@ -170,6 +207,10 @@ class AssignmentController extends Controller
         ]);
     }
 
+    /* ═══════════════════════════════════════════════════════════ */
+    /* EDIT — now includes graded_count so the UI can disable       */
+    /*        the delete button when submissions have been graded.  */
+    /* ═══════════════════════════════════════════════════════════ */
     public function edit(Request $request, Assignment $assignment)
     {
         abort_unless($assignment->classroom->isTaughtBy($request->user()), 403);
@@ -181,20 +222,24 @@ class AssignmentController extends Controller
                 'section' => $assignment->classroom?->section?->name,
             ],
             'assignment' => [
-                'id'           => $assignment->id,
-                'title'        => $assignment->title,
-                'instructions' => $assignment->instructions,
-                'due_at'       => $assignment->due_at?->format('Y-m-d\TH:i'),
-                'points'       => $assignment->points,
-                'allow_late'   => $assignment->allow_late,
-                'is_published' => $assignment->is_published,
+                'id'            => $assignment->id,
+                'title'         => $assignment->title,
+                'instructions'  => $assignment->instructions,
+                'due_at'        => $assignment->due_at?->format('Y-m-d\TH:i'),
+                'points'        => $assignment->points,
+                'allow_late'    => (bool) $assignment->allow_late,
+                'is_published'  => (bool) $assignment->is_published,
+                'category'      => $assignment->category,
+                'graded_count'  => $assignment->submissions()->whereNotNull('graded_at')->count(),
+                'submitted_count' => $assignment->submissions()->whereIn('status', ['submitted', 'late', 'graded'])->count(),
+                'students_count' => $assignment->classroom ? $assignment->classroom->students()->count() : 0,
             ],
         ]);
     }
 
-    /**
-     * Cross-class assignments hub — every assignment the teacher owns.
-     */
+    /* ═══════════════════════════════════════════════════════════ */
+    /* ALL TASKS — cross-class Hub                                  */
+    /* ═══════════════════════════════════════════════════════════ */
     public function allTasks(Request $request)
     {
         $teacher = $request->user()->teacher;
@@ -216,8 +261,9 @@ class AssignmentController extends Controller
             ])
             ->withCount([
                 'submissions',
-                'submissions as pending_count' => fn ($q) => $q->whereIn('status', ['submitted', 'late']),
-                'submissions as graded_count'  => fn ($q) => $q->whereNotNull('graded_at'),
+                'submissions as submitted_count' => fn ($q) => $q->whereIn('status', ['submitted', 'late', 'graded']),
+                'submissions as pending_count'   => fn ($q) => $q->whereIn('status', ['submitted', 'late']),
+                'submissions as graded_count'    => fn ($q) => $q->whereNotNull('graded_at'),
             ])
             ->orderByDesc('due_at')
             ->get()
@@ -230,8 +276,10 @@ class AssignmentController extends Controller
                 'is_published'      => (bool) $a->is_published,
                 'allow_late'        => (bool) $a->allow_late,
                 'submissions_count' => (int) $a->submissions_count,
+                'submitted_count'   => (int) $a->submitted_count,
                 'pending_count'     => (int) $a->pending_count,
                 'graded_count'      => (int) $a->graded_count,
+                'students_count'    => $a->classroom ? $a->classroom->students()->count() : 0,
                 'classroom_id'      => $a->class_id,
                 'subject'           => $a->classroom?->subject?->name,
                 'subject_code'      => $a->classroom?->subject?->code,
@@ -256,7 +304,7 @@ class AssignmentController extends Controller
                 'total'             => $assignments->count(),
                 'published'         => $assignments->where('is_published', true)->count(),
                 'draft'             => $assignments->where('is_published', false)->count(),
-                'total_submissions' => $assignments->sum('submissions_count'),
+                'total_submissions' => $assignments->sum('submitted_count'),   // ← now counts real turn-ins
                 'pending_grading'   => $assignments->sum('pending_count'),
             ],
             'active_term' => $activeTerm?->name,

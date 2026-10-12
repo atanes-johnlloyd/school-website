@@ -201,7 +201,7 @@ const isTeacher = computed(() => roles.value.includes('teacher'))
 const isStudent = computed(() => roles.value.includes('student'))
 
 const roleLabel = computed(() => {
-  if (isAdmin.value) return user.value?.adminPosition?.name || 'Administrator'
+  if (isAdmin.value) return user.value?.admin_position?.name || 'Administrator'
   if (isTeacher.value) return 'Teacher'
   if (isStudent.value) return 'Student'
   return 'User'
@@ -225,21 +225,11 @@ const notificationCount = computed(() => {
 // --- DIRECT DOM FONT SCALING ---
 const fontSizeMode = ref('base')
 
+const FONT_SIZES = { sm: '14px', base: '16px', lg: '18px' }
+
 const applyFontScale = (mode) => {
   fontSizeMode.value = mode
-  const root = document.documentElement
-
-  // Remove existing scale classes
-  root.classList.remove('font-scale-sm', 'font-scale-normal', 'font-scale-lg', 'font-scale-xl')
-
-  // Map mode to app.css class
-  const classMap = {
-    'sm': 'font-scale-sm',
-    'base': 'font-scale-normal',
-    'lg': 'font-scale-lg'
-  }
-
-  root.classList.add(classMap[mode] || 'font-scale-normal')
+  document.documentElement.style.fontSize = FONT_SIZES[mode] || FONT_SIZES.base
   localStorage.setItem('user_font_scale', mode)
   emit('font-size-changed', mode)
 }
@@ -312,7 +302,7 @@ const kindDot = (kind) => ({
 onMounted(() => {
   // Restore Font Scale Choice
   const savedScale = localStorage.getItem('user_font_scale') || 'base'
-  applyFontScale(savedScale)
+    applyFontScale(savedScale)
 
   // Restore Theme Choice (Only enable Dark Mode if explicitly saved)
   const savedTheme = localStorage.getItem('theme')

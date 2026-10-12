@@ -4,7 +4,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search learners (LRN), strand records, advisories..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO BANNER -->
       <div v-observe
@@ -258,13 +258,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/desktop-home-banner.png'
 
-const availableStrands = computed(() => {
-  const usedCodes = new Set(
-    classes.value.map(c => c.strand_code).filter(Boolean)
-  )
-  return (props.filterOptions?.strands ?? []).filter(s => usedCodes.has(s.code))
-})
-
 const props = defineProps({
   classes:       { type: Object, default: () => ({ data: [], links: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 }) },
   activeTerm:    { type: String, default: null },
@@ -274,6 +267,7 @@ const props = defineProps({
 })
 
 const classes = computed(() => props.classes?.data ?? [])
+const availableStrands = computed(() => props.filterOptions?.strands ?? [])
 
 const pagination = computed(() => ({
   current_page: props.classes?.current_page ?? 1,
@@ -302,7 +296,11 @@ function applyFilters() {
     strand_id:   filters.strand_id ?? undefined,
     term_id:     filters.term_id ?? undefined,
     grade_level: filters.grade_level ?? undefined,
-  }, { preserveState: true, replace: true })
+  }, {
+    preserveState:  true,
+    preserveScroll: true,
+    replace:        true,
+  })
 }
 
 function resetFilters() {

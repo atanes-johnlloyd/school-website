@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search lessons, DLL logs, module decks..">
 
-    <div class="relative z-10 px-4 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-4">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -370,7 +370,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -415,17 +416,34 @@ onBeforeUnmount(() => {
 })
 
 async function destroy(lesson) {
-  if (!await confirmAction(`Delete "${lesson.title}"? This cannot be undone.`)) return
+  const { confirmed } = await confirm({
+    title: 'Delete Lesson',
+    message: `Delete "${lesson.title}"?`,
+    details: [
+      'This action cannot be undone.',
+      'Any attachments uploaded with this lesson will also be removed.',
+    ],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   router.delete(route('teacher.lessons.destroy', lesson.id), {
     preserveScroll: true,
+    onSuccess: () => flash.success('Lesson deleted.'),
+    onError:   () => flash.error('Failed to delete lesson.'),
   })
 }
+
 const props = defineProps({
   lessons:     { type: Array,  default: () => [] },
   classrooms:  { type: Array,  default: () => [] },
   stats:       { type: Object, default: () => ({ total: 0, published: 0, draft: 0, attachments: 0 }) },
   active_term: { type: String, default: null },
 })
+
+const flash   = useFlash()
+const confirm = useConfirm()
 
 /* ─── Filters ─────────────────────────────────────────── */
 const classFilter  = ref('all')
@@ -506,11 +524,4 @@ const vObserve = {
 .not-visible { opacity: 0; }
 .is-animated.anim-fade-down { animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .is-animated.anim-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
 </style>

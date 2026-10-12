@@ -131,14 +131,17 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import Modal from '@/Components/Modal.vue'
 import Icon from '@/Components/Icon.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   show:     { type: Boolean, default: false },
   subjects: { type: Array,   default: () => [] },
 })
 
+const flash = useFlash()
 const emit = defineEmits(['close', 'imported'])
 
 const fileInput    = ref(null)
@@ -224,7 +227,7 @@ function downloadTemplate() {
   URL.revokeObjectURL(url)
 }
 
-function submitImport() {
+async function submitImport() {
   if (!file.value || !subjectId.value) return
   isLoading.value = true
   generalError.value = ''
@@ -235,27 +238,28 @@ function submitImport() {
   fd.append('subject_id', subjectId.value)
   fd.append('category', '')
 
-  router.post(route('teacher.questions.import-csv'), fd, {
-    forceFormData: true,
-    preserveScroll: true,
-    onSuccess: (page) => {
-      // Controller returns { message, created, failed }
-      // Inertia doesn't pipe custom response payloads through onSuccess directly,
-      // so we read from flash if available, else assume success
-      const flashCreated = page?.props?.flash?.created ?? 0
-      result.value = {
-        created: flashCreated,
-        failed: page?.props?.flash?.failed ?? [],
-      }
-      emit('imported')
-    },
-    onError: (errors) => {
-      generalError.value = errors.file || errors.subject_id || 'Import failed. Check your CSV file.'
-    },
-    onFinish: () => {
-      isLoading.value = false
-    },
-  })
+  try {
+    const { data } = await axios.post(route('teacher.questions.import-csv'), fd, {
+      headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },
+    })
+
+    result.value = {
+      created: data.created ?? 0,
+      failed:  data.failed ?? [],
+    }
+    flash.success(`${flashCreated} question${flashCreated === 1 ? '' : 's'} imported.`)
+    emit('imported')
+  } catch (e) {
+    if (e.response?.status === 422) {
+      const errs = e.response.data?.errors || {}
+      const first = Object.values(errs)[0]
+      generalError.value = Array.isArray(first) ? first[0] : (first || 'Validation failed.')
+    } else {
+      generalError.value = e.response?.data?.message || 'Import failed. Check your CSV file.'
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
 function closeModal() {

@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search assignments, classes, tasks..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -38,29 +38,14 @@
             </p>
           </div>
 
-          <!-- New Assignment picker -->
+          <!-- New Assignment picker trigger -->
           <div class="flex flex-wrap gap-2 pt-2">
-            <div class="relative">
-              <button @click="showClassPicker = !showClassPicker"
-                class="inline-flex items-center gap-1.5 bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] px-3.5 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95">
-                <Icon icon="plus" size="xs" />
-                New Assignment
-                <Icon icon="chevron-down" size="xs" />
-              </button>
-              <div v-if="showClassPicker"
-                class="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-[#2D3A31] rounded-2xl shadow-xl border border-slate-200 dark:border-[#3F4F43] overflow-hidden z-40">
-                <div class="px-4 py-2.5 border-b border-slate-100 dark:border-[#3F4F43] bg-slate-50 dark:bg-[#232D26]">
-                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Pick a Class</span>
-                </div>
-                <Link v-for="c in classrooms" :key="c.id"
-                  :href="route('teacher.classes.assignments.create', c.id)"
-                  @click="showClassPicker = false"
-                  class="block px-4 py-3 border-b border-slate-100 dark:border-[#3F4F43] last:border-b-0 hover:bg-slate-50 dark:hover:bg-[#3F4F43] transition-colors">
-                  <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{{ c.subject }}</p>
-                  <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{{ c.section }} • {{ c.code }}</p>
-                </Link>
-              </div>
-            </div>
+            <button ref="newAssignmentBtn" @click="toggleClassPicker"
+              class="inline-flex items-center gap-1.5 bg-[#F9C20C] hover:bg-amber-400 text-[#2C3E2D] px-3.5 py-2 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95">
+              <Icon icon="plus" size="xs" />
+              New Assignment
+              <Icon icon="chevron-down" size="xs" />
+            </button>
           </div>
         </div>
       </div>
@@ -232,7 +217,12 @@
                       <Icon icon="users" size="xs" class="text-slate-400" />
                       Turn-ins
                     </span>
-                    <span class="text-slate-800 dark:text-slate-200 font-bold">{{ a.submissions_count }}</span>
+                    <span :class="a.submitted_count > 0
+                      ? 'text-slate-800 dark:text-slate-200'
+                      : 'text-slate-400 dark:text-slate-500'"
+                      class="font-bold">
+                      {{ a.submitted_count }}<span class="text-slate-400 dark:text-slate-500 font-normal"> / {{ a.students_count }}</span>
+                    </span>
                   </div>
 
                   <div v-if="a.pending_count > 0" class="flex items-center justify-between font-bold">
@@ -260,11 +250,20 @@
                   <Icon icon="clipboard-check" size="xs" />
                   Open Grading Queue ({{ a.pending_count }})
                 </button>
-                <button v-else
+
+                <button v-else-if="a.submitted_count > 0"
                   @click="openDrawer(a)"
                   class="w-full bg-[#F9F7F1] dark:bg-[#232D26] hover:bg-slate-100 dark:hover:bg-[#3F4F43] text-slate-700 dark:text-slate-200 text-[11px] font-bold py-2.5 rounded-xl border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-center gap-1.5 transition-colors">
                   <Icon icon="eye" size="xs" />
-                  Review Submissions
+                  Review {{ a.submitted_count }} Submission{{ a.submitted_count === 1 ? '' : 's' }}
+                </button>
+
+                <button v-else
+                  disabled
+                  title="No student submissions yet"
+                  class="w-full bg-slate-50 dark:bg-[#232D26] text-slate-400 dark:text-slate-500 text-[11px] font-bold py-2.5 rounded-xl border border-dashed border-slate-200 dark:border-[#3F4F43] flex items-center justify-center gap-1.5 cursor-not-allowed">
+                  <Icon icon="clock" size="xs" />
+                  Awaiting student submissions
                 </button>
 
                 <div class="grid grid-cols-2 gap-2">
@@ -295,12 +294,18 @@
           </div>
         </div>
 
-        <!-- RIGHT: DRAWER -->
+        <!-- RIGHT: DRAWER (bottom sheet on mobile, sticky side panel on desktop) -->
         <Transition name="drawer-slide">
           <div v-if="drawerAssignment"
-            class="w-full lg:w-[420px] xl:w-[480px] shrink-0 sticky top-4">
+            class="fixed inset-0 z-[60] lg:static lg:inset-auto lg:z-20 lg:w-[420px] xl:w-[480px] lg:shrink-0 lg:sticky lg:top-24">
 
-            <div class="bg-white dark:bg-[#2D3A31] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl border border-slate-200 dark:border-[#3F4F43] space-y-4">
+            <!-- Mobile-only backdrop -->
+            <div @click="closeDrawer"
+              class="lg:hidden absolute inset-0 bg-slate-950/60 backdrop-blur-xs"></div>
+
+            <!-- Panel -->
+            <div class="absolute bottom-0 left-0 right-0 max-h-[92vh] overflow-y-auto bg-white dark:bg-[#2D3A31] rounded-t-3xl p-4 sm:p-5 shadow-2xl border-t border-slate-200 dark:border-[#3F4F43] space-y-4
+                        lg:static lg:max-h-[calc(100vh-7rem)] lg:rounded-2xl sm:lg:rounded-3xl lg:border lg:shadow-xl lg:overflow-y-auto">
 
               <div class="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#3F4F43]">
                 <div class="min-w-0">
@@ -450,16 +455,45 @@
       </div>
 
     </div>
+
+    <!-- Teleported class picker (survives hero's overflow-hidden) -->
+    <Teleport to="body">
+      <div v-if="showClassPicker"
+        class="fixed z-[100] w-72 bg-white dark:bg-[#2D3A31] rounded-2xl shadow-xl border border-slate-200 dark:border-[#3F4F43] overflow-hidden"
+        :style="{ top: pickerPos.top + 'px', left: pickerPos.left + 'px' }">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-[#3F4F43] bg-slate-50 dark:bg-[#232D26]">
+          <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Pick a Class</span>
+        </div>
+        <div class="max-h-72 overflow-y-auto">
+          <Link v-for="c in classrooms" :key="c.id"
+            :href="route('teacher.classes.assignments.create', c.id)"
+            @click="showClassPicker = false"
+            class="block px-4 py-3 border-b border-slate-100 dark:border-[#3F4F43] last:border-b-0 hover:bg-slate-50 dark:hover:bg-[#3F4F43] transition-colors">
+            <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{{ c.subject }}</p>
+            <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{{ c.section }} • {{ c.code }}</p>
+          </Link>
+          <div v-if="!classrooms.length" class="px-4 py-6 text-center text-[11px] text-slate-400 italic">
+            No classes assigned.
+          </div>
+        </div>
+      </div>
+
+      <!-- Backdrop — closes on outside click -->
+      <div v-if="showClassPicker" @click="showClassPicker = false"
+        class="fixed inset-0 z-[99] bg-transparent"></div>
+    </Teleport>
+
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import axios from 'axios'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   assignments: { type: Array,  default: () => [] },
@@ -468,10 +502,51 @@ const props = defineProps({
   active_term: { type: String, default: null },
 })
 
+const flash = useFlash()
+
 const classFilter    = ref('all')
 const statusFilter   = ref('all')
 const categoryFilter = ref('all')
 
+/* ─── New Assignment class picker (teleported) ─────────── */
+const showClassPicker     = ref(false)
+const newAssignmentBtn    = ref(null)
+const pickerPos           = reactive({ top: 0, left: 0 })
+
+function toggleClassPicker() {
+  if (showClassPicker.value) {
+    showClassPicker.value = false
+    return
+  }
+  const rect = newAssignmentBtn.value?.getBoundingClientRect()
+  if (rect) {
+    pickerPos.top  = rect.bottom + 8
+    pickerPos.left = rect.left
+    const maxLeft  = window.innerWidth - 288 - 16  // 288 = w-72
+    if (pickerPos.left > maxLeft) pickerPos.left = maxLeft
+  }
+  showClassPicker.value = true
+}
+
+function onWindowChange() {
+  if (!showClassPicker.value) return
+  const rect = newAssignmentBtn.value?.getBoundingClientRect()
+  if (rect) {
+    pickerPos.top  = rect.bottom + 8
+    pickerPos.left = Math.min(rect.left, window.innerWidth - 288 - 16)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('resize', onWindowChange)
+  window.addEventListener('scroll', onWindowChange, true)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onWindowChange)
+  window.removeEventListener('scroll', onWindowChange, true)
+})
+
+/* ─── Status / category filters ───────────────────────── */
 const statusFilters = computed(() => [
   { id: 'all',           label: 'All',           count: props.assignments.length },
   { id: 'needs_grading', label: 'Needs Grading', count: props.assignments.filter(a => a.pending_count > 0).length },
@@ -497,8 +572,7 @@ const filteredAssignments = computed(() => {
   })
 })
 
-const showClassPicker = ref(false)
-
+/* ─── Drawer state ────────────────────────────────────── */
 const drawerAssignment  = ref(null)
 const drawerSubmissions = ref([])
 const drawerIndex       = ref(0)
@@ -520,6 +594,10 @@ async function openDrawer(assignment) {
   gradeForm.clearErrors()
   gradeForm.reset()
 
+  if (window.innerWidth < 1024) {
+    document.body.style.overflow = 'hidden'
+  }
+
   try {
     const { data } = await axios.get(
       route('teacher.assignments.show', assignment.id),
@@ -539,6 +617,9 @@ async function openDrawer(assignment) {
     syncFormToIndex()
   } catch (e) {
     console.error('Failed to load submissions', e)
+    flash.error('Failed to load submissions. Please try again.')
+    drawerAssignment.value = null
+    document.body.style.overflow = ''
   } finally {
     drawerLoading.value = false
   }
@@ -550,6 +631,7 @@ function closeDrawer() {
   drawerIndex.value = 0
   gradeForm.reset()
   gradeForm.clearErrors()
+  document.body.style.overflow = ''
 }
 
 function syncFormToIndex() {
@@ -601,7 +683,9 @@ async function saveGrade(advance = false) {
           drawerIndex.value++
         }
       }
+      flash.success(`Grade saved for ${submission.student_name}.`)
     },
+    onError: () => flash.error('Failed to save grade.'),
   })
 }
 
@@ -684,19 +768,16 @@ const vObserve = {
   transition: opacity 0.2s ease-in,
               transform 0.2s ease-in;
 }
-.drawer-slide-enter-from {
-  opacity: 0;
-  transform: translateX(30px);
-}
+.drawer-slide-enter-from,
 .drawer-slide-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateY(20px);
 }
 
-.text-scale-sm :deep(.text-xs)   { font-size: 0.65rem !important; line-height: 0.85rem !important; }
-.text-scale-sm :deep(.text-sm)   { font-size: 0.75rem !important; line-height: 1rem !important; }
-.text-scale-sm :deep(.text-base) { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-xs)   { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-.text-scale-lg :deep(.text-sm)   { font-size: 1rem !important; line-height: 1.5rem !important; }
-.text-scale-lg :deep(.text-base) { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+@media (min-width: 1024px) {
+  .drawer-slide-enter-from,
+  .drawer-slide-leave-to {
+    transform: translateX(30px);
+  }
+}
 </style>

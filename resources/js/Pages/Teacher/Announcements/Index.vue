@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search announcements, class news, bulletins..">
 
-    <div class="relative z-10 px-4 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-4">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -493,7 +493,7 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
 import { ref, reactive, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import axios from 'axios'
@@ -508,6 +508,8 @@ const props = defineProps({
   stats:         { type: Object, default: () => ({ total: 0, published: 0, draft: 0, pinned: 0 }) },
   active_term:   { type: String, default: null },
 })
+
+const flash = useFlash()
 
 /* ─── FILTERS ─────────────────────────────────────────── */
 const classFilter  = ref('all')
@@ -591,8 +593,11 @@ const pinningId = ref(null)
 function togglePin(a) {
   pinningId.value = a.id
   axios.put(route('teacher.announcements.toggle-pin', a.id))
-    .then(() => router.reload({ only: ['announcements', 'stats'], preserveScroll: true, preserveState: true }))
-    .catch(e => showError(e.response?.data?.message || 'Could not toggle pin.'))
+    .then(() => {
+      flash.success(a.is_pinned ? 'Unpinned.' : 'Pinned to top of class feed.')
+      router.reload({ only: ['announcements', 'stats'], preserveScroll: true, preserveState: true })
+    })
+    .catch(e => flash.error(e.response?.data?.message || 'Could not toggle pin.'))
     .finally(() => { pinningId.value = null })
 }
 
@@ -663,20 +668,21 @@ function submitCreate() {
   axios.post(route('teacher.classes.announcements.store', createForm.class_id), fd, {
     headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },
   })
-    .then(() => {
-      createOpen.value = false
-      router.reload({ only: ['announcements', 'classrooms', 'stats'], preserveScroll: true, preserveState: true })
-    })
-    .catch(e => {
-      if (e.response?.status === 422) {
-        const errs = e.response.data?.errors || {}
-        const first = Object.values(errs)[0]
-        createError.value = Array.isArray(first) ? first[0] : (first || 'Validation failed.')
-      } else {
-        createError.value = e.response?.data?.message || 'Could not save announcement.'
-      }
-    })
-    .finally(() => { creating.value = false })
+        .then(() => {
+          createOpen.value = false
+          flash.success(createForm.is_published ? 'Announcement published.' : 'Draft saved.')
+          router.reload({ only: ['announcements', 'classrooms', 'stats'], preserveScroll: true, preserveState: true })
+        })
+        .catch(e => {
+          if (e.response?.status === 422) {
+            const errs = e.response.data?.errors || {}
+            const first = Object.values(errs)[0]
+            createError.value = Array.isArray(first) ? first[0] : (first || 'Validation failed.')
+          } else {
+            createError.value = e.response?.data?.message || 'Could not save announcement.'
+          }
+        })
+        .finally(() => { creating.value = false })
 }
 
 /* ─── DELETE ──────────────────────────────────────────── */
@@ -686,12 +692,14 @@ const deleting      = ref(false)
 function destroyConfirmed() {
   if (!confirmDelete.value) return
   deleting.value = true
+  const title = confirmDelete.value.title
   axios.delete(route('teacher.announcements.destroy', confirmDelete.value.id))
     .then(() => {
       confirmDelete.value = null
+      flash.success(`"${title}" deleted.`)
       router.reload({ only: ['announcements', 'classrooms', 'stats'], preserveScroll: true, preserveState: true })
     })
-    .catch(e => showError(e.response?.data?.message || 'Delete failed.'))
+    .catch(e => flash.error(e.response?.data?.message || 'Delete failed.'))
     .finally(() => { deleting.value = false })
 }
 

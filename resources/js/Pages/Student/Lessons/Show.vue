@@ -2,7 +2,7 @@
   <Head :title="`${lesson.title} - Salawag LMS`" />
 
   <StudentLayout>
-    <div class="space-y-6 pb-10 font-['Inter'] min-w-0 max-w-5xl mx-auto w-full">
+    <div class="space-y-6 pb-10 font-['Inter'] min-w-0">
 
       <!-- HERO -->
       <div v-observe
@@ -126,12 +126,20 @@ const props = defineProps({
 })
 
 function goBack() {
-  if (window.history.length > 2 && document.referrer) {
+  // Inertia pushes every visit onto `history`, so a length > 1 means
+  // there is a previous entry we can return to. `document.referrer`
+  // is not used: it stays fixed at initial page-load and never updates
+  // on pushState navigations, so checking it would always fall back.
+  if (window.history.length > 1) {
     window.history.back()
     return
   }
-  // Fallback: when opened cold, land on the class's lesson list
-  router.visit(route('student.classes.lessons.index', props.classroom.id))
+  // Cold landing (fresh tab, bookmark) — go to the lesson list.
+  if (props.classroom?.id) {
+    router.visit(route('student.classes.lessons.index', props.classroom.id))
+  } else {
+    router.visit(route('student.assessments.index'))
+  }
 }
 
 function formatDate(value) {

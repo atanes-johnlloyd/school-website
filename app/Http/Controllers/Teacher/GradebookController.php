@@ -97,6 +97,8 @@ class GradebookController extends Controller
                 'class_average'  => $studentRows->whereNotNull('final_grade')->avg('final_grade'),
             ],
             'activeTerm' => $activeTerm?->name,
+            'transmutationRule' => $this->resolveTransmutationRule(),
+            'subjectType'       => $this->resolveSubjectType($classroom),   // index(): $selectedClassroom
         ]);
     }
     public function show(Request $request, ClassRoom $classroom)
@@ -157,10 +159,40 @@ class GradebookController extends Controller
                 'failing'        => $studentRows->where('remarks', 'did_not_meet_expectations')->count(),
                 'class_average'  => $studentRows->whereNotNull('final_grade')->avg('final_grade'),
             ],
+            'transmutationRule' => $this->resolveTransmutationRule(),
+            'subjectType'       => $this->resolveSubjectType($classroom),
         ];
 
-        return $request->wantsJson()
-            ? response()->json($payload)
-            : Inertia::render('Teacher/Gradebook/Show', $payload);
+        if ($request->wantsJson()) {
+            return response()->json($payload);
+        }
+
+        return redirect()->route('teacher.gradebook.index', ['class_id' => $classroom->id]);
+    }
+
+    protected function resolveTransmutationRule(): string
+    {
+        $activeYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if (! $activeYear) return 'do8_2015';
+
+        $startYear = (int) substr($activeYear->label, 0, 4);
+
+        if ($startYear >= 2027) return 'none';       // SY 2027-2028+: raw = final
+        if ($startYear >= 2026) return 'do15_2026';  // SY 2026-2027: adjusted
+        return 'do8_2015';                            // SY 2025-2026: current
+    }
+
+    protected function resolveSubjectType(\App\Models\ClassRoom $classroom): ?string
+    {
+        // Prefer an explicit column if you add one. Otherwise infer from subject.
+        // Adjust this heuristic to your Subject model.
+        $subject = $classroom->subject;
+        if (! $subject) return null;
+
+        // Example: if subject has a 'category' or 'type' column
+        // return $subject->category;
+
+        // Fallback: assume core for now
+        return $subject->is_core ? 'core' : 'academic_elective';
     }
 }

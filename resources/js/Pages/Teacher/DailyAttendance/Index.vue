@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search student attendance logs, LRN, remarks..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <div v-if="!classroom"
         class="bg-white dark:bg-[#2D3A31] rounded-3xl p-12 shadow-sm border border-dashed border-slate-300 dark:border-[#3F4F43] text-center space-y-3 mt-8">
@@ -549,6 +549,8 @@ import axios from 'axios'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/attendace.png'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   classrooms:      { type: Array,  default: () => [] },
@@ -561,6 +563,9 @@ const props = defineProps({
   today:           { type: String, default: null },
   active_term:     { type: String, default: null },
 })
+
+const flash = useFlash()
+const confirm = useConfirm()
 
 const students = ref(props.students.map(s => ({ ...s })))
 watch(() => props.students, (val) => { students.value = val.map(s => ({ ...s })) }, { deep: true })
@@ -621,15 +626,43 @@ const statusOptions = [
   { id: 'excused', letter: 'E', label: 'Excused',  activeClass: 'bg-blue-600 text-white shadow-sm' },
 ]
 
+let rollbackSnapshot = null
+
+function snapshotState() {
+  if (rollbackSnapshot) return  // keep the first snapshot of the debounce window
+  rollbackSnapshot = students.value.map(s => ({
+    id: s.id,
+    status: s.status,
+    notes: s.notes,
+    marked_at: s.marked_at,
+  }))
+}
+
+function rollback() {
+  if (!rollbackSnapshot) return
+  const byId = new Map(rollbackSnapshot.map(r => [r.id, r]))
+  students.value.forEach(s => {
+    const r = byId.get(s.id)
+    if (r) {
+      s.status = r.status
+      s.notes = r.notes
+      s.marked_at = r.marked_at
+    }
+  })
+  rollbackSnapshot = null
+}
+
 function setStatus(studentId, status) {
   const s = students.value.find(x => x.id === studentId)
   if (!s) return
+  snapshotState()
   s.status = status
   s.marked_at = new Date().toISOString()
   queueSave()
 }
 
 function saveNote() {
+  snapshotState()
   queueSave()
 }
 
@@ -648,21 +681,46 @@ async function flushSave() {
       notes: s.notes || null,
     }))
 
-  if (records.length === 0) { saving.value = false; return }
+  if (records.length === 0) {
+    saving.value = false
+    rollbackSnapshot = null
+    return
+  }
 
   try {
     await axios.post(
       route('teacher.classes.attendance.mark', { classroom: props.classroom.id, date: props.date }),
       { records }
     )
+    flash.success(`Attendance saved for ${records.length} learner${records.length === 1 ? '' : 's'}.`)
+    rollbackSnapshot = null
   } catch (e) {
-    console.error('Save failed', e)
+    rollback()
+    const msg = e.response?.data?.message || 'Failed to save attendance. Reverted your changes.'
+    flash.error(msg)
   } finally {
     saving.value = false
   }
 }
 
 async function markAllPresent() {
+  const total = students.value.length
+  if (total === 0) return
+
+  const alreadyMarked = students.value.filter(s => s.status).length
+
+  const { confirmed } = await confirm({
+    title: 'Mark All Present',
+    message: `Mark all ${total} learner${total === 1 ? '' : 's'} as Present?`,
+    details: alreadyMarked > 0
+      ? [`This will overwrite ${alreadyMarked} existing status${alreadyMarked === 1 ? '' : 'es'} for this date.`]
+      : ['This sets every learner to Present for the selected date.'],
+    confirmLabel: 'Mark All Present',
+    variant: alreadyMarked > 0 ? 'warning' : 'info',
+  })
+  if (!confirmed) return
+
+  snapshotState()
   savingAll.value = true
   const now = new Date().toISOString()
   students.value.forEach(s => {
@@ -717,7 +775,7 @@ const presentRate = computed(() => {
 
 const absentRate = computed(() => {
   if (!liveStats.value.enrolled) return 0
-  return Math.round(((liveStats.value.absent + liveStats.value.late) / liveStats.value.enrolled) * 100)
+  return Math.round((liveStats.value.absent / liveStats.value.enrolled) * 100)
 })
 
 /* ─── SF-2 sync helpers ───────────────────────────────── */

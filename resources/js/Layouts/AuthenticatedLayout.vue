@@ -1,42 +1,55 @@
 <template>
-  <div class="h-screen w-full flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] relative transition-colors duration-300 overflow-hidden">
-    
-    <!-- Shared Mobile-Responsive Sidebar -->
-    <Sidebart 
-      :isOpen="isSidebarOpen" 
-      @close-sidebar="isSidebarOpen = false" 
+  <div class="min-h-screen flex bg-[#F9F7F1] dark:bg-[#232D26] font-['Inter'] transition-colors duration-300">
+    <!-- Sidebar is single-root, so these classes land on its outer <div>,
+         which then becomes the flex child and the sticky element. -->
+    <Sidebart
+      class="print:hidden md:sticky md:top-0 md:h-screen shrink-0"
+      :is-open="sidebarOpen"
+      @close-sidebar="sidebarOpen = false"
     />
-
-    <!-- Main Workspace Canvas -->
-    <main :class="['flex-1 min-w-0 relative overflow-y-auto h-screen flex flex-col', `text-scale-${fontSizeMode}`]">
-      
-      <!-- Shared Top Navigation Component with Hamburger Trigger -->
-      <navbartop 
-        :searchPlaceholder="searchPlaceholder"
-        @open-sidebar="isSidebarOpen = true"
-        @font-size-changed="(size) => fontSizeMode = size" 
+    <main class="flex-1 flex flex-col min-w-0">
+      <!-- navbartop handles its own print:hidden internally (multi-root) -->
+      <navbartop
+        :search-placeholder="searchPlaceholder"
+        @open-sidebar="sidebarOpen = true"
+        @font-size-changed="onFontSizeChanged"
       />
-
-      <!-- Page Content Slot -->
-      <slot />
-
+      <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
+        <slot />
+      </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import Sidebart from '@/Components/Sidebart.vue'
 import navbartop from '@/Components/navbartop.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 defineProps({
   searchPlaceholder: {
     type: String,
-    default: 'Search...'
+    default: 'Search learners (LRN), strand records, advisories...'
   }
 })
 
-// Centralized layout state for font scaling and mobile drawer open/close
-const fontSizeMode = ref('base')
-const isSidebarOpen = ref(false)
+const page  = usePage()
+const flash = useFlash()
+const sidebarOpen = ref(false)
+
+watch(
+  () => page.props.flash,
+  (f) => {
+    if (! f) return
+    if (f.success) flash.success(f.success)
+    if (f.error)   flash.error(f.error)
+    if (f.info)    flash.info(f.info)
+    if (f.warning) flash.error(f.warning)
+  },
+  { deep: true }
+)
+
+const onFontSizeChanged = () => {}
 </script>

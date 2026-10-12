@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search learners (LRN), strand records, advisories..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- ═══════════════ HERO BANNER ═══════════════ -->
       <div v-observe
@@ -807,6 +807,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/desktop-home-banner.png'
 import BackButton from '@/Components/BackButton.vue'
+import { useFlash } from '@/Composables/useFlash'
 
 /* ═════════════════════════════════════════════════════════ */
 /* PROPS                                                     */
@@ -814,7 +815,10 @@ import BackButton from '@/Components/BackButton.vue'
 const props = defineProps({
   classroom: { type: Object, default: () => ({}) },
   students:  { type: Array,  default: () => [] },
+  counts:    { type: Object, default: () => ({}) },
 })
+
+const flash = useFlash()
 
 /* ═════════════════════════════════════════════════════════ */
 /* SHARED UTILS — declared first so everything below can use  */
@@ -855,11 +859,11 @@ const tabLoading = reactive({
 })
 
 const tabs = computed(() => [
-  { id: 'students',    label: 'Students',    icon: 'users',           count: props.students.length },
-  { id: 'assignments', label: 'Assignments', icon: 'clipboard-list',  count: tabData.assignments?.assignments?.length ?? null },
-  { id: 'lessons',     label: 'Lessons',     icon: 'book-open',       count: tabData.lessons?.lessons?.length ?? null },
+  { id: 'students',    label: 'Students',    icon: 'users',           count: props.counts?.students    ?? props.students.length },
+  { id: 'assignments', label: 'Assignments', icon: 'clipboard-list',  count: props.counts?.assignments ?? null },
+  { id: 'lessons',     label: 'Lessons',     icon: 'book-open',       count: props.counts?.lessons     ?? null },
   { id: 'gradebook',   label: 'Gradebook',   icon: 'chart-bar',       count: null },
-  { id: 'attendance',  label: 'Attendance',  icon: 'clipboard-check', count: tabData.attendance?.sessions?.length ?? null },
+  { id: 'attendance',  label: 'Attendance',  icon: 'clipboard-check', count: props.counts?.attendance  ?? null },
 ])
 
 function tabLabel(id) {
@@ -897,6 +901,17 @@ function refreshTab(id) {
 function selectTab(id) {
   activeTab.value = id
   loadTab(id)
+
+  // Keep the URL in sync so browser back-navigation preserves the tab.
+  // replaceState (not pushState) — clicking between tabs shouldn't create
+  // separate back-button stops.
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', id)
+    window.history.replaceState({}, '', url.toString())
+  } catch (e) {
+    // Malformed URL — skip sync, tab still works in memory
+  }
 }
 
 onMounted(() => {
@@ -975,7 +990,6 @@ async function saveAttendance() {
         date:      selectedDate.value,
       }),
       {
-        // Controller expects `records` (MarkAttendanceRequest).
         records: attendanceRoster.value.map(r => ({
           student_id: r.student_id,
           status:     r.status,
@@ -985,10 +999,13 @@ async function saveAttendance() {
       { headers: { Accept: 'application/json' } }
     )
 
+    const count = attendanceRoster.value.length
+    flash.success(`Attendance saved for ${count} learner${count === 1 ? '' : 's'}.`)
     refreshTab('attendance')
     closeAttendanceSession()
   } catch (e) {
     saveError.value = e.response?.data?.message || 'Failed to save attendance.'
+    flash.error(saveError.value)
   } finally {
     isSaving.value = false
   }

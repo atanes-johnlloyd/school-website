@@ -34,7 +34,18 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user()?->load('adminPosition:id,name'),
+                'user' => (function () use ($request) {
+                    $user = $request->user();
+                    if (! $user) return null;
+
+                    $user->load('adminPosition:id,name');
+
+                    if ($user->hasRole('teacher')) {
+                        $user->load('teacher:id,user_id,employee_no,department');
+                    }
+
+                    return $user;
+                })(),
                 'roles' => $request->user()?->getRoleNames() ?? [],
                 'can' => $request->user()
                     ? $request->user()->getAllPermissions()->pluck('name')->mapWithKeys(fn ($p) => [$p => true])

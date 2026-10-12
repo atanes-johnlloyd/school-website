@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search lessons, resources..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -118,7 +118,8 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -132,13 +133,29 @@ const props = defineProps({
   attachments: { type: Array,  default: () => [] },
 })
 
+const flash   = useFlash()
+const confirm = useConfirm()
+
 const deleting = ref(false)
 
 async function destroy() {
-  if (!await confirmAction('Delete this lesson? This cannot be undone.')) return
+  const { confirmed } = await confirm({
+    title: 'Delete Lesson',
+    message: `Delete "${props.lesson.title}"?`,
+    details: [
+      'This action cannot be undone.',
+      'Any attachments uploaded with this lesson will also be removed.',
+    ],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   deleting.value = true
   router.delete(route('teacher.lessons.destroy', props.lesson.id), {
-    onFinish: () => { deleting.value = false },
+    onSuccess: () => flash.success('Lesson deleted.'),
+    onError:   () => flash.error('Failed to delete lesson.'),
+    onFinish:  () => { deleting.value = false },
   })
 }
 

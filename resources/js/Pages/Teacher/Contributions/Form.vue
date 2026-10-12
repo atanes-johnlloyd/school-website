@@ -440,8 +440,9 @@
               <strong>{{ selectedCount }} {{ form.scope === 'section' ? 'section' : 'class' }}{{ selectedCount === 1 ? '' : 'es' }}</strong>.
               Each gets its own campaign and roster.
             </p>
-            <p v-if="form.is_published" class="font-black text-[#004d08] dark:text-[#86EFAC] mt-1.5">
-              📧 Guardian emails will be sent automatically on save.
+            <p v-if="form.is_published" class="font-black text-[#004d08] dark:text-[#86EFAC] mt-1.5 inline-flex items-center gap-1.5">
+              <Icon icon="envelope" size="xs" />
+              Guardian emails will be sent automatically on save.
             </p>
           </div>
         </div>
@@ -476,6 +477,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import BackButton from '@/Components/BackButton.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
+import { useFlash } from '@/Composables/useFlash'
 
 const props = defineProps({
   advisorySections: { type: Array,  default: () => [] },
@@ -483,6 +485,7 @@ const props = defineProps({
   contribution:     { type: Object, default: null },
 })
 
+const flash = useFlash()
 const isEdit = computed(() => !!props.contribution?.id)
 
 const defaultScope = props.advisorySections.length > 0 ? 'section' : 'class'
@@ -616,6 +619,7 @@ async function submit() {
   try {
     if (isEdit.value) {
       await axios.put(route('teacher.contributions.update', props.contribution.id), form.value)
+      flash.success('Contribution updated.')
       router.visit(route('teacher.contributions.show', props.contribution.id))
     } else {
       const payload = {
@@ -624,6 +628,12 @@ async function submit() {
         class_ids:   form.value.scope === 'class'   ? selectedClassIds.value   : undefined,
       }
       const { data } = await axios.post(route('teacher.contributions.store'), payload)
+      const count = selectedCount.value
+      flash.success(
+        count > 1
+          ? `${count} contributions created.`
+          : 'Contribution created.'
+      )
       router.visit(data.redirect || route('teacher.contributions.index'))
     }
   } catch (e) {

@@ -133,6 +133,7 @@ import { ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import Modal from '@/Components/Modal.vue'
 import Icon from '@/Components/Icon.vue'
+import axios from 'axios'
 
 const props = defineProps({
   show:     { type: Boolean, default: false },
@@ -224,7 +225,7 @@ function downloadTemplate() {
   URL.revokeObjectURL(url)
 }
 
-function submitImport() {
+async function submitImport() {
   if (!file.value || !subjectId.value) return
   isLoading.value = true
   generalError.value = ''
@@ -235,27 +236,21 @@ function submitImport() {
   fd.append('subject_id', subjectId.value)
   fd.append('category', '')
 
-  router.post(route('teacher.questions.import-csv'), fd, {
-    forceFormData: true,
-    preserveScroll: true,
-    onSuccess: (page) => {
-      // Controller returns { message, created, failed }
-      // Inertia doesn't pipe custom response payloads through onSuccess directly,
-      // so we read from flash if available, else assume success
-      const flashCreated = page?.props?.flash?.created ?? 0
-      result.value = {
-        created: flashCreated,
-        failed: page?.props?.flash?.failed ?? [],
-      }
-      emit('imported')
-    },
-    onError: (errors) => {
-      generalError.value = errors.file || errors.subject_id || 'Import failed. Check your CSV file.'
-    },
-    onFinish: () => {
-      isLoading.value = false
-    },
-  })
+  try {
+    const { data } = await axios.post(route('teacher.questions.import-csv'), fd, {
+      headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },
+    })
+        result.value = {
+      created: flashCreated,
+      failed: page?.props?.flash?.failed ?? [],
+    }
+    flash.success(`${flashCreated} question${flashCreated === 1 ? '' : 's'} imported.`)
+    emit('imported')
+  } catch (e) {
+    generalError.value = e.response?.data?.message || 'Import failed. Check your CSV file.'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 function closeModal() {

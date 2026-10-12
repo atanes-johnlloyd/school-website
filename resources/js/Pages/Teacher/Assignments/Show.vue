@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search assignments, tasks, rubric..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-16 sm:pb-24 space-y-4 sm:space-y-6 flex-1 mt-2">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -57,8 +57,10 @@
               <Icon icon="x-circle" size="xs" />
               {{ publishing ? 'Unpublishing…' : 'Unpublish' }}
             </button>
-            <button @click="destroy" :disabled="deleting"
-              class="inline-flex items-center gap-1.5 bg-rose-500/90 hover:bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-60">
+            <button @click="destroy"
+              :disabled="deleting || stats.graded > 0"
+              :title="stats.graded > 0 ? 'Cannot delete: graded submissions exist' : 'Delete assignment'"
+              class="inline-flex items-center gap-1.5 bg-rose-500/90 hover:bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed">
               <Icon icon="trash" size="xs" />
               {{ deleting ? 'Deleting…' : 'Delete' }}
             </button>
@@ -262,13 +264,14 @@
 </template>
 
 <script setup>
-import { confirmAction, showError } from '@/Pages/useSweetAlert'
 import { ref, computed } from 'vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/assignment.png'
 import BackButton from '@/Components/BackButton.vue'
+import { useFlash } from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
   assignment:  { type: Object, default: () => ({}) },
@@ -276,6 +279,8 @@ const props = defineProps({
   stats:       { type: Object, default: () => ({ total_students: 0, submitted: 0, graded: 0 }) },
 })
 
+const flash = useFlash()
+const confirm = useConfirm()
 const active = ref(null)
 const publishing = ref(false)
 const deleting = ref(false)
@@ -292,26 +297,54 @@ function submitGrade() {
   gradeForm.put(route('teacher.submissions.grade', active.value.id), {
     preserveScroll: true,
     onSuccess: () => {
+      flash.success(`Grade saved for ${active.value.student_name}.`)
       active.value = null
       gradeForm.reset()
     },
+    onError: () => flash.error('Failed to save grade.'),
   })
 }
 
 function togglePublish(next) {
   publishing.value = true
   router.put(route('teacher.assignments.update', props.assignment.id), {
+    title:        props.assignment.title,
+    category:     props.assignment.category,
+    instructions: props.assignment.instructions ?? '',
+    due_at:       props.assignment.due_at,
+    points:       props.assignment.points,
+    allow_late:   props.assignment.allow_late,
     is_published: next,
   }, {
     preserveScroll: true,
+    onSuccess: () => flash.success(next ? 'Assignment published.' : 'Assignment unpublished.'),
+    onError: (errs) => flash.error(Object.values(errs).flat()[0] || 'Failed to update.'),
     onFinish: () => { publishing.value = false },
   })
 }
 
 async function destroy() {
-  if (!await confirmAction('Delete this assignment? This cannot be undone.')) return
+  if (props.stats.graded > 0) {
+    flash.error('Cannot delete: submissions have already been graded. Unpublish instead.')
+    return
+  }
+
+  const { confirmed } = await confirm({
+    title: 'Delete Assignment',
+    message: `Delete "${props.assignment.title}"?`,
+    details: [
+      'This action cannot be undone.',
+      'The assignment will be hidden. Student submissions are preserved in the database.',
+    ],
+    confirmLabel: 'Delete',
+    variant: 'danger',
+  })
+  if (!confirmed) return
+
   deleting.value = true
   router.delete(route('teacher.assignments.destroy', props.assignment.id), {
+    onSuccess: () => flash.success('Assignment deleted.'),
+    onError: (err) => flash.error(err?.message || 'Failed to delete assignment.'),
     onFinish: () => { deleting.value = false },
   })
 }

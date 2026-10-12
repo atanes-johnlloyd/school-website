@@ -93,7 +93,7 @@ class ClassController extends Controller
             $query->join('subjects', 'subjects.id', '=', 'classes.subject_id')
                 ->join('sections', 'sections.id', '=', 'classes.section_id')
                 ->orderBy($sortColumn, $direction)
-                ->select('classes.*');
+                ->addSelect('classes.*');
         } else {
             $query->orderBy($sortColumn, $direction);
         }
@@ -144,8 +144,20 @@ class ClassController extends Controller
                 'per_page'     => $perPage,
             ],
             'filterOptions' => [
-                'strands' => \App\Models\Strand::select('id', 'code', 'name')->orderBy('name')->get(),
-                'terms'   => Term::select('id', 'name')->orderByDesc('start_date')->get(),
+                'strands' => \App\Models\Strand::query()
+                    ->whereHas('sections.classroom', fn ($q) => $q->where('teacher_id', $teacher->id))
+                    ->select('id', 'code', 'name')
+                    ->orderBy('code')
+                    ->get(),
+                'terms' => Term::with('schoolYear:id,label')
+                    ->when($activeTerm?->school_year_id, fn ($q) => $q->where('school_year_id', $activeTerm->school_year_id))
+                    ->orderByDesc('start_date')
+                    ->get()
+                    ->map(fn ($t) => [
+                        'id'    => $t->id,
+                        'name'  => $t->name,
+                        'label' => ($t->schoolYear?->label ? $t->schoolYear->label . ' • ' : '') . $t->name,
+                    ]),
             ],
             'totals' => $totals,
         ];
@@ -191,6 +203,17 @@ class ClassController extends Controller
                     ? \Carbon\Carbon::parse($s->pivot->enrolled_at)->toIso8601String()
                     : null,
             ]),
+
+            // ← ADD THIS BLOCK
+            'counts' => [
+                'students'    => $classroom->students()->count(),
+                'assignments' => $classroom->assignments()->count(),
+                'lessons'     => $classroom->lessons()->count(),
+                'attendance'  => \App\Models\AttendanceRecord::query()
+                    ->where('class_id', $classroom->id)
+                    ->distinct()
+                    ->count('attendance_date'),
+            ],
         ]);
     }
 }

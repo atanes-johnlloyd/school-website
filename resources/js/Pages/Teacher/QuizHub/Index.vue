@@ -3,7 +3,7 @@
 
   <AuthenticatedLayout searchPlaceholder="Search quizzes, question banks, exams..">
 
-    <div class="relative z-10 px-3 sm:px-6 md:px-10 pb-24 space-y-6 flex-1 mt-2 max-w-full">
+    <div class="space-y-4 sm:space-y-6">
 
       <!-- HERO -->
       <div v-observe
@@ -403,30 +403,6 @@
       </div>
     </div>
 
-    <!-- Teleported class picker -->
-    <Teleport to="body">
-      <div v-if="showClassPicker"
-        class="fixed z-[100] w-72 bg-white dark:bg-[#2D3A31] rounded-2xl shadow-xl border border-slate-200 dark:border-[#3F4F43] overflow-hidden"
-        :style="{ top: pickerPos.top + 'px', left: pickerPos.left + 'px' }">
-        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-[#3F4F43] bg-slate-50 dark:bg-[#232D26]">
-          <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Pick a Class</span>
-        </div>
-        <div class="max-h-72 overflow-y-auto">
-          <Link v-for="c in classrooms" :key="c.id"
-            :href="route('teacher.classes.quizzes.index', c.id)"
-            @click="showClassPicker = false"
-            class="block px-4 py-3 border-b border-slate-100 dark:border-[#3F4F43] last:border-b-0 hover:bg-slate-50 dark:hover:bg-[#3F4F43] transition-colors">
-            <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{{ c.subject }}</p>
-            <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{{ c.section }} • {{ c.quizzes_count }} quizzes</p>
-          </Link>
-          <div v-if="!classrooms.length" class="px-4 py-6 text-center text-[11px] text-slate-400 italic">
-            No classes assigned.
-          </div>
-        </div>
-      </div>
-      <div v-if="showClassPicker" @click="showClassPicker = false" class="fixed inset-0 z-[99] bg-transparent"></div>
-    </Teleport>
-
     <!-- CREATE QUIZ MODAL -->
 <div v-if="showCreateQuiz"
   class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-start justify-center p-4 overflow-y-auto"
@@ -528,12 +504,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/local/quiz-hub-hero.jpg'
 import { useForm } from '@inertiajs/vue3'
+import { useFlash } from '@/Composables/useFlash'
 
 const showCreateQuiz = ref(false)
 const createClassId = ref('')
@@ -579,6 +556,7 @@ function submitCreateQuiz() {
       showCreateQuiz.value = false
       createForm.reset()
       createClassId.value = ''
+      flash.success('Quiz created. Add questions from the bank.')
     },
     onError: () => {
       createError.value = 'Please review the form and try again.'
@@ -594,6 +572,8 @@ const props = defineProps({
   recent_attempts: { type: Array,  default: () => [] },
   active_term:     { type: String, default: null },
 })
+
+const flash = useFlash()
 
 /* ─── Filters ─────────────────────────────────────────── */
 const classFilter  = ref('all')
@@ -691,10 +671,6 @@ function relativeClose(iso) {
   if (hours >= 1) return `in ${hours}h`
   const minutes = Math.floor(diff / 60000)
   return `in ${minutes}m`
-}
-
-function onWindowChange() {
-  if (showClassPicker.value) recomputePos()
 }
 
 /* ─── Helpers ─────────────────────────────────────────── */

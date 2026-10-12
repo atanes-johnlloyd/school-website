@@ -1,13 +1,13 @@
 <template>
   <div>
     <!-- Mobile Backdrop Overlay -->
-    <div 
-      v-if="isOpen" 
-      @click="$emit('close-sidebar')" 
+    <div
+      v-if="isOpen"
+      @click="$emit('close-sidebar')"
       class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300"
     ></div>
 
-    <!-- Sidebar Container (Responsive Slide-over Drawer for Mobile & Sticky Column for Desktop) -->
+    <!-- Sidebar Container -->
     <aside
       :class="[
         'fixed md:sticky top-0 left-0 h-screen w-72 flex flex-col bg-[#F9F7F1] dark:bg-[#232D26] border-r border-gray-200 dark:border-[#3F4F43] overflow-hidden transition-all duration-300 z-50 shrink-0 font-[\'Inter\'] shadow-xl',
@@ -22,10 +22,10 @@
 
       <!-- 1. PINNED TOP HEADER SECTION (NON-SCROLLABLE) -->
       <div class="relative z-10 p-5 pb-3 shrink-0 border-b border-[#006907]/10 dark:border-[#3F4F43] bg-[#F9F7F1]/90 dark:bg-[#232D26]/90 backdrop-blur-xs">
-        
+
         <!-- Mobile Drawer Close Button -->
-        <button 
-          @click="$emit('close-sidebar')" 
+        <button
+          @click="$emit('close-sidebar')"
           class="md:hidden absolute top-4 right-4 p-2 rounded-xl bg-white/80 dark:bg-[#2D3A31]/80 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-[#3F4F43] transition-colors"
           aria-label="Close Navigation"
         >
@@ -36,7 +36,6 @@
 
         <!-- Logo & School Name Section -->
         <div class="flex flex-col items-center mb-4 mt-1">
-          <!-- LOGO WITH WATER DROPLET RIPPLE ANIMATION -->
           <div class="relative flex items-center justify-center mb-3">
             <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/40 dark:border-[#86EFAC]/50"></div>
             <div class="ripple-wave absolute inset-0 rounded-full border border-[#006907]/30 dark:border-[#86EFAC]/40" style="animation-delay: 1s;"></div>
@@ -62,17 +61,22 @@
             class="text-[10px] font-extrabold text-[#006907] dark:text-slate-300 tracking-widest uppercase transition-colors"
           >Academic Workspace</span>
           <span
-            class="text-[10px] font-black text-[#006907] dark:text-[#232D26] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-xs"
-          >S.Y. 25-26</span>
+            class="text-[10px] font-black text-[#006907] dark:text-[#232D26] bg-[#F9C20C] px-2.5 py-0.5 rounded-full shadow-xs whitespace-nowrap"
+          >S.Y. {{ shortYear }}</span>
         </div>
       </div>
 
       <!-- 2. SCROLLABLE MIDDLE NAVIGATION AREA -->
-      <div class="relative z-10 flex-1 overflow-y-auto px-4 py-4 no-scrollbar space-y-1.5 text-xs font-semibold">
+      <div
+        ref="scrollContainer"
+        class="relative z-10 flex-1 overflow-y-auto px-4 py-4 no-scrollbar space-y-1.5 text-xs font-semibold"
+      >
         <nav class="flex flex-col space-y-1.5">
+
           <!-- Dashboard -->
-          <Link 
-            :href="route('teacher.dashboard')" 
+          <Link
+            :href="route('teacher.dashboard')"
+            :data-nav-active="isRouteActive('teacher.dashboard') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -88,8 +92,9 @@
           </Link>
 
           <!-- My Classes -->
-          <Link 
-            :href="route('teacher.classes.index')" 
+          <Link
+            :href="route('teacher.classes.index')"
+            :data-nav-active="isRouteActive('teacher.classes.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -105,8 +110,9 @@
           </Link>
 
           <!-- Gradebook -->
-          <Link 
-            :href="route('teacher.gradebook.index')" 
+          <Link
+            :href="route('teacher.gradebook.index')"
+            :data-nav-active="isRouteActive('teacher.gradebook.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -125,8 +131,9 @@
           </Link>
 
           <!-- Daily Attendance -->
-          <Link 
-            :href="route('teacher.attendance.index')" 
+          <Link
+            :href="route('teacher.attendance.index')"
+            :data-nav-active="isRouteActive('teacher.attendance.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -142,8 +149,9 @@
           </Link>
 
           <!-- Assignments & Tasks -->
-          <Link 
-            :href="route('teacher.tasks.index')" 
+          <Link
+            :href="route('teacher.tasks.index')"
+            :data-nav-active="isRouteActive('teacher.tasks.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -159,8 +167,9 @@
           </Link>
 
           <!-- DepEd LR Resources -->
-          <Link 
-            :href="route('teacher.resources.index')" 
+          <Link
+            :href="route('teacher.resources.index')"
+            :data-nav-active="isRouteActive('teacher.resources.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -175,25 +184,28 @@
             <span class="text-sm tracking-wide">DepEd LR Resources</span>
           </Link>
 
+          <!-- Announcements -->
           <Link
-              :href="route('teacher.announcements.index')"
-              @click="$emit('close-sidebar')"
-              :class="[
-                'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
-                isRouteActive('teacher.announcements.*')
-                  ? 'bg-[#006907] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-md font-extrabold'
-                  : 'text-[#2C3E2D] dark:text-slate-300 hover:bg-[#006907]/10 dark:hover:bg-[#3F4F43] hover:text-[#006907] dark:hover:text-white'
-              ]"
-            >
-              <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-              </svg>
-              <span class="text-sm tracking-wide">Announcements</span>
-            </Link>
+            :href="route('teacher.announcements.index')"
+            :data-nav-active="isRouteActive('teacher.announcements.*') ? 'true' : undefined"
+            @click="$emit('close-sidebar')"
+            :class="[
+              'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
+              isRouteActive('teacher.announcements.*')
+                ? 'bg-[#006907] dark:bg-[#86EFAC] text-white dark:text-[#232D26] shadow-md font-extrabold'
+                : 'text-[#2C3E2D] dark:text-slate-300 hover:bg-[#006907]/10 dark:hover:bg-[#3F4F43] hover:text-[#006907] dark:hover:text-white'
+            ]"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            <span class="text-sm tracking-wide">Announcements</span>
+          </Link>
 
           <!-- Quiz Hub & Exam Bank -->
-          <Link 
-            :href="route('teacher.quizzes.index')" 
+          <Link
+            :href="route('teacher.quizzes.index')"
+            :data-nav-active="isRouteActive('teacher.quizzes.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -209,8 +221,9 @@
           </Link>
 
           <!-- Contributions -->
-          <Link 
-            :href="route('teacher.contributions.index')" 
+          <Link
+            :href="route('teacher.contributions.index')"
+            :data-nav-active="isRouteActive('teacher.contributions.*') ? 'true' : undefined"
             @click="$emit('close-sidebar')"
             :class="[
               'flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 ease-in-out',
@@ -224,13 +237,14 @@
             </svg>
             <span class="text-sm tracking-wide">Contributions</span>
           </Link>
+
         </nav>
       </div>
 
       <!-- 3. PINNED BOTTOM FOOTER SECTION (NON-SCROLLABLE) -->
       <div class="relative z-10 p-4 pt-2 shrink-0 bg-[#F9F7F1]/95 dark:bg-[#232D26]/95 backdrop-blur-xs border-t border-[#006907]/10 dark:border-[#3F4F43]">
         <div class="bg-white dark:bg-[#2D3A31] rounded-2xl p-4 shadow-sm border border-[#006907]/10 dark:border-[#3F4F43] transition-colors duration-300">
-          <Link 
+          <Link
             :href="route('home')"
             class="flex items-center gap-2.5 text-xs font-bold text-[#006907] dark:text-[#86EFAC] hover:text-green-800 dark:hover:text-white transition-colors mb-3 group"
           >
@@ -251,7 +265,8 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 
 import sidebarBg from '@/../assets/img/newsidebarbg.png'
 import schoolLogo from '@/../assets/img/logo_trans.png'
@@ -265,14 +280,42 @@ defineProps({
 
 defineEmits(['close-sidebar'])
 
-const isRouteActive = (routeName) => {
-  if (!routeName) return false
+const page = usePage()
+
+/* ─── Active route detection ────────────────────────────── */
+const isRouteActive = (pattern) => {
+  if (!pattern) return false
   try {
-    return route().current(routeName) || route().current(routeName + '.*')
+    return !!route().current(pattern)
   } catch (e) {
     return false
   }
 }
+
+/* ─── Short school year (e.g. "2026-2027" → "26-27") ────── */
+const shortYear = computed(() => {
+  const label = page.props.activeSchoolYear
+  if (!label) return '—'
+  const [y1, y2] = String(label).split('-')
+  if (!y1 || !y2) return label
+  return `${y1.slice(-2)}-${y2.slice(-2)}`
+})
+
+/* ─── Auto-scroll active nav item into view ─────────────── */
+const scrollContainer = ref(null)
+
+const scrollActiveIntoView = () => {
+  nextTick(() => {
+    if (!scrollContainer.value) return
+    const active = scrollContainer.value.querySelector('[data-nav-active="true"]')
+    if (active) {
+      active.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  })
+}
+
+onMounted(scrollActiveIntoView)
+watch(() => page.url, scrollActiveIntoView)
 </script>
 
 <style scoped>

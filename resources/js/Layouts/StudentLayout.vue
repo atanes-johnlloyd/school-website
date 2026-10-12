@@ -3,7 +3,7 @@
     <!-- Sidebar is single-root, so these classes land on its outer <div>,
          which then becomes the flex child and the sticky element. -->
     <Sidebar
-      class="print:hidden sticky top-0 h-screen shrink-0"
+      class="print:hidden md:sticky md:top-0 md:h-screen shrink-0"
       :is-open="sidebarOpen"
       @close-sidebar="sidebarOpen = false"
     />
@@ -14,7 +14,7 @@
         @open-sidebar="sidebarOpen = true"
         @font-size-changed="onFontSizeChanged"
       />
-      <div class="flex-1 p-6 md:p-8 w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
+      <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:block">
         <slot />
       </div>
     </main>
