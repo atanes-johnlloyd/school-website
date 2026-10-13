@@ -5,42 +5,27 @@
       <!-- Hero Banner -->
       <div
         class="relative overflow-hidden w-full rounded-2xl sm:rounded-3xl shadow-lg border border-[#006907]/20 dark:border-none min-h-[220px] sm:min-h-[240px] flex flex-col justify-center p-4 sm:p-8 md:p-10">
-        <!-- Background Image Layer (Classroom / Grouping Layout Theme) -->
         <img
           :src="heroImage || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1600&auto=format&fit=crop'"
           alt="Class Sections Hero" class="absolute inset-0 w-full h-full object-cover z-0 object-center" />
-
-        <!-- Animated Dark Green Overlay -->
         <div class="absolute inset-0 bg-[#004d05]/85 dark:bg-[#152B1C]/90 animate-overlay z-0 mix-blend-multiply"></div>
+        <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0"></div>
+        <div class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0"></div>
 
-        <!-- Ambient Light Glow Highlights -->
-        <div
-          class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none z-0">
-        </div>
-        <div class="absolute right-24 -top-16 w-80 h-80 rounded-full bg-[#F9C20C]/20 blur-3xl pointer-events-none z-0">
-        </div>
-
-        <!-- Content Container -->
         <div class="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="space-y-2 sm:space-y-3 max-w-2xl">
-            <!-- Top Capsule Badges -->
             <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
-              <span
-                class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
+              <span class="inline-flex items-center gap-1.5 bg-[#F9C20C] text-[#2C3E2D] font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wide uppercase">
                 <span>🏫</span> ACADEMICS
               </span>
-
-              <span
-                class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+              <span class="inline-flex items-center gap-2 bg-black/30 dark:bg-black/50 backdrop-blur-md text-white border border-white/20 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Sections
               </span>
             </div>
 
-            <!-- Title & Subtitle -->
             <div class="space-y-1 sm:space-y-1.5">
-              <h1
-                class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
+              <h1 class="font-['Anton'] text-2xl sm:text-4xl md:text-5xl tracking-wide uppercase flex items-center gap-2 select-none flex-wrap leading-none text-white drop-shadow-md">
                 <span>CLASS</span>
                 <span class="text-[#F9C20C] drop-shadow-[0_2px_8px_rgba(249,194,12,0.4)]">SECTIONS</span>
               </h1>
@@ -50,7 +35,6 @@
             </div>
           </div>
 
-          <!-- Action Button -->
           <div class="flex items-center shrink-0 pt-2 md:pt-0">
             <button @click="openCreateModal"
               class="inline-flex items-center justify-center gap-2 bg-[#F9C20C] hover:bg-[#e0ae0a] text-[#2C3E2D] font-black px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs sm:text-sm cursor-pointer">
@@ -63,86 +47,69 @@
 
       <!-- Stat Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <div
-          class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
+        <div class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-gray-400 tracking-wider">Total Sections</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.total_sections || 0 }}</p>
             <span class="text-[10px] text-gray-500 dark:text-gray-400 font-normal">This School Year</span>
           </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-700 dark:text-[#86EFAC] shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-700 dark:text-[#86EFAC] shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0v10m-4-10v10" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0v10m-4-10v10" />
             </svg>
           </div>
         </div>
 
-        <div
-          class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
+        <div class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-sky-500 tracking-wider">Total Capacity</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.total_capacity || 0 }}</p>
             <span class="text-[10px] text-sky-600 dark:text-sky-400 font-normal">Seat Slots</span>
           </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-[#1C261E] border border-sky-100 dark:border-[#3F4F43] flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-[#1C261E] border border-sky-100 dark:border-[#3F4F43] flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
         </div>
 
-        <div
-          class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
+        <div class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-emerald-500 tracking-wider">Enrolled</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.total_enrolled || 0 }}</p>
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">Students Placed</span>
           </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-[#1C261E] border border-emerald-100 dark:border-[#3F4F43] flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         </div>
 
-        <div
-          class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
+        <div class="text-left p-5 rounded-2xl border shadow-xs flex items-center justify-between bg-white dark:bg-[#2D3A31] border-gray-200/80 dark:border-[#3F4F43]">
           <div class="space-y-1">
             <p class="text-[10px] font-medium uppercase text-amber-500 tracking-wider">Occupancy</p>
             <p class="text-2xl font-medium text-gray-900 dark:text-white">{{ counts.occupancy_rate || 0 }}%</p>
             <span class="text-[10px] text-amber-600 dark:text-amber-400 font-normal">Capacity Used</span>
           </div>
-          <div
-            class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-[#1C261E] border border-amber-100 dark:border-[#3F4F43] flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-[#1C261E] border border-amber-100 dark:border-[#3F4F43] flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
         </div>
       </div>
 
       <!-- Main Card -->
-      <div
-        class="bg-white dark:bg-[#2D3A31] rounded-2xl border border-gray-200/80 dark:border-[#3F4F43] shadow-xs overflow-hidden transition-colors">
+      <div class="bg-white dark:bg-[#2D3A31] rounded-2xl border border-gray-200/80 dark:border-[#3F4F43] shadow-xs overflow-hidden transition-colors">
 
-        <!-- Controls -->
-        <div
-          class="p-4 sm:p-5 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 flex flex-col lg:flex-row gap-3 justify-between lg:items-center">
+        <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 flex flex-col lg:flex-row gap-3 justify-between lg:items-center">
           <div>
             <h2 class="text-xs font-medium text-gray-900 dark:text-white uppercase tracking-wider">Sections Roster</h2>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">Search, filter, and manage class
-              groupings</p>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">Search, filter, and manage class groupings</p>
           </div>
 
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto lg:justify-end">
-
             <div class="relative">
               <select v-model="filters.school_year_id" @change="resetAndFetch()"
                 class="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer">
@@ -194,33 +161,28 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr
-                class="border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 text-[10px] font-medium uppercase text-gray-400 tracking-wider">
+              <tr class="border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50/50 dark:bg-[#232D26]/50 text-[10px] font-medium uppercase text-gray-400 tracking-wider">
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('name')"
-                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('name')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Section
                     <SortIcon field="name" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('grade_level')"
-                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('grade_level')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Grade
                     <SortIcon field="grade_level" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5">
-                  <button @click="setSort('strand')"
-                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('strand')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Strand
                     <SortIcon field="strand" />
                   </button>
                 </th>
                 <th class="py-3.5 px-5">Adviser</th>
                 <th class="py-3.5 px-5 min-w-[180px]">
-                  <button @click="setSort('enrolled')"
-                    class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+                  <button @click="setSort('enrolled')" class="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
                     Enrolled / Capacity
                     <SortIcon field="enrolled" />
                   </button>
@@ -228,18 +190,15 @@
                 <th class="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody
-              class="divide-y divide-gray-100 dark:divide-[#3F4F43] text-xs font-normal text-gray-800 dark:text-gray-200">
-              <tr v-for="s in sections.data" :key="s.id"
-                class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors">
+            <tbody class="divide-y divide-gray-100 dark:divide-[#3F4F43] text-xs font-normal text-gray-800 dark:text-gray-200">
+              <tr v-for="s in sections.data" :key="s.id" class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors">
                 <td class="py-4 px-5">
                   <p class="text-xs font-medium text-gray-900 dark:text-white">{{ s.name }}</p>
                   <p class="text-[10px] text-gray-400">{{ s.school_year }}</p>
                 </td>
                 <td class="py-4 px-5 text-gray-700 dark:text-gray-300">Grade {{ s.grade_level }}</td>
                 <td class="py-4 px-5">
-                  <span v-if="s.strand_code"
-                    class="font-mono text-[11px] text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#232D26] px-2 py-0.5 rounded border border-gray-200 dark:border-[#3F4F43]">
+                  <span v-if="s.strand_code" class="font-mono text-[11px] text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#232D26] px-2 py-0.5 rounded border border-gray-200 dark:border-[#3F4F43]">
                     {{ s.strand_code }}
                   </span>
                   <span v-else class="text-gray-400">—</span>
@@ -248,21 +207,20 @@
                 <td class="py-4 px-5">
                   <div>
                     <div class="flex items-center justify-between mb-1">
-                      <span class="text-xs text-gray-900 dark:text-white font-medium">
-                        {{ s.enrolled_count }} / {{ s.max_capacity }}
-                      </span>
-                      <span class="text-[10px] font-normal" :class="capacityTextClass(s)">
-                        {{ capacityPercent(s) }}%
-                      </span>
+                      <span class="text-xs text-gray-900 dark:text-white font-medium">{{ s.enrolled_count }} / {{ s.max_capacity }}</span>
+                      <span class="text-[10px] font-normal" :class="capacityTextClass(s)">{{ capacityPercent(s) }}%</span>
                     </div>
                     <div class="h-1.5 rounded-full bg-gray-200 dark:bg-[#1C261E] overflow-hidden">
-                      <div class="h-full rounded-full transition-all" :class="capacityBarClass(s)"
-                        :style="{ width: capacityPercent(s) + '%' }"></div>
+                      <div class="h-full rounded-full transition-all" :class="capacityBarClass(s)" :style="{ width: capacityPercent(s) + '%' }"></div>
                     </div>
                   </div>
                 </td>
                 <td class="py-4 px-5 text-right">
                   <div class="flex items-center justify-end gap-1.5">
+                    <Link :href="route('admin.sections.view', s.id)"
+                      class="px-2.5 py-1 text-[10px] font-normal text-[#004d08] dark:text-[#86EFAC] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer">
+                      Schedule
+                    </Link>
                     <button @click="openViewModal(s)"
                       class="px-2.5 py-1 text-[10px] font-normal text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 rounded-lg border border-sky-200 dark:border-sky-800 transition-colors cursor-pointer">
                       View
@@ -312,8 +270,7 @@
             <span class="px-3 py-1.5 font-medium text-gray-900 dark:text-white">
               Page {{ sections.current_page }} of {{ sections.last_page }}
             </span>
-            <button @click="changePage(sections.current_page + 1)"
-              :disabled="sections.current_page >= sections.last_page"
+            <button @click="changePage(sections.current_page + 1)" :disabled="sections.current_page >= sections.last_page"
               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3F4F43] bg-white dark:bg-[#2D3A31] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors">
               Next
             </button>
@@ -322,29 +279,49 @@
       </div>
 
       <!-- Modals -->
-      <SectionFormModal :show="showFormModal" :section="selectedSection" :strands="strands" :teachers="teachers"
-        :school-years="schoolYears" :default-max-capacity="defaultMaxCapacity"
-        @close="showFormModal = false" @saved="fetchSections" />
+      <SectionFormModal
+        :show="showFormModal"
+        :section="selectedSection"
+        :strands="strands"
+        :teachers="teachers"
+        :school-years="schoolYears"
+        :home-rooms="homeRooms"
+        :default-max-capacity="defaultMaxCapacity"
+        @close="showFormModal = false"
+        @saved="fetchSections"
+      />
 
-      <ViewSectionModal :show="showViewModal" :section="selectedSection"
-        @close="showViewModal = false" @edit="fromViewToEdit" @changed="fetchSections" />
+      <ViewSectionModal
+        :show="showViewModal"
+        :section="selectedSection"
+        @close="showViewModal = false"
+        @edit="fromViewToEdit"
+        @changed="fetchSections"
+      />
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, h } from 'vue'
+import { Link } from '@inertiajs/vue3'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import SectionFormModal from './SectionFormModal.vue'
 import ViewSectionModal from './ViewSectionModal.vue'
+import { useFlash }  from '@/Composables/useFlash'
+import { useConfirm } from '@/Composables/useConfirm'
 
 const props = defineProps({
-  strands: { type: Array, default: () => [] },
-  teachers: { type: Array, default: () => [] },
-  schoolYears: { type: Array, default: () => [] },
+  strands:      { type: Array, default: () => [] },
+  teachers:     { type: Array, default: () => [] },
+  schoolYears:  { type: Array, default: () => [] },
+  homeRooms:    { type: Array, default: () => [] },
   defaultMaxCapacity: { type: Number, default: 40 },
 })
+
+const flash = useFlash()
+const confirmDialog = useConfirm()
 
 const emptyPaginator = () => ({ data: [], current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
 
@@ -377,12 +354,11 @@ const fetchSections = async () => {
   try {
     const { data } = await axios.get('/admin/sections/list', { params: filters })
     const p = data?.sections
-    sections.value = p && Array.isArray(p.data) ? p : emptyPaginator()   // success: assign server data
+    sections.value = p && Array.isArray(p.data) ? p : emptyPaginator()
     counts.value = data?.counts ?? counts.value
   } catch (e) {
     console.error('Failed to load sections:', e)
     flash.error(e.response?.data?.message || 'Failed to load sections. Please refresh.')
-    // nothing assigned — table keeps showing its last-known rows
   }
 }
 
@@ -460,10 +436,10 @@ const fromViewToEdit = (s) => {
 }
 
 const confirmDelete = async (section) => {
-  const { confirmed } = await confirm({
+  const { confirmed } = await confirmDialog({
     title: 'Delete Section',
     message: `Delete "${section.name}"?`,
-    details: ['Fails if students are enrolled in this section.'],
+    details: ['Fails if students are enrolled in this section.', 'Classes and schedules for this section will be removed.'],
     confirmLabel: 'Delete',
     variant: 'danger',
   })

@@ -39,13 +39,18 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Full Name <span class="text-red-500">*</span>
             </label>
-            <input 
+            <input
               v-model="form.name"
-              type="text" 
+              type="text"
+              pattern="^[\p{L}\s'\-\.]+$"
+              title="Letters, spaces, hyphens, apostrophes, and periods only"
               placeholder="e.g. Maria Santos"
               class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal"
               :class="{ 'border-red-500 dark:border-red-500': form.errors.name }"
             />
+            <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+              Letters, spaces, hyphens, apostrophes, and periods only.
+            </p>
             <p v-if="form.errors.name" class="mt-1 text-[11px] text-red-500 font-normal">{{ form.errors.name }}</p>
           </div>
 
@@ -53,14 +58,20 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               LRN / Student No. <span class="text-red-500">*</span>
             </label>
-            <input 
+            <input
               v-model="form.lrn"
-              type="text" 
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="12"
               placeholder="123456789012"
+              @input="form.lrn = form.lrn.replace(/\D/g, '').slice(0, 12)"
               class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal uppercase"
               :class="{ 'border-red-500 dark:border-red-500': form.errors.lrn }"
             />
-            <p v-if="form.errors.lrn" class="mt-1 text-[11px] text-red-500 font-normal">{{ form.errors.lrn }}</p>
+            <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+              10–12 digits, numbers only.
+            </p>
           </div>
         </div>
 
@@ -98,12 +109,19 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Contact Number
             </label>
-            <input 
+            <input
               v-model="form.contact_number"
-              type="text" 
-              placeholder="+63 912 345 6789"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="11"
+              placeholder="09XXXXXXXXX"
+              @input="form.contact_number = form.contact_number.replace(/\D/g, '').slice(0, 11)"
               class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal"
             />
+            <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+              7–11 digits, numbers only.
+            </p>
           </div>
         </div>
 
@@ -146,9 +164,10 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Date of Birth
             </label>
-            <input 
+            <input
               v-model="form.date_of_birth"
-              type="date" 
+              type="date"
+              :max="new Date().toISOString().split('T')[0]"
               class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
             />
           </div>
@@ -172,10 +191,14 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Guardian Contact
             </label>
-            <input 
+            <input
               v-model="form.guardian_contact"
-              type="text" 
-              placeholder="+63 918 765 4321"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="11"
+              placeholder="09XXXXXXXXX"
+              @input="form.guardian_contact = form.guardian_contact.replace(/\D/g, '').slice(0, 11)"
               class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-[#004d08] dark:focus:ring-[#86EFAC] focus:outline-none font-normal"
             />
           </div>

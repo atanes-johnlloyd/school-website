@@ -114,4 +114,19 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Two-Factor Authentication
+    |--------------------------------------------------------------------------
+    |
+    | Global switch for the OTP challenge that admins and teachers go through
+    | on login. Set TWO_FACTOR_ENABLED=false in your local .env to skip the
+    | challenge during development. NEVER disable this in production.
+    |
+    */
+
+    'two_factor' => [
+        'enabled' => env('TWO_FACTOR_ENABLED', true),
+    ],
+
 ];

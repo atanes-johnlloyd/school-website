@@ -252,7 +252,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, usePage } from '@inertiajs/vue3'
 import Navbar from '@/Components/Navbar.vue'
 import Footer from '@/Components/Footer.vue'
 
@@ -261,6 +261,8 @@ const props = defineProps({
   tracks:   { type: Array, default: () => [] },
   subjects: { type: Array, default: () => [] },
 })
+
+const page = usePage()
 
 const tabs = [
   { key: 'academic', label: 'Academic Track' },
@@ -281,15 +283,37 @@ const isSyllabusVisible = ref(false)
 let observer = null
 
 onMounted(() => {
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.target === pathwaysRef.value) isPathwaysVisible.value = entry.isIntersecting
-      else if (entry.target === syllabusRef.value) isSyllabusVisible.value = entry.isIntersecting
+  // Honor ?track=ACAD / ?track=TECHPRO from the Home page cards.
+  const url = new URL(page.url, window.location.origin)
+  const requested = (url.searchParams.get('track') || '').toUpperCase()
+
+  if (requested === 'TECHPRO') {
+    activeTrack.value   = 'techpro'
+    selectedTrack.value = 'TECHPRO'
+  } else if (requested === 'ACAD') {
+    activeTrack.value   = 'academic'
+    selectedTrack.value = 'ACAD'
+  }
+
+  if (typeof IntersectionObserver !== 'undefined') {
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const visible = entry.isIntersecting
+        if (entry.target === pathwaysRef.value)      isPathwaysVisible.value = visible
+        else if (entry.target === syllabusRef.value) isSyllabusVisible.value = visible
+      })
+    }, {
+      threshold: [0, 0.05],   // fires on first pixel AND at 5% — pick whichever you prefer for exit
+      rootMargin: '0px 0px -80px 0px',
     })
-  }, { threshold: 0.12 })
-  if (pathwaysRef.value) observer.observe(pathwaysRef.value)
-  if (syllabusRef.value) observer.observe(syllabusRef.value)
+    if (pathwaysRef.value) observer.observe(pathwaysRef.value)
+    if (syllabusRef.value) observer.observe(syllabusRef.value)
+  } else {
+    isPathwaysVisible.value = true
+    isSyllabusVisible.value = true
+  }
 })
+
 onUnmounted(() => { if (observer) observer.disconnect() })
 
 function resetFilters() {

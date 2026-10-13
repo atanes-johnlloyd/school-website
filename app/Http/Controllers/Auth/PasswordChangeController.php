@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Validation\ValidationException;
+
 
 class PasswordChangeController extends Controller
 {
@@ -38,7 +40,17 @@ class PasswordChangeController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $request->user()->forceFill([
+        $user = $request->user();
+
+        // Block reuse of the current password (covers the temp-password case:
+        // the "current" password IS the temp password they just signed in with).
+        if (Hash::check($validated['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Your new password must be different from your current password.',
+            ]);
+        }
+
+        $user->forceFill([
             'password'             => Hash::make($validated['password']),
             'must_change_password' => false,
             'reset_token'          => null,

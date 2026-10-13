@@ -1,7 +1,63 @@
 <script setup>
+import { Link } from '@inertiajs/vue3'
 import bannerImg from '@/../assets/img/desktop-home-banner.png'
 import logoImg from '@/../assets/img/SSHS-logo.png'
 import catImg from '@/../assets/img/cat_not_hug.png'
+
+// Optional: allow the backend to override these later.
+// Until then, sensible defaults live here.
+const props = defineProps({
+  contact: {
+    type: Object,
+    default: () => ({
+      email:    '342512@deped.gov.ph',
+      landline: '(046) 416-0000',
+      // strip non-digits for the tel: href
+      landlineHref: '+460464160000',
+    }),
+  },
+  social: {
+    type: Object,
+    default: () => ({
+      facebook: 'https://www.facebook.com/DepEdTayoSalawagSHS',
+      youtube:  'https://www.youtube.com/@depedphilippines',
+    }),
+  },
+  transparencyLinks: {
+    type: Array,
+    default: () => [
+      {
+        label: 'Citizen\'s Charter',
+        href:  'https://www.deped.gov.ph/transparency/citizens-charter/',
+        external: true,
+      },
+      {
+        label: 'Data Privacy Notice',
+        href:  'https://www.deped.gov.ph/data-privacy/',
+        external: true,
+      },
+      {
+        label: 'DepEd Transparency Seal',
+        href:  'https://www.deped.gov.ph/transparency-seal/',
+        external: true,
+      },
+      {
+        label: 'Procurement & BAC Opportunities',
+        href:  'https://www.deped.gov.ph/procurement/',
+        external: true,
+      },
+    ],
+  },
+  hotlines: {
+    type: Array,
+    default: () => [
+      { label: 'Dasmariñas CDRRMO',         tel: '(046) 481-4600', telHref: '+460464814600' },
+      { label: 'PNP Salawag Sub-Station',   tel: '(046) 432-1111', telHref: '+460464321111' },
+      { label: 'DepEd Cavite Division',     tel: '(046) 419-1286', telHref: '+460464191286' },
+      { label: 'Guidance & Mental Health',  tel: '0917-000-SSHS',  telHref: '+639170007747' },
+    ],
+  },
+})
 </script>
 
 <template>
@@ -66,8 +122,20 @@ import catImg from '@/../assets/img/cat_not_hug.png'
                 Golden City Subdivision, Barangay Salawag, City of Dasmariñas, Cavite 4114, Philippines
               </p>
               <div class="space-y-1 text-xs text-emerald-100/90 pt-1">
-                <p><span class="font-bold text-white">Email:</span> 342512@deped.gov.ph</p>
-                <p><span class="font-bold text-white">Landline:</span> (046) 416-0000</p>
+                <p>
+                  <span class="font-bold text-white">Email:</span>
+                  <a :href="`mailto:${contact.email}`"
+                    class="hover:text-amber-300 hover:underline transition-colors break-all">
+                    {{ contact.email }}
+                  </a>
+                </p>
+                <p>
+                  <span class="font-bold text-white">Landline:</span>
+                  <a :href="`tel:${contact.landlineHref}`"
+                    class="hover:text-amber-300 hover:underline transition-colors">
+                    {{ contact.landline }}
+                  </a>
+                </p>
               </div>
             </div>
 
@@ -77,30 +145,48 @@ import catImg from '@/../assets/img/cat_not_hug.png'
                 EMERGENCY HOTLINES
               </h4>
               <div class="space-y-1.5 text-xs text-emerald-100/90">
-                <p><span class="font-bold text-white">Dasmariñas CDRRMO:</span> (046) 481-4600</p>
-                <p><span class="font-bold text-white">PNP Salawag Sub-Station:</span> (046) 432-1111</p>
-                <p><span class="font-bold text-white">DepEd Cavite Division:</span> (046) 419-1286</p>
-                <p><span class="font-bold text-white">Guidance & Mental Health:</span> 0917-000-SSHS</p>
+                <p v-for="h in hotlines" :key="h.label">
+                  <span class="font-bold text-white">{{ h.label }}:</span>
+                  <a :href="`tel:${h.telHref}`"
+                    class="hover:text-amber-300 hover:underline transition-colors">
+                    {{ h.tel }}
+                  </a>
+                </p>
               </div>
             </div>
 
             <!-- COLUMN 4: PUBLIC TRANSPARENCY & QUICK LINKS -->
             <div class="space-y-2.5 text-xs sm:text-sm">
               <div class="flex items-center justify-between border-b border-white/20 pb-1">
-                <h4 class="font-bold tracking-wider uppercase text-slate-100">
-                  TRANSPARENCY
-                </h4>
-                <!-- Social Icons -->
+                <h4 class="font-bold tracking-wider uppercase text-slate-100">TRANSPARENCY</h4>
                 <div class="flex items-center gap-1.5">
-                  <a href="#" class="w-5 h-5 rounded border border-white/40 flex items-center justify-center text-[10px] hover:bg-white/20 transition-colors">f</a>
-                  <a href="#" class="w-5 h-5 rounded border border-white/40 flex items-center justify-center text-[10px] hover:bg-white/20 transition-colors">yt</a>
+                  <a :href="social.facebook" target="_blank" rel="noopener noreferrer"
+                    aria-label="Salawag SHS on Facebook"
+                    class="w-5 h-5 rounded border border-white/40 flex items-center justify-center text-[10px] hover:bg-white/20 transition-colors">
+                    f
+                  </a>
+                  <a :href="social.youtube" target="_blank" rel="noopener noreferrer"
+                    aria-label="DepEd Philippines on YouTube"
+                    class="w-5 h-5 rounded border border-white/40 flex items-center justify-center text-[10px] hover:bg-white/20 transition-colors">
+                    yt
+                  </a>
                 </div>
               </div>
+
               <ul class="space-y-1.5 text-xs text-emerald-100/90 font-medium">
-                <li><a href="#" class="hover:text-amber-300 hover:underline transition-colors">Citizen's Charter</a></li>
-                <li><a href="#" class="hover:text-amber-300 hover:underline transition-colors">Data Privacy Notice</a></li>
-                <li><a href="#" class="hover:text-amber-300 hover:underline transition-colors">DepEd Transparency Seal</a></li>
-                <li><a href="#" class="hover:text-amber-300 hover:underline transition-colors">Procurement & BAC Opportunities</a></li>
+                <li v-for="link in transparencyLinks" :key="link.label">
+                  <a v-if="link.external"
+                    :href="link.href"
+                    target="_blank" rel="noopener noreferrer"
+                    class="hover:text-amber-300 hover:underline transition-colors">
+                    {{ link.label }}
+                  </a>
+                  <Link v-else
+                        :href="link.href"
+                        class="hover:text-amber-300 hover:underline transition-colors">
+                    {{ link.label }}
+                  </Link>
+                </li>
               </ul>
             </div>
 

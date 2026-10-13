@@ -38,18 +38,29 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Employee ID <span class="text-red-500">*</span>
             </label>
-            <input v-model="form.employee_no" type="text" placeholder="e.g. T-2026-001"
-                  class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
-                  :class="{ 'border-red-500': form.errors.employee_no }" />
-            <p v-if="form.errors.employee_no" class="mt-1 text-[11px] text-red-500">{{ form.errors.employee_no }}</p>
+            <input
+              v-model="form.employee_no"
+              type="text"
+              maxlength="30"
+              placeholder="e.g. T-2026-001"
+              @input="form.employee_no = form.employee_no.replace(/[^A-Za-z0-9\-_]/g, '').slice(0, 30)"
+              class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal uppercase"
+              :class="{ 'border-red-500': form.errors.employee_no }" />
+            <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">Letters, numbers, hyphens, underscores only (3–30 chars).</p>
           </div>
 
           <div>
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Department
             </label>
-            <input v-model="form.department" type="text" placeholder="e.g. Mathematics"
-                  class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal" />
+            <input
+                v-model="form.department"
+                type="text"
+                maxlength="100"
+                pattern="^[\p{L}\s\-&\.]+$"
+                title="Letters, spaces, hyphens, ampersands, and periods only"
+                placeholder="e.g. Mathematics"
+                class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal" />
           </div>
         </div>
 
@@ -59,9 +70,15 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Full Name <span class="text-red-500">*</span>
             </label>
-            <input v-model="form.name" type="text" placeholder="e.g. Juan Dela Cruz"
-                  class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
-                  :class="{ 'border-red-500': form.errors.name }" />
+            <input
+              v-model="form.name"
+              type="text"
+              maxlength="255"
+              pattern="^[\p{L}\s'\-\.]+$"
+              title="Letters, spaces, hyphens, apostrophes, and periods only"
+              placeholder="e.g. Juan Dela Cruz"
+              class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
+              :class="{ 'border-red-500': form.errors.name }" />
             <p v-if="form.errors.name" class="mt-1 text-[11px] text-red-500">{{ form.errors.name }}</p>
           </div>
 
@@ -69,9 +86,13 @@
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Email Address <span class="text-red-500">*</span>
             </label>
-            <input v-model="form.email" type="email" placeholder="teacher@school.edu.ph"
-                  class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
-                  :class="{ 'border-red-500': form.errors.email }" />
+            <input
+              v-model="form.email"
+              type="email"
+              maxlength="255"
+              placeholder="teacher@school.edu.ph"
+              class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
+              :class="{ 'border-red-500': form.errors.email }" />
             <p v-if="form.errors.email" class="mt-1 text-[11px] text-red-500">{{ form.errors.email }}</p>
           </div>
         </div>
@@ -81,9 +102,15 @@
           <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
             Initial Password <span class="text-red-500">*</span>
           </label>
-          <input v-model="form.password" type="password" placeholder="••••••••"
-                class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal"
-                :class="{ 'border-red-500': form.errors.password }" />
+          <input
+            v-model="form.password"
+            type="password"
+            maxlength="72"
+            autocomplete="new-password"
+            placeholder="••••••••"
+            class="..."
+            :class="{ 'border-red-500': form.errors.password }" />
+          <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">8–72 characters. Mix letters, numbers, and symbols.</p>
           <p v-if="form.errors.password" class="mt-1 text-[11px] text-red-500">{{ form.errors.password }}</p>
         </div>
 
@@ -107,8 +134,16 @@
 
           <div>
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Contact No.</label>
-            <input v-model="form.contact_number" type="text" placeholder="+63 912 345 6789"
+            <input
+              v-model="form.contact_number"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="11"
+              placeholder="09XXXXXXXXX"
+              @input="form.contact_number = form.contact_number.replace(/\D/g, '').slice(0, 11)"
                   class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal" />
+              <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">7–11 digits, numbers only.</p>
           </div>
         </div>
 
@@ -116,13 +151,21 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Date Hired</label>
-            <input v-model="form.date_hired" type="date"
+            <input
+              v-model="form.date_hired"
+              type="date"
+              min="1950-01-01"
+              :max="new Date().toISOString().split('T')[0]"
                   class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal cursor-pointer" />
           </div>
 
           <div>
             <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Specialization</label>
-            <input v-model="form.specialization" type="text" placeholder="e.g. Algebra and Geometry"
+            <input
+                  v-model="form.specialization"
+                  type="text"
+                  maxlength="150"
+                  placeholder="e.g. Algebra and Geometry"
                   class="w-full px-3.5 py-2.5 text-xs bg-gray-50 dark:bg-[#232D26] border border-gray-200 dark:border-[#3F4F43] text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-[#004d08] focus:outline-none font-normal" />
           </div>
         </div>

@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\LoginTwoFactorController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,6 +44,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+    
+    Route::get('login/verify',  [LoginTwoFactorController::class, 'show'])->name('login.verify');
+    Route::post('login/verify', [LoginTwoFactorController::class, 'verify'])
+        ->middleware('throttle:10,1')   // 10 attempts / minute
+        ->name('login.verify.submit');
+
+    Route::post('login/verify/resend', [LoginTwoFactorController::class, 'resend'])
+        ->middleware('throttle:3,1')    // 3 resends / minute
+        ->name('login.verify.resend');
 });
 
 Route::middleware('auth')->group(function () {
@@ -63,6 +74,10 @@ Route::middleware('auth')->group(function () {
 
     Route::put('password/change', [PasswordChangeController::class, 'update'])
         ->name('password.change.update');
+        
+    // ── Change password from profile page (authenticated user, requires current password) ──
+    Route::put('password', [PasswordController::class, 'update'])
+        ->name('password.update');
 
     // ── Logout ──
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])

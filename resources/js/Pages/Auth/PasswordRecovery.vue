@@ -70,15 +70,24 @@
             </p>
           </div>
 
-          <!-- SEND RECOVERY BUTTON -->
-          <div class="pt-2">
-            <button 
+          <!-- SEND / RESEND RECOVERY BUTTON -->
+          <div class="pt-2 space-y-2">
+            <button
               type="submit"
-              :disabled="form.processing"
+              :disabled="form.processing || !canSend"
               class="w-full py-3.5 bg-[#005506] hover:bg-[#004204] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <span>Send Recovery</span>
+              <span>{{ buttonLabel }}</span>
             </button>
+
+            <!-- Post-send hint: guides the user to check spam / wait -->
+            <p
+              v-if="hasSent"
+              class="text-center text-[11px] text-slate-400 leading-relaxed"
+            >
+              Didn't get the email? Check your spam folder, or wait a minute
+              and try again.
+            </p>
           </div>
 
           <!-- BACK TO LOGIN / HOME -->
@@ -106,30 +115,73 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
 import bgImg from '@/../assets/img/login_background.png'
 import logoImg from '@/../assets/img/logo_trans_big.png'
 import catImg from '@/../assets/img/cat-mobile-track.png'
 
-defineProps({
-  status: {
-    type: String,
-  },
+const props = defineProps({
+  status: { type: String },
 })
-
-const showEmail = ref(false)
 
 const form = useForm({
   email: '',
 })
 
+// ─── Resend cooldown ────────────────────────────────────────────
+// 60 seconds between sends. Prevents hammering the SMTP server
+// and discourages users from sending 5 emails by accident.
+const COOLDOWN_SECONDS = 60
+
+const sentAt = ref(null)         // timestamp of the last successful send
+const now    = ref(Date.now())   // ticks every second while cooldown is active
+let   ticker = null
+
+const startCooldown = () => {
+  sentAt.value = Date.now()
+  if (ticker) return
+  ticker = setInterval(() => { now.value = Date.now() }, 1000)
+}
+
+const secondsLeft = computed(() => {
+  if (!sentAt.value) return 0
+  const elapsed = Math.floor((now.value - sentAt.value) / 1000)
+  return Math.max(0, COOLDOWN_SECONDS - elapsed)
+})
+
+const hasSent     = computed(() => sentAt.value !== null)
+const canSend     = computed(() => secondsLeft.value === 0)
+const buttonLabel = computed(() =>
+  !hasSent.value     ? 'Send Recovery'
+  : canSend.value    ? 'Resend Recovery Email'
+  : `Resend in ${secondsLeft.value}s`
+)
+
+// If the page loads with a status flash (e.g. user navigated back
+// after a previous send), treat it as "just sent" and start the cooldown.
+watch(
+  () => props.status,
+  (val) => { if (val) startCooldown() },
+  { immediate: true }
+)
+
+// Clean up the interval when the user navigates away.
+onUnmounted(() => { if (ticker) clearInterval(ticker) })
+
 const submit = () => {
-  form.post(route('password.email'))
+  if (!canSend.value) return
+  form.post(route('password.email'), {
+    preserveScroll: true,
+    onSuccess: () => {
+      startCooldown()
+      // Keep the email in the field so the resend targets the same address.
+      // If they want to change it, they can edit it — the cooldown still applies.
+    },
+  })
 }
 </script>
-
 <style scoped>
 
 @keyframes slideUpCard {

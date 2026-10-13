@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
             Route::get('/teachers/export', [\App\Http\Controllers\Admin\TeacherController::class, 'export'])->name('teachers.export');
             Route::post('/teachers/import', [\App\Http\Controllers\Admin\TeacherController::class, 'import'])->name('teachers.import');
             Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
+            Route::put('teachers/{teacher}/restore', [\App\Http\Controllers\Admin\TeacherController::class, 'restore'])->name('teachers.restore');
             Route::post('teachers/{teacher}/reset-password', [\App\Http\Controllers\Admin\TeacherController::class, 'resetPassword'])->name('teachers.reset-password');
         });
 
@@ -154,9 +155,32 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
         Route::middleware('permission:manage-sections')->group(function () {
             Route::get('/sections/list', [\App\Http\Controllers\Admin\SectionController::class, 'list'])->name('sections.list');
             Route::get('/sections/{section}/eligible-students', [\App\Http\Controllers\Admin\SectionController::class, 'eligibleStudents'])->name('sections.eligible-students');
+            Route::get('/sections/next-name', [\App\Http\Controllers\Admin\SectionController::class, 'nextName'])
+                ->name('sections.next-name');
             Route::apiResource('sections', \App\Http\Controllers\Admin\SectionController::class);
             Route::post('sections/{section}/enroll', [\App\Http\Controllers\Admin\SectionController::class, 'enrollStudent'])->name('sections.enroll');
             Route::delete('sections/{section}/students/{student}', [\App\Http\Controllers\Admin\SectionController::class, 'removeStudent'])->name('sections.students.remove');
+            Route::get('/sections/{section}/view', [\App\Http\Controllers\Admin\SectionController::class, 'show'])
+                ->name('sections.view');
+            Route::post('sections/{section}/regenerate', [\App\Http\Controllers\Admin\SectionController::class, 'regenerate'])
+                ->name('sections.regenerate');
+            Route::put('sections/{section}/change-cluster', [\App\Http\Controllers\Admin\SectionController::class, 'changeCluster'])
+                ->name('sections.change-cluster');
+            Route::get('sections/{section}/classes/{classroom}/available-slots',
+                [\App\Http\Controllers\Admin\SectionController::class, 'availableSlots'])
+                ->name('sections.classes.available-slots');
+            Route::put('sections/{section}/classes/{classroom}/reschedule',
+                [\App\Http\Controllers\Admin\SectionController::class, 'reschedule'])
+                ->name('sections.classes.reschedule');
+            Route::get('sections/{section}/classes/{classroom}/edit-options',
+                [\App\Http\Controllers\Admin\SectionController::class, 'editClassOptions'])
+                ->name('sections.classes.edit-options');
+            Route::put('sections/{section}/classes/{classroom}',
+                [\App\Http\Controllers\Admin\SectionController::class, 'updateClass'])
+                ->name('sections.classes.update');
+            Route::delete('sections/{section}/classes/{classroom}/schedule',
+                [\App\Http\Controllers\Admin\SectionController::class, 'unschedule'])
+                ->name('sections.classes.unschedule');
         });
 
         // ─── Enrollments ───

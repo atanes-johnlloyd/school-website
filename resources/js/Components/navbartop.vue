@@ -1,7 +1,10 @@
 <template>
-  <header class="flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 md:px-10 py-3.5 sm:py-5 bg-[#F9F7F1] dark:bg-[#232D26] sticky top-0 z-30 gap-3 md:gap-8 transition-colors duration-300 border-b md:border-b-0 border-gray-200/60 dark:border-[#3F4F43] print:hidden">
+  <header :class="[
+    'flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 md:px-10 py-3.5 sm:py-5 sticky top-0 z-30 gap-3 md:gap-8 transition-colors duration-300 border-b md:border-b-0 border-gray-200/60 dark:border-[#3F4F43] print:hidden',
+    theme.navbarBg
+  ]">
 
-    <div class="flex items-center justify-between w-full md:w-auto gap-3">
+    <div class="flex items-center justify-between w-full md:flex-1 md:min-w-0 gap-3">
       <button @click="$emit('open-sidebar')"
         class="md:hidden p-2.5 rounded-xl bg-white dark:bg-[#2D3A31] text-gray-800 dark:text-white border border-gray-200 dark:border-[#3F4F43] shadow-sm hover:bg-gray-50 dark:hover:bg-[#3F4F43] transition-colors shrink-0">
         <Icon icon="menu" size="lg" />
@@ -62,7 +65,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
           </svg>
           <span v-if="notificationCount > 0"
-            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-600 ring-2 ring-[#F9F7F1] dark:ring-[#232D26]"></span>
+            :class="['absolute top-1 right-1 w-2 h-2 rounded-full bg-red-600 ring-2', theme.navbarRing]"></span>
         </button>
 
         <div v-if="showNotifications"
@@ -205,6 +208,19 @@ const roleLabel = computed(() => {
   if (isTeacher.value) return 'Teacher'
   if (isStudent.value) return 'Student'
   return 'User'
+})
+
+const theme = computed(() => {
+  if (isStudent.value) {
+    return {
+      navbarBg:   'bg-[#e8f5e9] dark:bg-[#232D26]',
+      navbarRing: 'ring-[#e8f5e9] dark:ring-[#232D26]',
+    }
+  }
+  return {
+    navbarBg:   'bg-[#F9F7F1] dark:bg-[#232D26]',
+    navbarRing: 'ring-[#F9F7F1] dark:ring-[#232D26]',
+  }
 })
 
 const initials = computed(() => {

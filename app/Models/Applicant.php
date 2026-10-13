@@ -55,15 +55,21 @@ class Applicant extends Model
     }
 
     /**
+         * Generate the next reference number for a given year.
+         * Format: YYYY-NNNN  (e.g., 2026-0001)
+         */
+        /**
      * Generate the next reference number for a given year.
-     * Format: YYYY-NNNN  (e.g., 2026-0001)
+     * Format: APP-YYYY-NNNN  (e.g., APP-2026-0001)
      */
     public static function generateReferenceNumber(int $year = null): string
     {
         $year = $year ?: (int) now()->format('Y');
 
+        // Scope to APP-{year}- prefixed values so we don't collide with
+        // any legacy YYYY-NNNN rows left over from before the prefix change.
         $latest = static::withTrashed()
-            ->where('reference_number', 'like', "{$year}-%")
+            ->where('reference_number', 'like', "APP-{$year}-%")
             ->orderByDesc('reference_number')
             ->value('reference_number');
 
@@ -71,7 +77,7 @@ class Applicant extends Model
             ? ((int) substr($latest, -4)) + 1
             : 1;
 
-        return sprintf('%d-%04d', $year, $next);
+        return sprintf('APP-%d-%04d', $year, $next);
     }
 
     public function entranceExamResults()

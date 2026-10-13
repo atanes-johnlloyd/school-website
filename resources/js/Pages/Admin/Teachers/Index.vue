@@ -301,9 +301,13 @@
                       class="px-2.5 py-1 text-[10px] font-normal text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#232D26] hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
                       Edit
                     </button>
-                    <button @click="openDeleteConfirmation(teacher)"
+                    <button v-if="teacher.is_active" @click="openDeleteConfirmation(teacher)"
                       class="px-2.5 py-1 text-[10px] font-normal text-red-700 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-900 transition-colors cursor-pointer">
                       Deactivate
+                    </button>
+                    <button v-else @click="reactivate(teacher)"
+                      class="px-2.5 py-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer">
+                      Reactivate
                     </button>
                   </div>
                 </td>
@@ -566,20 +570,23 @@ const executeDeactivation = () => {
   const name = teacherToDelete.value.name
   isDeactivating.value = true
   router.delete(route('admin.teachers.destroy', teacherToDelete.value.id), {
-    onSuccess: () => {
-      flash.success(`${name} deactivated.`)
-    },
-    onError: (err) => {
-      const msg = err?.message || 'Failed to deactivate faculty member.'
-      flash.error(msg)
-    },
-    onFinish: () => {
-      isDeactivating.value = false
-      showDeleteModal.value = false
-      teacherToDelete.value = null
-      fetchTeachers()
-    },
+      preserveScroll: true,
+      onError: (err) => flash.error(err?.message || 'Failed to deactivate faculty member.'),
+      onFinish: () => {
+          isDeactivating.value = false
+          showDeleteModal.value = false
+          teacherToDelete.value = null
+          fetchTeachers()
+      },
   })
+}
+
+const reactivate = (teacher) => {
+  router.put(route('admin.teachers.restore', teacher.id), {}, {
+        preserveScroll: true,
+        onError: (err) => flash.error(err?.message || 'Failed to reactivate faculty member.'),
+        onFinish: () => fetchTeachers(),
+    })
 }
 
 /* Export */

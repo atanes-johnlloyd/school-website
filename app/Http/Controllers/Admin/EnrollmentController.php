@@ -133,6 +133,12 @@ class EnrollmentController extends Controller
             return response()->json(['message' => 'Assign a section before approving.'], 422);
         }
 
+        if (! $enrollment->section?->is_fully_scheduled) {
+            return response()->json([
+                'message' => "Cannot approve: the section's schedule is incomplete. Place all classes first.",
+            ], 422);
+        }
+
         AuditContext::wrap('approve_enrollment', function () use ($enrollment, $request) {
             DB::transaction(function () use ($enrollment, $request) {
                 $enrollment->update([
@@ -179,6 +185,12 @@ class EnrollmentController extends Controller
 
         if ($newSection->school_year_id !== $enrollment->school_year_id) {
             return response()->json(['message' => 'Section belongs to a different school year.'], 422);
+        }
+
+        if (! $newSection->is_fully_scheduled) {
+            return response()->json([
+                'message' => "Cannot assign: the target section's schedule is incomplete.",
+            ], 422);
         }
 
         $currentCount = Enrollment::where('section_id', $newSection->id)

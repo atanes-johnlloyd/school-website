@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
+use App\Models\ClassRoom;
 use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\Student;
@@ -209,36 +210,30 @@ class StudentController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name'             => ['required', 'string', 'max:255'],
-            'email'            => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password'         => ['required', Password::defaults()],
-            'lrn'              => ['required', 'string', 'max:50', 'unique:students,lrn'],
-            'section_id'       => ['nullable', 'integer', 'exists:sections,id'],
-            'sex'              => ['nullable', 'in:male,female'],
-            'date_of_birth'    => ['nullable', 'date'],
-            'contact_number'   => ['nullable', 'string', 'max:20'],
-            'guardian_name'    => ['nullable', 'string', 'max:255'],
-            'guardian_contact' => ['nullable', 'string', 'max:20'],
-        ]);
+        $validated = $request->validate(
+            $this->studentRules(),
+            $this->studentMessages()
+        );
 
         AuditContext::wrap('create_student', function () use ($validated) {
             DB::transaction(function () use ($validated) {
                 $user = User::create([
-                    'name'                 => $validated['name'],
-                    'email'                => $validated['email'],
+                    'name'                 => trim($validated['name']),
+                    'email'                => trim($validated['email']),
                     'password'             => Hash::make($validated['password']),
                     'must_change_password' => true,
+                    'email_verified_at'    => now(),
+                    'status'               => 'active',
                 ]);
                 if (method_exists($user, 'assignRole')) $user->assignRole('student');
 
                 $student = Student::create([
                     'user_id'          => $user->id,
-                    'lrn'              => $validated['lrn'],
+                    'lrn'              => trim($validated['lrn']),
                     'sex'              => $validated['sex']              ?? null,
                     'date_of_birth'    => $validated['date_of_birth']    ?? null,
                     'contact_number'   => $validated['contact_number']   ?? null,
-                    'guardian_name'    => $validated['guardian_name']    ?? null,
+                    'guardian_name'    => isset($validated['guardian_name'])    ? trim($validated['guardian_name'])    : null,
                     'guardian_contact' => $validated['guardian_contact'] ?? null,
                     'status'           => 'active',
                 ]);
@@ -252,6 +247,10 @@ class StudentController extends Controller
                         'status'         => 'enrolled',
                         'enrolled_at'    => now(),
                     ]);
+
+                    // Sync into every classroom belonging to the section,
+                    // so the student appears in class rosters immediately.
+                    $this->syncStudentToSection($student, $section->id);
                 }
             });
         });
@@ -261,32 +260,24 @@ class StudentController extends Controller
 
     public function update(Request $request, Student $student)
     {
-        $validated = $request->validate([
-            'name'             => ['required', 'string', 'max:255'],
-            'email'            => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($student->user_id)],
-            'lrn'              => ['required', 'string', 'max:50', Rule::unique('students', 'lrn')->ignore($student->id)],
-            'section_id'       => ['nullable', 'integer', 'exists:sections,id'],
-            'sex'              => ['nullable', 'in:male,female'],
-            'date_of_birth'    => ['nullable', 'date'],
-            'contact_number'   => ['nullable', 'string', 'max:20'],
-            'guardian_name'    => ['nullable', 'string', 'max:255'],
-            'guardian_contact' => ['nullable', 'string', 'max:20'],
-            'status'           => ['nullable', 'in:active,graduated,dropped_out,transferred_out'],
-        ]);
+        $validated = $request->validate(
+            $this->studentRules($student),
+            $this->studentMessages()
+        );
 
         AuditContext::wrap('update_student', function () use ($validated, $student) {
             DB::transaction(function () use ($validated, $student) {
                 $student->user->update([
-                    'name'  => $validated['name'],
-                    'email' => $validated['email'],
+                    'name'  => trim($validated['name']),
+                    'email' => trim($validated['email']),
                 ]);
 
                 $student->update([
-                    'lrn'              => $validated['lrn'],
+                    'lrn'              => trim($validated['lrn']),
                     'sex'              => $validated['sex']              ?? null,
                     'date_of_birth'    => $validated['date_of_birth']    ?? null,
                     'contact_number'   => $validated['contact_number']   ?? null,
-                    'guardian_name'    => $validated['guardian_name']    ?? null,
+                    'guardian_name'    => isset($validated['guardian_name']) ? trim($validated['guardian_name']) : null,
                     'guardian_contact' => $validated['guardian_contact'] ?? null,
                     'status'           => $validated['status']           ?? $student->status,
                 ]);
@@ -297,6 +288,8 @@ class StudentController extends Controller
                         ->where('status', 'enrolled')
                         ->latest('enrolled_at')
                         ->first();
+
+                    $previousSectionId = $current?->section_id;
 
                     if ($current) {
                         $current->update([
@@ -312,6 +305,9 @@ class StudentController extends Controller
                             'enrolled_at'    => now(),
                         ]);
                     }
+
+                    // Detach from old section's classrooms, attach to new section's.
+                    $this->syncStudentToSection($student, $newSection->id, $previousSectionId);
                 }
             });
         });
@@ -466,9 +462,60 @@ class StudentController extends Controller
                         }
                     }
 
+                    $name  = trim((string) $data['name']);
                     $email = trim((string) $data['email']);
                     $lrn   = trim((string) $data['lrn']);
 
+                     $rowErrors = [];
+
+                    if (! preg_match('/^[\p{L}\s\'\-\.]+$/u', $name)) {
+                        $rowErrors[] = "name may only contain letters, spaces, hyphens, apostrophes, and periods";
+                    }
+
+                    if (! preg_match('/^\d{10,12}$/', $lrn)) {
+                        $rowErrors[] = "LRN must be 10–12 digits";
+                    }
+
+                    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $rowErrors[] = "email is not a valid address";
+                    }
+
+                    $contact = trim((string) ($data['contact_number'] ?? ''));
+                    if ($contact !== '' && ! preg_match('/^\d{7,11}$/', $contact)) {
+                        $rowErrors[] = "contact number must be 7–11 digits";
+                    }
+
+                    $guardianName = trim((string) ($data['guardian_name'] ?? ''));
+                    if ($guardianName !== '' && ! preg_match('/^[\p{L}\s\'\-\.]+$/u', $guardianName)) {
+                        $rowErrors[] = "guardian name has invalid characters";
+                    }
+
+                    $guardianContact = trim((string) ($data['guardian_contact'] ?? ''));
+                    if ($guardianContact !== '' && ! preg_match('/^\d{7,11}$/', $guardianContact)) {
+                        $rowErrors[] = "guardian contact must be 7–11 digits";
+                    }
+
+                    $dob = trim((string) ($data['date_of_birth'] ?? ''));
+                    if ($dob !== '') {
+                        $parsed = strtotime($dob);
+                        if ($parsed === false) {
+                            $rowErrors[] = "date of birth is not a valid date";
+                        } elseif ($parsed > time()) {
+                            $rowErrors[] = "date of birth cannot be in the future";
+                        }
+                    }
+
+                    $sex = strtolower(trim((string) ($data['sex'] ?? '')));
+                    if ($sex !== '' && ! in_array($sex, ['male', 'female'], true)) {
+                        $rowErrors[] = "sex must be 'male' or 'female'";
+                    }
+
+                    // If any format errors accumulated, surface them all at once.
+                    if (! empty($rowErrors)) {
+                        throw new \RuntimeException('Format issues: ' . implode('; ', $rowErrors) . '.');
+                    }
+
+                    // ─── Uniqueness ──────────────────────────────────────────────
                     if (User::where('email', $email)->exists()) {
                         throw new \RuntimeException("Email '{$email}' already exists.");
                     }
@@ -476,28 +523,31 @@ class StudentController extends Controller
                         throw new \RuntimeException("LRN '{$lrn}' already exists.");
                     }
 
-                    DB::transaction(function () use ($data, $email, $lrn, $sections) {
+                    // ─── Persist ─────────────────────────────────────────────────
+                    DB::transaction(function () use ($data, $name, $email, $lrn, $contact, $guardianName, $guardianContact, $dob, $sex, $sections) {
                         $user = User::create([
-                            'name'                 => trim((string) $data['name']),
+                            'name'                 => $name,
                             'email'                => $email,
                             'password'             => Hash::make(Str::random(16)),
                             'must_change_password' => true,
+                            'email_verified_at'    => now(),
+                            'status'               => 'active',
                         ]);
                         if (method_exists($user, 'assignRole')) $user->assignRole('student');
 
                         $student = Student::create([
                             'user_id'          => $user->id,
                             'lrn'              => $lrn,
-                            'sex'              => filled($data['sex']              ?? null) ? strtolower(trim($data['sex'])) : null,
-                            'date_of_birth'    => filled($data['date_of_birth']    ?? null) ? $data['date_of_birth']          : null,
-                            'contact_number'   => filled($data['contact_number']   ?? null) ? trim($data['contact_number'])   : null,
+                            'sex'              => $sex !== '' ? $sex : null,
+                            'date_of_birth'    => $dob !== '' ? $dob : null,
+                            'contact_number'   => $contact !== '' ? $contact : null,
                             'house_street'     => filled($data['house_street']     ?? null) ? trim($data['house_street'])     : null,
                             'barangay'         => filled($data['barangay']         ?? null) ? trim($data['barangay'])         : null,
                             'municipality'     => filled($data['municipality']     ?? null) ? trim($data['municipality'])     : null,
                             'province'         => filled($data['province']         ?? null) ? trim($data['province'])         : null,
                             'zip_code'         => filled($data['zip_code']         ?? null) ? trim($data['zip_code'])         : null,
-                            'guardian_name'    => filled($data['guardian_name']    ?? null) ? trim($data['guardian_name'])    : null,
-                            'guardian_contact' => filled($data['guardian_contact'] ?? null) ? trim($data['guardian_contact']) : null,
+                            'guardian_name'    => $guardianName !== '' ? $guardianName : null,
+                            'guardian_contact' => $guardianContact !== '' ? $guardianContact : null,
                             'status'           => 'active',
                         ]);
 
@@ -513,6 +563,14 @@ class StudentController extends Controller
                                     'status'         => 'enrolled',
                                     'enrolled_at'    => now(),
                                 ]);
+
+                                // Inline pivot sync — $this may not be reliably bound
+                                // inside this closure chain.
+                                ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
+                                    $class->students()->syncWithoutDetaching([
+                                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
+                                    ]);
+                                });
                             }
                         }
                     });
@@ -533,4 +591,91 @@ class StudentController extends Controller
             'errors'  => $errors,
         ]);
     }
+
+    /**
+     * Sync a student into every ClassRoom belonging to a section.
+     * Pass $previousSectionId to detach from the old section's classrooms first.
+     */
+    private function syncStudentToSection(Student $student, ?int $sectionId, ?int $previousSectionId = null): void
+    {
+        if ($previousSectionId && $previousSectionId !== $sectionId) {
+            ClassRoom::where('section_id', $previousSectionId)->each(function ($class) use ($student) {
+                $class->students()->detach($student->id);
+            });
+        }
+
+        if ($sectionId) {
+            ClassRoom::where('section_id', $sectionId)->each(function ($class) use ($student) {
+                $class->students()->syncWithoutDetaching([
+                    $student->id => ['status' => 'active', 'enrolled_at' => now()],
+                ]);
+            });
+        }
+    }
+
+    /**
+ * Shared validation rules for student create/update.
+ * Pass a Student to skip unique checks against itself.
+ */
+private function studentRules(?Student $student = null): array
+{
+    return [
+        'name' => [
+            'required', 'string', 'max:255',
+            'regex:/^[\p{L}\s\'\-\.]+$/u',
+        ],
+        'email' => [
+            'required', 'email', 'max:255',
+            $student
+                ? Rule::unique('users', 'email')->ignore($student->user_id)
+                : Rule::unique('users', 'email'),
+        ],
+        'password' => $student
+            ? ['nullable', Password::defaults()]
+            : ['required', Password::defaults()],
+
+        'lrn' => [
+            'required', 'string',
+            'regex:/^\d{10,12}$/',                 // exactly 10–12 digits, nothing else
+            $student
+                ? Rule::unique('students', 'lrn')->ignore($student->id)
+                : Rule::unique('students', 'lrn'),
+        ],
+
+        'section_id' => ['nullable', 'integer', 'exists:sections,id'],
+        'sex'        => ['nullable', 'in:male,female'],
+        'date_of_birth' => ['nullable', 'date', 'before:today'],
+
+        'contact_number' => [
+            'nullable', 'string',
+            'regex:/^\d{7,11}$/',                  // digits only, PH mobile or landline range
+        ],
+
+        'guardian_name' => [
+            'nullable', 'string', 'max:255',
+            'regex:/^[\p{L}\s\'\-\.]+$/u',
+        ],
+        'guardian_contact' => [
+            'nullable', 'string',
+            'regex:/^\d{7,11}$/',
+        ],
+
+        'status' => ['nullable', 'in:active,graduated,dropped_out,transferred_out'],
+    ];
+}
+
+/**
+ * Human-readable error messages for the shared rules.
+ */
+private function studentMessages(): array
+{
+    return [
+        'name.regex'              => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+        'guardian_name.regex'     => 'Guardian name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+        'lrn.regex'               => 'LRN must be exactly 10–12 digits.',
+        'contact_number.regex'    => 'Contact number must contain only digits (7–11 digits).',
+        'guardian_contact.regex'  => 'Guardian contact must contain only digits (7–11 digits).',
+        'date_of_birth.before'    => 'Date of birth cannot be in the future.',
+    ];
+}
 }

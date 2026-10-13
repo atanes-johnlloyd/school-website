@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class NewPasswordController extends Controller
 {
@@ -26,6 +27,15 @@ class NewPasswordController extends Controller
             'email'    => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // Find the user first so we can compare against their existing hash.
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Your new password must be different from your previous password.',
+            ]);
+        }
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),

@@ -85,8 +85,10 @@
                 Enrolled Students
               </h4>
               <button type="button" @click="openEnrollModal"
-                      :disabled="remaining <= 0"
-                      :title="remaining <= 0 ? 'Section is at capacity' : 'Enroll a student'"
+                :disabled="!section.is_fully_scheduled || remaining <= 0"
+                :title="!section.is_fully_scheduled
+                  ? 'Complete the section schedule before enrolling'
+                  : (remaining <= 0 ? 'Section is at capacity' : 'Enroll a student')"
                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[#004d08] dark:text-[#86EFAC] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />

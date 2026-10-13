@@ -362,6 +362,7 @@
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Date of Birth
                     <span class="text-red-500">*</span></label>
                   <input type="date" v-model="form.dob" @change="calculateAge" data-field="dob"
+                    :max="DOB_MAX" :min="DOB_MIN"
                     class="w-full px-3 py-2.5 rounded-lg border text-sm transition-all"
                     :class="errors.dob ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300'">
                   <p v-if="errors.dob" class="text-red-500 text-xs mt-1">{{ errors.dob }}</p>
@@ -549,17 +550,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <!-- PSA -->
                   <div
-                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between"
+                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between gap-3 min-w-0"
                     :class="errors.psa ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="text-xs font-bold text-slate-800">PSA Birth Certificate <span
                           class="text-red-500">*</span></p>
-                      <p class="text-[11px]" :class="fileNames.psa ? 'text-emerald-600 font-bold' : 'text-slate-400'">
+                      <p class="text-[11px] truncate"
+                        :title="fileNames.psa || 'PDF or JPG (Max 5MB)'"
+                        :class="fileNames.psa ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.psa || 'PDF or JPG (Max 5MB)' }}
                       </p>
                     </div>
                     <label
-                      class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
+                      class="shrink-0 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
                       Choose
                       <input type="file" ref="ref_psa" @change="handleFileChange($event, 'psa')"
                         accept=".pdf,.png,.jpg,.jpeg" class="hidden">
@@ -567,18 +570,19 @@
                   </div>
                   <!-- Form 137 -->
                   <div
-                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between"
+                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between gap-3 min-w-0"
                     :class="errors.form137 ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="text-xs font-bold text-slate-800">Form 137 / SF10 <span class="text-red-500">*</span>
                       </p>
-                      <p class="text-[11px]"
+                      <p class="text-[11px] truncate"
+                        :title="fileNames.form137 || 'PDF or JPG (Max 5MB)'"
                         :class="fileNames.form137 ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.form137 || 'PDF or JPG (Max 5MB)' }}
                       </p>
                     </div>
                     <label
-                      class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
+                      class="shrink-0 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
                       Choose
                       <input type="file" ref="ref_form137" @change="handleFileChange($event, 'form137')"
                         accept=".pdf,.png,.jpg,.jpeg" class="hidden">
@@ -586,18 +590,19 @@
                   </div>
                   <!-- Good Moral -->
                   <div
-                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between"
+                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between gap-3 min-w-0"
                     :class="errors.good_moral ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="text-xs font-bold text-slate-800">Good Moral Certificate <span
                           class="text-red-500">*</span></p>
-                      <p class="text-[11px]"
+                      <p class="text-[11px] truncate"
+                        :title="fileNames.good_moral || 'PDF or JPG (Max 5MB)'"
                         :class="fileNames.good_moral ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.good_moral || 'PDF or JPG (Max 5MB)' }}
                       </p>
                     </div>
                     <label
-                      class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
+                      class="shrink-0 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
                       Choose
                       <input type="file" ref="ref_good_moral" @change="handleFileChange($event, 'good_moral')"
                         accept=".pdf,.png,.jpg,.jpeg" class="hidden">
@@ -605,17 +610,18 @@
                   </div>
                   <!-- 2x2 Photo -->
                   <div
-                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between"
+                    class="border-2 border-dashed rounded-xl p-4 transition-all bg-slate-50/50 flex items-center justify-between gap-3 min-w-0"
                     :class="errors.picture ? 'border-red-500' : 'border-slate-300 hover:border-emerald-500'">
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="text-xs font-bold text-slate-800">2x2 ID Photo <span class="text-red-500">*</span></p>
-                      <p class="text-[11px]"
+                      <p class="text-[11px] truncate"
+                        :title="fileNames.picture || 'PNG or JPG (Max 2MB)'"
                         :class="fileNames.picture ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         {{ fileNames.picture || 'PNG or JPG (Max 2MB)' }}
                       </p>
                     </div>
                     <label
-                      class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
+                      class="shrink-0 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs cursor-pointer shadow-sm">
                       Choose
                       <input type="file" ref="ref_picture" @change="handleFileChange($event, 'picture')"
                         accept=".png,.jpg,.jpeg" class="hidden">
@@ -806,19 +812,63 @@
                 No strands are currently available. Please check back later or contact the registrar.
               </div>
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div v-for="strand in allStrands" :key="strand.id"
-                  @click="form.selected_cluster = strand.id"
-                  class="cluster-card border-2 border-slate-200 hover:border-emerald-400 rounded-2xl p-5 cursor-pointer transition-all bg-white"
-                  :class="{ 'selected border-emerald-600 shadow-md ring-2 ring-emerald-500': form.selected_cluster === strand.id }">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md">{{
-                      strand.code }}</span>
-                    <span class="text-xs text-slate-400 font-medium">{{ strand.track_name }}</span>
+              <div v-else class="space-y-8">
+                <div v-for="track in tracksWithStrands" :key="track.id" class="space-y-4">
+
+                  <!-- Track section header -->
+                  <div class="flex items-center gap-3 pb-2 border-b border-slate-200">
+                    <span class="w-1 h-5 rounded-full shrink-0" :class="trackAccentClass(track.code)"></span>
+                    <h4 class="font-['Anton'] text-base sm:text-lg uppercase tracking-wider text-[#005506] leading-none">
+                      {{ track.name }}
+                    </h4>
+                    <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {{ track.strands.length }} {{ track.strands.length === 1 ? 'strand' : 'strands' }}
+                    </span>
                   </div>
-                  <h4 class="font-bold text-slate-900 text-base">{{ strand.name }}</h4>
-                  <p v-if="strand.description" class="text-xs text-slate-500 mt-1 leading-relaxed">{{
-                    strand.description }}</p>
+
+                  <!-- Strand cards -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                    <div v-for="strand in track.strands" :key="strand.id"
+                      @click="form.selected_cluster = strand.id"
+                      class="cluster-card relative h-full min-h-[92px] border-2 rounded-2xl p-4 pr-10 cursor-pointer transition-all bg-white grid grid-cols-[auto_1fr] items-center gap-x-3.5 gap-y-1.5"
+                      :class="form.selected_cluster === strand.id
+                        ? 'border-emerald-600 shadow-md ring-2 ring-emerald-500/40'
+                        : 'border-slate-200 hover:border-emerald-400 hover:shadow-sm'">
+
+                      <!-- Icon — row 2 only, so it centers against the name, not badge+name -->
+                      <span
+                        class="row-start-2 col-start-1 w-12 h-12 rounded-xl text-white flex items-center justify-center shrink-0 shadow-sm transition-colors"
+                        :class="form.selected_cluster === strand.id ? 'bg-emerald-600' : 'bg-[#005506]'">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                          <path stroke-linecap="round" stroke-linejoin="round" :d="strandIconPath(strand.code)" />
+                        </svg>
+                      </span>
+
+                      <!-- Badge — row 1, col 2 -->
+                      <span class="row-start-1 col-start-2 justify-self-start inline-block text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md tracking-wider whitespace-nowrap">
+                        {{ strand.code }}
+                      </span>
+
+                      <!-- Name — row 2, col 2 -->
+                      <h4 class="row-start-2 col-start-2 font-bold text-slate-900 text-sm leading-snug min-w-0">
+                        {{ strand.name }}
+                      </h4>
+
+                      <!-- Description — row 3 (spans under the name only) -->
+                      <p v-if="strand.description" class="col-start-2 row-start-3 text-[11px] text-slate-500 leading-relaxed line-clamp-2">
+                        {{ strand.description }}
+                      </p>
+
+                      <!-- Selected check -->
+                      <span v-if="form.selected_cluster === strand.id"
+                        class="absolute top-3 right-3 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -843,41 +893,146 @@
               </div>
 
               <div class="bg-slate-50 rounded-xl p-5 space-y-4 border border-slate-200 text-sm">
-                <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2">Personal Information</h4>
-                <div class="grid grid-cols-2 gap-2">
-                  <div><span class="font-semibold text-slate-600">Surname:</span> {{ form.surname }}</div>
-                  <div><span class="font-semibold text-slate-600">Given Name:</span> {{ form.given_name }}</div>
-                  <div><span class="font-semibold text-slate-600">Middle Name:</span> {{ form.middle_name || 'N/A' }}
+
+                <!-- === PERSONAL INFORMATION === -->
+                <div>
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">1</span>
+                    Personal Information
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    <div><span class="font-semibold text-slate-600">Surname:</span> {{ form.surname }}</div>
+                    <div><span class="font-semibold text-slate-600">Given Name:</span> {{ form.given_name }}</div>
+                    <div><span class="font-semibold text-slate-600">Middle Name:</span> {{ form.middle_name || 'N/A' }}</div>
+                    <div><span class="font-semibold text-slate-600">Suffix:</span> {{ form.suffix || 'N/A' }}</div>
+                    <div><span class="font-semibold text-slate-600">Date of Birth:</span> {{ form.dob }}</div>
+                    <div><span class="font-semibold text-slate-600">Age:</span> {{ form.age }}</div>
+                    <div><span class="font-semibold text-slate-600">Sex:</span> {{ form.sex }}</div>
+                    <div><span class="font-semibold text-slate-600">LRN:</span> <span class="font-mono">{{ form.lrn }}</span></div>
+                    <div><span class="font-semibold text-slate-600">Mobile:</span> {{ form.mobile_number }}</div>
+                    <div><span class="font-semibold text-slate-600">Email:</span> {{ form.email }}</div>
                   </div>
-                  <div><span class="font-semibold text-slate-600">Suffix:</span> {{ form.suffix || 'N/A' }}</div>
-                  <div><span class="font-semibold text-slate-600">Date of Birth:</span> {{ form.dob }}</div>
-                  <div><span class="font-semibold text-slate-600">Age:</span> {{ form.age }}</div>
-                  <div><span class="font-semibold text-slate-600">Sex:</span> {{ form.sex }}</div>
-                  <div><span class="font-semibold text-slate-600">LRN:</span> {{ form.lrn }}</div>
-                  <div><span class="font-semibold text-slate-600">Mobile:</span> {{ form.mobile_number }}</div>
-                  <div><span class="font-semibold text-slate-600">Email:</span> {{ form.email }}</div>
                 </div>
 
-                <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mt-4">Address</h4>
-                <div class="grid grid-cols-2 gap-2">
-                  <div><span class="font-semibold text-slate-600">Province:</span> {{ form.province }}</div>
-                  <div><span class="font-semibold text-slate-600">City/Municipality:</span> {{ form.municipality }}
+                <!-- === ADDRESS === -->
+                <div>
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 mt-4 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">2</span>
+                    Residential Address
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    <div><span class="font-semibold text-slate-600">Province:</span> {{ form.province }}</div>
+                    <div><span class="font-semibold text-slate-600">City/Municipality:</span> {{ form.municipality }}</div>
+                    <div><span class="font-semibold text-slate-600">Barangay:</span> {{ form.barangay }}</div>
+                    <div><span class="font-semibold text-slate-600">Street:</span> {{ form.street }}</div>
+                    <div><span class="font-semibold text-slate-600">Zip Code:</span> {{ form.zip_code }}</div>
+                    <div><span class="font-semibold text-slate-600">Religion:</span> {{ form.religion }}</div>
                   </div>
-                  <div><span class="font-semibold text-slate-600">Barangay:</span> {{ form.barangay }}</div>
-                  <div><span class="font-semibold text-slate-600">Street:</span> {{ form.street }}</div>
-                  <div><span class="font-semibold text-slate-600">Zip Code:</span> {{ form.zip_code }}</div>
-                  <div><span class="font-semibold text-slate-600">Religion:</span> {{ form.religion }}</div>
                 </div>
 
-                <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mt-4">Selected Track</h4>
-                <div class="flex items-center gap-4">
-                  <span class="font-semibold text-slate-600">Track:</span>
-                  <div class="w-56 h-20 bg-emerald-700 rounded-xl p-3 flex flex-col justify-center">
-                    <span class="font-bold text-white text-sm">{{ selectedClusterObject?.code || '---' }}</span>
-                    <span class="text-xs text-emerald-200">{{ selectedClusterObject?.name || 'No cluster selected'
-                    }}</span>
+                <!-- === JUNIOR HIGH SCHOOL === -->
+                <div>
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 mt-4 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">3</span>
+                    Junior High School
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    <div><span class="font-semibold text-slate-600">School Name:</span> {{ form.jhs_name }}</div>
+                    <div><span class="font-semibold text-slate-600">School Type:</span> {{ form.school_type }}</div>
+                    <div><span class="font-semibold text-slate-600">Completion Year:</span> {{ form.year_graduated }}</div>
+                    <div class="sm:col-span-2"><span class="font-semibold text-slate-600">School Address:</span> {{ form.school_address }}</div>
                   </div>
                 </div>
+
+                <!-- === PARENT / GUARDIAN === -->
+                <div v-if="filledProfiles.length">
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 mt-4 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">4</span>
+                    Parent / Guardian
+                  </h4>
+                  <div class="space-y-4">
+                    <div v-for="p in filledProfiles" :key="p.label"
+                      class="bg-white rounded-lg border border-slate-200 p-4">
+                      <p class="text-xs font-bold text-[#005506] uppercase tracking-wider mb-2">{{ p.label }}</p>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                        <div><span class="font-semibold text-slate-600">Full Name:</span> {{ p.name }}</div>
+                        <div><span class="font-semibold text-slate-600">Occupation:</span> {{ p.occupation || 'N/A' }}</div>
+                        <div><span class="font-semibold text-slate-600">Contact Number:</span> {{ p.contact || 'N/A' }}</div>
+                        <div><span class="font-semibold text-slate-600">Educational Attainment:</span> {{ p.education || 'N/A' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- === DOCUMENTS UPLOADED === -->
+                <div>
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 mt-4 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">5</span>
+                    Documents Uploaded
+                  </h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div v-for="doc in uploadedDocs" :key="doc.key"
+                      class="bg-white rounded-lg border border-slate-200 p-3 flex items-start gap-2.5 min-w-0">
+                      <span
+                        class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                        :class="doc.filename ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'">
+                        <svg v-if="doc.filename" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </span>
+                      <div class="min-w-0 flex-1">
+                        <p class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">{{ doc.label }}</p>
+                        <p class="text-[11px] truncate"
+                          :title="doc.filename || 'Not uploaded'"
+                          :class="doc.filename ? 'text-emerald-700 font-semibold' : 'text-slate-400 italic'">
+                          {{ doc.filename || 'Not uploaded' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- === SELECTED TRACK === -->
+                <div>
+                  <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3 mt-4 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">6</span>
+                    Selected Track
+                  </h4>
+                  <div class="flex items-center gap-4">
+                    <div class="w-full max-w-xs bg-emerald-700 rounded-xl p-4 flex items-center gap-3 min-w-0">
+                      <span class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            :d="strandIconPath(selectedClusterObject?.code)" />
+                        </svg>
+                      </span>
+                      <div class="min-w-0">
+                        <p class="font-bold text-white text-sm truncate">
+                          {{ selectedClusterObject?.name || 'No cluster selected' }}
+                        </p>
+                        <p class="text-xs text-emerald-200 truncate">
+                          {{ selectedClusterObject?.code || '---' }} · {{ selectedClusterObject?.track_name || '' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3">
+                <svg class="w-5 h-5 text-[#005506] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+                <p class="text-xs text-slate-700 leading-relaxed">
+                  By submitting this form, you certify that all information provided is true and correct.
+                  Falsification of any entry is grounds for disqualification. You'll receive a
+                  <strong>reference number</strong> after submission — save it to track your application status.
+                </p>
               </div>
 
               <div class="flex justify-between pt-4">
@@ -1199,9 +1354,91 @@ const allStrands = computed(() => {
   return list
 })
 
+/* Groups strands by their parent track for Step 4.
+ * Keeps the track's original order (ACAD then TECHPRO) and
+ * preserves strand sort order from the DB — no client sort. */
+const tracksWithStrands = computed(() =>
+  props.tracks
+    .filter(t => (t.strands || []).length > 0)
+    .map(t => ({
+      id:      t.id,
+      code:    t.code,
+      name:    t.name,
+      strands: t.strands,
+    }))
+)
+
+/* Accent color per track — matches the Home page track cards. */
+const trackAccentClass = (code) => {
+  const c = String(code || '').toUpperCase()
+  if (c === 'ACAD')    return 'bg-[#005506]'
+  if (c === 'TECHPRO') return 'bg-amber-500'
+  return 'bg-emerald-500'
+}
+
 const selectedClusterObject = computed(() =>
   allStrands.value.find(c => c.id === form.selected_cluster)
 )
+
+/* Profiles that actually have data — used in the Step 5 review.
+ * Same "has name" heuristic used at submit time, so the review
+ * shows exactly what will be sent to the server. */
+const filledProfiles = computed(() => [
+  { label: 'Father',   name: form.father_name,   occupation: form.father_occupation,   contact: form.father_contact,   education: form.father_education },
+  { label: 'Mother',   name: form.mother_name,   occupation: form.mother_occupation,   contact: form.mother_contact,   education: form.mother_education },
+  { label: 'Guardian', name: form.guardian_name, occupation: form.guardian_occupation, contact: form.guardian_contact, education: form.guardian_education },
+].filter(p => (p.name || '').trim()))
+
+/* Uploaded docs for the Step 5 review. */
+const uploadedDocs = computed(() => [
+  { key: 'psa',        label: 'PSA Birth Certificate',   filename: fileNames.psa },
+  { key: 'form137',    label: 'Form 137 / SF10',         filename: fileNames.form137 },
+  { key: 'good_moral', label: 'Good Moral Certificate',  filename: fileNames.good_moral },
+  { key: 'picture',    label: '2x2 ID Photo',            filename: fileNames.picture },
+])
+
+/* -------------------- STRAND ICONS -------------------- */
+const STRAND_ICON_FALLBACK =
+  'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+
+const STRAND_ICONS = {
+  'ARTS-SOC-HUM':
+    'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z',
+  'STEM':
+    'M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5',
+  'SPORTS-WELLNESS':
+    'M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0',
+  'BUSINESS-ENTREP':
+    'M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-12a2.25 2.25 0 01-2.25-2.25v-4.073M15.75 6a.75.75 0 00-.75-.75h-6a.75.75 0 00-.75.75m7.5 0v.75h1.5a2.25 2.25 0 012.25 2.25V15M15.75 6v.75H8.25V6m0 .75H6.75A2.25 2.25 0 004.5 9v6M8.25 6.75v.75h7.5v-.75',
+  'FIELD-EXP':
+    'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418',
+  'AESTHETIC-WELLNESS':
+    'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z',
+  'AGRI-FISHERY':
+    'M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z',
+  'ARTISANRY':
+    'M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42',
+  'AUTOMOTIVE':
+    'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437L1.5 15l3.75 3.75 5.67-5.67',
+  'CONSTRUCTION':
+    'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z',
+  'CREATIVE-ARTS':
+    'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z',
+  'HOSPITALITY':
+    'M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z',
+  'INDUSTRIAL':
+    'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437L1.5 15l3.75 3.75 5.67-5.67',
+  'ICT':
+    'M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25',
+  'MARITIME':
+    'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418',
+}
+
+function strandIconPath(code) {
+  if (!code) return STRAND_ICON_FALLBACK
+  const key = String(code).trim().toUpperCase()
+  return STRAND_ICONS[key] || STRAND_ICON_FALLBACK
+}
 
 /* -------------------- STATE -------------------- */
 const currentStep = ref(1)
@@ -1223,6 +1460,18 @@ const MAX = {
   guardian_name: 80, guardian_occupation: 60, guardian_education: 60,
   lrn: 12, mobile_number: 11, zip_code: 4, year_graduated: 4,
 }
+
+/* -------------------- DATE BOUNDS -------------------- */
+// A date input's max/min is the cleanest first line of defense:
+// the native picker simply refuses to select anything outside the range.
+// We still re-check in handleNext(1) because users can type/paste into the field.
+const TODAY = new Date()
+const DOB_MAX = TODAY.toISOString().split('T')[0]                            // today
+const DOB_MIN = (() => {
+  const d = new Date(TODAY)
+  d.setFullYear(d.getFullYear() - 100)                                       // 100 years ago
+  return d.toISOString().split('T')[0]
+})()
 
 const makeInitialForm = () => ({
   applicant_type: 'Grade11',
@@ -1299,11 +1548,15 @@ const onMunicipalityChange = () => {
 const calculateAge = () => {
   if (!form.dob) { form.age = ''; return }
   const birth = new Date(form.dob)
+  if (isNaN(birth.getTime())) { form.age = ''; return }
+
   const today = new Date()
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-  form.age = (age >= 0 && age <= 100) ? age : ''
+
+  // Just display the computed age. Sanity checks live in handleNext.
+  form.age = age >= 0 ? age : ''
 }
 
 const handleFileChange = (e, key) => {
@@ -1362,7 +1615,7 @@ const validateProfile = (prefix, label) => {
   const edu = (form[eduKey] || '').trim()
 
   const hasAny = name || occ || contact || edu
-  if (!hasAny) return { active: false, valid: true }
+  if (!hasAny) return { active: false, valid: true, errs: [] }
 
   const errs = []
   if (!name) errs.push([nameKey, `${label} name is required.`])
@@ -1405,8 +1658,18 @@ const handleNext = (step) => {
       else if (!/^[A-Za-z.]+$/.test(form.suffix)) errors.suffix = 'Suffix may only contain letters and periods.'
     }
 
-    if (!form.dob) errors.dob = 'Date of birth is required.'
-    else if (!form.age || form.age < 15 || form.age > 85) errors.dob = 'Age must be between 15 and 85.'
+    if (!form.dob) {
+      errors.dob = 'Date of birth is required.'
+    } else {
+      const birth = new Date(form.dob)
+      if (isNaN(birth.getTime())) {
+        errors.dob = 'Please enter a valid date of birth.'
+      } else if (birth > TODAY) {
+        errors.dob = 'Date of birth cannot be in the future.'
+      } else if (form.dob < DOB_MIN) {
+        errors.dob = 'Please enter a valid date of birth.'
+      }
+    }
 
     if (!form.sex) errors.sex = 'Please select sex.'
 
@@ -1466,7 +1729,7 @@ const handleNext = (step) => {
     const mother = validateProfile('mother', 'Mother')
     const guardian = validateProfile('guardian', 'Guardian')
 
-    ;[...father.errs, ...mother.errs, ...guardian.errs].forEach(([k, m]) => { errors[k] = m })
+    ;[...(father.errs || []), ...(mother.errs || []), ...(guardian.errs || [])].forEach(([k, m]) => { errors[k] = m })
 
     const hasComplete = [father, mother, guardian].some(p => p.active && p.valid)
     if (!hasComplete && Object.keys(errors).length === 0) {
@@ -1681,14 +1944,6 @@ const applicantStatusDotClass = computed(() => {
   }[s] || 'bg-slate-400'
 })
 
-/**
- * Five tracker stages matching the real workflow:
- *   0 = Submitted (pending)
- *   1 = Under Review (under_review / needs_resubmission)
- *   2 = Verified (approved implies verified + exam-assigned)
- *   3 = Entrance Exam (approved → waiting for exam session)
- *   4 = Enrolled (enrolled → LMS account + section assigned)
- */
 const statusStages = computed(() => {
   const status = searchResult.value?.status || 'pending'
 
@@ -1696,8 +1951,8 @@ const statusStages = computed(() => {
     pending:            0,
     under_review:       1,
     needs_resubmission: 1,
-    approved:           3,   // approved = past review, waiting on exam
-    enrolled:           4,   // fully done
+    approved:           3,
+    enrolled:           4,
   }[status] ?? 0
 
   const isEnrolled = status === 'enrolled'
@@ -1716,10 +1971,6 @@ const statusStages = computed(() => {
   }))
 })
 
-/**
- * Progress bar fill width. The bar sits between 10% and 90% of the container,
- * so it spans 80%. Each interval between 5 stages is 25% of that span.
- */
 const progressBarWidth = computed(() => {
   const stages = statusStages.value
   if (!stages.length) return '0%'
@@ -1800,13 +2051,21 @@ onMounted(() => {
     observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target === phasesRef.value) isPhasesVisible.value = entry.isIntersecting
-          else if (entry.target === statusRef.value) isStatusVisible.value = entry.isIntersecting
-          else if (entry.target === faqRef.value) isFaqVisible.value = entry.isIntersecting
-          else if (entry.target === formContainer.value) isApplicationVisible.value = entry.isIntersecting
+          if (!entry.isIntersecting) return   // only care about "entered", not "left"
+          if (entry.target === phasesRef.value)        isPhasesVisible.value = true
+          else if (entry.target === statusRef.value)   isStatusVisible.value = true
+          else if (entry.target === faqRef.value)      isFaqVisible.value = true
+          else if (entry.target === formContainer.value) isApplicationVisible.value = true
         })
       },
-      { threshold: 0.12 }
+      {
+        // threshold: 0 means "as soon as ANY pixel is visible".
+        // Combined with a negative bottom rootMargin, the animation kicks in
+        // once the element is ~80px into the viewport — feels natural and,
+        // crucially, works no matter how tall the element is.
+        threshold: 0,
+        rootMargin: '0px 0px -80px 0px',
+      }
     )
 
     nextTick(() => {

@@ -6,21 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+
 class Section extends Model
 {
     use SoftDeletes;
     use HasFactory;
     use Auditable;
-    
+
     protected $fillable = [
         'school_year_id', 'strand_id', 'grade_level',
-        'name', 'adviser_id', 'max_capacity',
+        'name', 'adviser_id', 'home_room_id', 'max_capacity',
     ];
 
     public function schoolYear()  { return $this->belongsTo(SchoolYear::class); }
     public function strand()      { return $this->belongsTo(Strand::class); }
     public function adviser()     { return $this->belongsTo(Teacher::class, 'adviser_id'); }
-    public function classroom()     { return $this->hasMany(ClassRoom::class, 'section_id'); }
+    public function homeRoom()    { return $this->belongsTo(Room::class, 'home_room_id'); }
+    public function classroom()   { return $this->hasMany(ClassRoom::class, 'section_id'); }
     public function enrollments() { return $this->hasMany(Enrollment::class); }
 
     public function students()
@@ -28,5 +30,17 @@ class Section extends Model
         return $this->belongsToMany(Student::class, 'enrollments', 'section_id', 'student_id')
                     ->withPivot('status', 'enrolled_at')
                     ->withTimestamps();
+    }
+
+    /**
+     * True when every ClassRoom in this section (in every term) has at
+     * least one class_schedules row. Enrollment is blocked until this
+     * returns true.
+     */
+    public function getIsFullyScheduledAttribute(): bool
+    {
+        return ! ClassRoom::where('section_id', $this->id)
+            ->whereDoesntHave('schedules')
+            ->exists();
     }
 }

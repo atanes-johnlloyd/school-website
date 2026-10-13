@@ -336,8 +336,16 @@ class ApplicantController extends Controller
             'section_id' => ['required', 'integer', 'exists:sections,id'],
         ]);
 
-        $student = AuditContext::wrap('manual_enroll', function () use ($applicant, $validated) {
-            return DB::transaction(function () use ($applicant, $validated) {
+        $targetSection = Section::findOrFail($validated['section_id']);
+
+        if (! $targetSection->is_fully_scheduled) {
+            return response()->json([
+                'message' => "Cannot enroll: the target section's schedule is incomplete. Place all classes first.",
+            ], 422);
+        }
+
+        $payload = AuditContext::wrap('manual_enroll', function () use ($applicant, $targetSection) {
+            return DB::transaction(function () use ($applicant, $targetSection) {
                 $tempPassword = Str::random(12);
 
                 $user = User::firstOrCreate(
@@ -345,42 +353,43 @@ class ApplicantController extends Controller
                     [
                         'name'                 => $applicant->full_name,
                         'password'             => Hash::make($tempPassword),
-                        'role'                 => 'student',
                         'must_change_password' => true,
+                        'email_verified_at'    => now(),
+                        'status'               => 'active',
                     ]
                 );
 
-                $guardian = $applicant->contacts
-                ->sortBy(fn ($c) => match ($c->role) {
-                    'guardian' => 0,
-                    'father'   => 1,
-                    'mother'   => 2,
-                    default    => 9,
-                })
-                ->first(fn ($c) => filled($c->full_name));
+                if ($user->wasRecentlyCreated) {
+                    $user->assignRole('student');
+                }
 
+                $guardian = $applicant->contacts
+                    ->sortBy(fn ($c) => match ($c->role) {
+                        'guardian' => 0,
+                        'father'   => 1,
+                        'mother'   => 2,
+                        default    => 9,
+                    })
+                    ->first(fn ($c) => filled($c->full_name));
 
                 $student = Student::firstOrCreate(
                     ['user_id' => $user->id],
                     [
-                        'lrn'            => $applicant->lrn ?? 'LRN-' . rand(100000, 999999),
-                        'first_name'     => $applicant->first_name,
-                        'middle_name'    => $applicant->middle_name,
-                        'last_name'      => $applicant->last_name,
-                        'extension_name' => $applicant->extension_name,
-                        'contact_no'     => $applicant->contact_number,
-                        'strand_id'      => $applicant->strand_id,
+                        'lrn'              => $applicant->lrn ?? 'LRN-' . rand(100000, 999999),
+                        'contact_number'   => $applicant->contact_number,
                         'guardian_name'    => $guardian?->full_name,
                         'guardian_contact' => $guardian?->contact_number,
+                        'status'           => 'active',
                     ]
                 );
 
-                $section = Section::with('classrooms')->findOrFail($validated['section_id']);
-                $section->students()->syncWithoutDetaching([
+                $targetSection->load('classrooms');
+
+                $targetSection->students()->syncWithoutDetaching([
                     $student->id => ['status' => 'active', 'enrolled_at' => now()],
                 ]);
 
-                foreach ($section->classrooms as $classroom) {
+                foreach ($targetSection->classrooms as $classroom) {
                     $classroom->students()->syncWithoutDetaching([
                         $student->id => ['status' => 'active', 'enrolled_at' => now()],
                     ]);
@@ -391,15 +400,19 @@ class ApplicantController extends Controller
                     'converted_student_id' => $student->id,
                 ]);
 
-                return $student;
+                return [
+                    'student'       => $student,
+                    'was_created'   => $user->wasRecentlyCreated,
+                    'temp_password' => $tempPassword,
+                ];
             });
-        }, ['section_id' => $validated['section_id']]);
-
+        }, ['section_id' => $targetSection->id]);
 
         return response()->json([
-            'message'   => 'Applicant successfully enrolled and attached to section.',
-            'applicant' => $applicant->fresh(['schoolYear', 'strand']),
-            'student'   => $student,
+            'message'       => 'Applicant successfully enrolled and attached to section.',
+            'applicant'     => $applicant->fresh(['schoolYear', 'strand']),
+            'student'       => $payload['student'],
+            'temp_password' => $payload['was_created'] ? $payload['temp_password'] : null,
         ]);
     }
 

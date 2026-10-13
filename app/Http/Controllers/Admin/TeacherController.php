@@ -28,6 +28,77 @@ class TeacherController extends Controller
         ]);
     }
 
+    /**
+     * Shared validation rules for teacher create/update.
+     * Pass a Teacher to skip unique checks against itself.
+     */
+    private function teacherRules(?Teacher $teacher = null): array
+    {
+        return [
+            'name' => [
+                'required', 'string', 'max:255',
+                'regex:/^[\p{L}\s\'\-\.]+$/u',
+            ],
+            'email' => [
+                'required', 'email:rfc,dns', 'max:255',
+                $teacher
+                    ? Rule::unique('users', 'email')->ignore($teacher->user_id)
+                    : Rule::unique('users', 'email'),
+            ],
+            'password' => $teacher
+                ? ['nullable', Password::defaults()]
+                : ['required', Password::defaults()],
+
+            'employee_no' => [
+                'required', 'string', 'min:3', 'max:30',
+                'regex:/^[A-Z0-9][A-Z0-9\-_]*$/i',   // alnum, dash, underscore; must start alnum
+                $teacher
+                    ? Rule::unique('teachers', 'employee_no')->ignore($teacher->id)
+                    : Rule::unique('teachers', 'employee_no'),
+            ],
+
+            'sex'           => ['nullable', 'in:male,female'],
+            'date_of_birth' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'date_hired'    => ['nullable', 'date', 'after:1950-01-01', 'before_or_equal:today'],
+
+            'contact_number' => [
+                'nullable', 'string',
+                'regex:/^\d{7,11}$/',
+            ],
+
+            'department' => [
+                'nullable', 'string', 'max:100',
+                'regex:/^[\p{L}\s\-&\.]+$/u',       // letters, spaces, hyphens, ampersands, periods
+            ],
+
+            'specialization' => [
+                'nullable', 'string', 'max:150',
+                'regex:/^[\p{L}\p{N}\s\-\.\,\/\&]+$/u',
+            ],
+
+            'is_active' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Human-readable messages for the shared rules.
+     */
+    private function teacherMessages(): array
+    {
+        return [
+            'name.regex'              => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+            'employee_no.regex'       => 'Employee number may only contain letters, numbers, hyphens, and underscores.',
+            'employee_no.min'         => 'Employee number must be at least 3 characters.',
+            'contact_number.regex'    => 'Contact number must contain only digits (7–11 digits).',
+            'department.regex'        => 'Department may only contain letters, spaces, hyphens, ampersands, and periods.',
+            'specialization.regex'    => 'Specialization contains invalid characters.',
+            'date_of_birth.before'    => 'Date of birth cannot be in the future.',
+            'date_of_birth.after'     => 'Date of birth must be after 1900.',
+            'date_hired.before_or_equal' => 'Date hired cannot be in the future.',
+            'date_hired.after'        => 'Date hired must be after 1950.',
+        ];
+    }
+
     public function list(Request $request)
     {
         $validated = $request->validate([
@@ -150,19 +221,10 @@ class TeacherController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name'           => ['required', 'string', 'max:255'],
-            'email'          => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password'       => ['required', Password::defaults()],
-            'employee_no'    => ['required', 'string', 'max:50', 'unique:teachers,employee_no'],
-            'sex'            => ['nullable', 'in:male,female'],
-            'date_of_birth'  => ['nullable', 'date', 'before:today'],
-            'contact_number' => ['nullable', 'string', 'max:20'],
-            'date_hired'     => ['nullable', 'date'],
-            'department'     => ['nullable', 'string', 'max:255'],
-            'specialization' => ['nullable', 'string', 'max:255'],
-            'is_active'      => ['boolean'],
-        ]);
+        $validated = $request->validate(
+            $this->teacherRules(),
+            $this->teacherMessages()
+        );
 
         AuditContext::wrap('create_teacher', function () use ($validated) {
             DB::transaction(function () use ($validated) {
@@ -171,6 +233,8 @@ class TeacherController extends Controller
                     'email'                => $validated['email'],
                     'password'             => Hash::make($validated['password']),
                     'must_change_password' => true,
+                    'email_verified_at'    => now(),
+                    'status'               => 'active',
                 ]);
                 if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
 
@@ -193,18 +257,10 @@ class TeacherController extends Controller
 
     public function update(Request $request, Teacher $teacher)
     {
-        $validated = $request->validate([
-            'name'           => ['required', 'string', 'max:255'],
-            'email'          => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($teacher->user_id)],
-            'employee_no'    => ['required', 'string', 'max:50', Rule::unique('teachers', 'employee_no')->ignore($teacher->id)],
-            'sex'            => ['nullable', 'in:male,female'],
-            'date_of_birth'  => ['nullable', 'date', 'before:today'],
-            'contact_number' => ['nullable', 'string', 'max:20'],
-            'date_hired'     => ['nullable', 'date'],
-            'department'     => ['nullable', 'string', 'max:255'],
-            'specialization' => ['nullable', 'string', 'max:255'],
-            'is_active'      => ['boolean'],
-        ]);
+        $validated = $request->validate(
+            $this->teacherRules($teacher),
+            $this->teacherMessages()
+        );
 
         AuditContext::wrap('update_teacher', function () use ($validated, $teacher) {
             DB::transaction(function () use ($validated, $teacher) {
@@ -231,12 +287,26 @@ class TeacherController extends Controller
 
     public function destroy(Teacher $teacher)
     {
+        $name = $teacher->user?->name ?? 'Faculty member';
+
         AuditContext::wrap('deactivate_teacher', function () use ($teacher) {
             $teacher->update(['is_active' => false]);
-            $teacher->delete();
+            $teacher->user?->update(['status' => 'disabled']);
         });
 
-        return redirect()->back()->with('success', 'Faculty member deactivated.');
+        return redirect()->back()->with('success', "{$name} deactivated.");
+    }
+
+    public function restore(Teacher $teacher)
+    {
+        $name = $teacher->user?->name ?? 'Faculty member';
+
+        AuditContext::wrap('restore_teacher', function () use ($teacher) {
+            $teacher->update(['is_active' => true]);
+            $teacher->user?->update(['status' => 'active']);
+        });
+
+        return redirect()->back()->with('success', "{$name} reactivated.");
     }
 
     public function resetPassword(Teacher $teacher)
@@ -354,9 +424,72 @@ class TeacherController extends Controller
                         }
                     }
 
+                    $name  = trim((string) $data['name']);
                     $email = trim((string) $data['email']);
                     $empNo = trim((string) $data['employee_no']);
 
+                    // ── Format validation (mirrors store/update) ────────────────
+                    $rowErrors = [];
+
+                    if (! preg_match('/^[\p{L}\s\'\-\.]+$/u', $name)) {
+                        $rowErrors[] = 'name may only contain letters, spaces, hyphens, apostrophes, and periods';
+                    }
+
+                    if (! preg_match('/^[A-Z0-9][A-Z0-9\-_]*$/i', $empNo)) {
+                        $rowErrors[] = 'employee number may only contain letters, numbers, hyphens, and underscores';
+                    } elseif (strlen($empNo) < 3 || strlen($empNo) > 30) {
+                        $rowErrors[] = 'employee number must be 3–30 characters';
+                    }
+
+                    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $rowErrors[] = 'email is not a valid address';
+                    }
+
+                    $contact = trim((string) ($data['contact_number'] ?? ''));
+                    if ($contact !== '' && ! preg_match('/^\d{7,11}$/', $contact)) {
+                        $rowErrors[] = 'contact number must contain only digits (7–11 digits)';
+                    }
+
+                    $dept = trim((string) ($data['department'] ?? ''));
+                    if ($dept !== '' && ! preg_match('/^[\p{L}\s\-&\.]+$/u', $dept)) {
+                        $rowErrors[] = 'department contains invalid characters';
+                    }
+
+                    $spec = trim((string) ($data['specialization'] ?? ''));
+                    if ($spec !== '' && ! preg_match('/^[\p{L}\p{N}\s\-\.\,\/\&]+$/u', $spec)) {
+                        $rowErrors[] = 'specialization contains invalid characters';
+                    }
+
+                    $dob = trim((string) ($data['date_of_birth'] ?? ''));
+                    if ($dob !== '') {
+                        $parsed = strtotime($dob);
+                        if ($parsed === false) {
+                            $rowErrors[] = 'date of birth is not a valid date';
+                        } elseif ($parsed > time()) {
+                            $rowErrors[] = 'date of birth cannot be in the future';
+                        }
+                    }
+
+                    $hired = trim((string) ($data['date_hired'] ?? ''));
+                    if ($hired !== '') {
+                        $parsed = strtotime($hired);
+                        if ($parsed === false) {
+                            $rowErrors[] = 'date hired is not a valid date';
+                        } elseif ($parsed > time()) {
+                            $rowErrors[] = 'date hired cannot be in the future';
+                        }
+                    }
+
+                    $sex = strtolower(trim((string) ($data['sex'] ?? '')));
+                    if ($sex !== '' && ! in_array($sex, ['male', 'female'], true)) {
+                        $rowErrors[] = "sex must be 'male' or 'female'";
+                    }
+
+                    if (! empty($rowErrors)) {
+                        throw new \RuntimeException('Format issues: ' . implode('; ', $rowErrors) . '.');
+                    }
+
+                    // ── Uniqueness ───────────────────────────────────────────────
                     if (User::where('email', $email)->exists()) {
                         throw new \RuntimeException("Email '{$email}' already exists.");
                     }
@@ -364,24 +497,27 @@ class TeacherController extends Controller
                         throw new \RuntimeException("Employee number '{$empNo}' already exists.");
                     }
 
-                    DB::transaction(function () use ($data, $email, $empNo) {
+                    // ── Persist ──────────────────────────────────────────────────
+                    DB::transaction(function () use ($data, $name, $email, $empNo, $contact, $dept, $spec, $dob, $hired, $sex) {
                         $user = User::create([
-                            'name'                 => trim((string) $data['name']),
+                            'name'                 => $name,
                             'email'                => $email,
                             'password'             => Hash::make(Str::random(16)),
                             'must_change_password' => true,
+                            'email_verified_at'    => now(),
+                            'status'               => 'active',
                         ]);
                         if (method_exists($user, 'assignRole')) $user->assignRole('teacher');
 
                         Teacher::create([
                             'user_id'        => $user->id,
                             'employee_no'    => $empNo,
-                            'sex'            => filled($data['sex']            ?? null) ? strtolower(trim($data['sex'])) : null,
-                            'date_of_birth'  => filled($data['date_of_birth']  ?? null) ? $data['date_of_birth']          : null,
-                            'contact_number' => filled($data['contact_number'] ?? null) ? trim($data['contact_number'])   : null,
-                            'date_hired'     => filled($data['date_hired']     ?? null) ? $data['date_hired']             : null,
-                            'department'     => filled($data['department']     ?? null) ? trim($data['department'])       : null,
-                            'specialization' => filled($data['specialization'] ?? null) ? trim($data['specialization'])   : null,
+                            'sex'            => $sex !== ''   ? $sex   : null,
+                            'date_of_birth'  => $dob !== ''   ? $dob   : null,
+                            'contact_number' => $contact !== '' ? $contact : null,
+                            'date_hired'     => $hired !== '' ? $hired : null,
+                            'department'     => $dept !== ''  ? $dept  : null,
+                            'specialization' => $spec !== ''  ? $spec  : null,
                             'is_active'      => strtolower(trim((string) ($data['is_active'] ?? 'yes'))) !== 'no',
                         ]);
                     });

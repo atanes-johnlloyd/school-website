@@ -12,6 +12,9 @@ use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Mail\TemplateMail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ApplicationController extends Controller
 {
@@ -112,6 +115,30 @@ class ApplicationController extends Controller
 
             return $applicant;
         });
+
+        // Send the applicant a confirmation email with their reference number.
+        // Wrapped in try/catch so a mail hiccup never fails the submission —
+        // the applicant already has their reference number on screen.
+        try {
+            Mail::to($applicant->email)->send(new TemplateMail(
+                templateKey: 'application-received',
+                placeholders: [
+                    'student_name'  => $applicant->full_name,
+                    'control_number'=> $applicant->reference_number,
+                    'strand'        => $applicant->strand?->name ?? '—',
+                    'school_year'   => $activeYear->label,
+                    'submitted_at'  => $applicant->submitted_at->format('F d, Y \a\t g:i A'),
+                    'tracking_link' => url('/admissions') . '#status-check',
+                ],
+                emailSubject: 'Application Received - ' . $applicant->reference_number,
+            ));
+        } catch (\Throwable $e) {
+            Log::warning('[MAIL] Applicant confirmation failed', [
+                'applicant_id' => $applicant->id,
+                'to'           => $applicant->email,
+                'error'        => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'message'          => 'Application submitted successfully. Keep your reference number.',
