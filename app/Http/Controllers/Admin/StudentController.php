@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\ClassRoom;
+use App\Models\ClassStudent;
 use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\Student;
+use App\Models\Term;
 use App\Models\User;
+use App\Services\ScheduleConflictService;
 use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +24,8 @@ use Inertia\Response;
 
 class StudentController extends Controller
 {
+    public function __construct(protected ScheduleConflictService $conflicts) {}
+
     public function index(Request $request): Response
     {
         return Inertia::render('Admin/Students/Index', [
@@ -30,6 +35,8 @@ class StudentController extends Controller
                 ->get(['id', 'name', 'grade_level', 'school_year_id']),
         ]);
     }
+
+    /* ═══════════════ LIST ═══════════════ */
 
     public function list(Request $request)
     {
@@ -106,6 +113,7 @@ class StudentController extends Controller
                 'guardian_name'    => $s->guardian_name,
                 'guardian_contact' => $s->guardian_contact,
                 'status'           => $s->status,
+                'is_irregular'     => $s->is_irregular,
                 'created_at'       => $s->created_at?->toIso8601String(),
             ];
         });
@@ -128,6 +136,8 @@ class StudentController extends Controller
             ],
         ]);
     }
+
+    /* ═══════════════ SHOW ═══════════════ */
 
     public function show(Student $student)
     {
@@ -165,6 +175,7 @@ class StudentController extends Controller
                 'school_year'      => $current?->schoolYear?->label,
                 'guardian_name'    => $student->guardian_name,
                 'guardian_contact' => $student->guardian_contact,
+                'is_irregular'     => $student->is_irregular,
                 'created_at'       => $student->created_at?->toIso8601String(),
                 'user' => [
                     'id'     => $student->user->id,
@@ -208,6 +219,192 @@ class StudentController extends Controller
         ]);
     }
 
+    /* ═══════════════ SCHEDULE — weekly view ═══════════════ */
+
+    public function schedule(Student $student)
+    {
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $enrollment = $student->enrollments()
+            ->where('status', 'enrolled')
+            ->with('section:id,name,grade_level')
+            ->latest('enrolled_at')
+            ->first();
+
+        $links = ClassStudent::where('student_id', $student->id)
+            ->where('status', 'active')
+            ->get()
+            ->keyBy('class_id');
+
+        $classes = ClassRoom::whereIn('id', $links->keys())
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->with([
+                'subject:id,code,name',
+                'teacher.user:id,name',
+                'section:id,name',
+                'schedules.room:id,code,name',
+            ])
+            ->get()
+            ->map(fn ($c) => [
+                'id'           => $c->id,
+                'subject'      => $c->subject?->name,
+                'subject_code' => $c->subject?->code,
+                'teacher'      => $c->teacher?->user?->name,
+                'section'      => $c->section?->name,
+                'section_id'   => $c->section_id,
+                'source'       => $links[$c->id]->source ?? 'section',
+                'schedules'    => $c->schedules->map(fn ($s) => [
+                    'day_of_week' => $s->day_of_week,
+                    'time_start'  => $s->time_start,
+                    'time_end'    => $s->time_end,
+                    'room'        => $s->room?->name,
+                ]),
+            ]);
+
+        return response()->json([
+            'term'         => $activeTerm ? ['id' => $activeTerm->id, 'name' => $activeTerm->name] : null,
+            'section'      => $enrollment?->section?->name,
+            'section_id'   => $enrollment?->section_id,
+            'is_irregular' => $student->is_irregular,
+            'classes'      => $classes,
+        ]);
+    }
+
+    /* ═══════════════ AVAILABLE CLASSES — for add modal ═══════════════ */
+
+    public function availableClasses(Student $student)
+    {
+        $activeTerm = Term::where('is_active', true)->first();
+        if (! $activeTerm) {
+            return response()->json(['classes' => []]);
+        }
+
+        $existingIds = ClassStudent::where('student_id', $student->id)
+            ->where('status', 'active')
+            ->pluck('class_id')
+            ->all();
+
+        $candidates = ClassRoom::where('term_id', $activeTerm->id)
+            ->whereNotIn('id', $existingIds)
+            ->with([
+                'subject:id,code,name',
+                'teacher.user:id,name',
+                'section:id,name',
+                'schedules',
+            ])
+            ->get();
+
+        $result = $candidates->map(function ($c) use ($student) {
+            $conflict = $this->conflicts->studentHasConflict($student, $c);
+            return [
+                'id'           => $c->id,
+                'subject'      => $c->subject?->name,
+                'subject_code' => $c->subject?->code,
+                'teacher'      => $c->teacher?->user?->name,
+                'section'      => $c->section?->name,
+                'section_id'   => $c->section_id,
+                'available'    => $conflict === null,
+                'conflict'     => $conflict,
+                'schedules'    => $c->schedules->map(fn ($s) => [
+                    'day_of_week' => $s->day_of_week,
+                    'time_start'  => $s->time_start,
+                    'time_end'    => $s->time_end,
+                ]),
+            ];
+        });
+
+        return response()->json(['classes' => $result]);
+    }
+
+    /* ═══════════════ ADD / REMOVE CLASS ═══════════════ */
+
+    public function addClass(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'class_id' => ['required', 'integer', 'exists:classes,id'],
+        ]);
+
+        $class = ClassRoom::with('schedules')->findOrFail($validated['class_id']);
+
+        $conflict = $this->conflicts->studentHasConflict($student, $class);
+        if ($conflict) {
+            return response()->json([
+                'message' => "Time conflict with {$conflict['subject']} ({$conflict['section']}) on {$conflict['day']} {$conflict['time_start']}–{$conflict['time_end']}.",
+                'conflict' => $conflict,
+            ], 422);
+        }
+
+        AuditContext::wrap('add_student_to_class', function () use ($student, $class) {
+            ClassStudent::updateOrCreate(
+                ['class_id' => $class->id, 'student_id' => $student->id],
+                [
+                    'status' => 'active',
+                    'source' => 'manual',
+                ]
+            );
+        }, ['student_id' => $student->id, 'class_id' => $class->id]);
+
+        return response()->json(['message' => 'Class added.']);
+    }
+
+    public function removeClass(Student $student, ClassRoom $class)
+    {
+        AuditContext::wrap('remove_student_from_class', function () use ($student, $class) {
+            $existing = ClassStudent::where('class_id', $class->id)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if (! $existing) return;
+
+            if ($existing->source === 'section') {
+                $existing->update(['source' => 'excluded', 'status' => 'inactive']);
+            } else {
+                $existing->delete();
+            }
+        }, ['student_id' => $student->id, 'class_id' => $class->id]);
+
+        return response()->json(['message' => 'Class removed.']);
+    }
+
+    /* ═══════════════ RESET TO SECTION ═══════════════ */
+
+    public function resetToSection(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'section_id' => ['required', 'integer', 'exists:sections,id'],
+        ]);
+
+        AuditContext::wrap('reset_student_schedule', function () use ($student, $validated) {
+            DB::transaction(function () use ($student, $validated) {
+                ClassStudent::where('student_id', $student->id)
+                    ->whereIn('source', ['manual', 'excluded'])
+                    ->delete();
+
+                ClassRoom::where('section_id', $validated['section_id'])->each(function ($class) use ($student) {
+                    $existing = ClassStudent::where('class_id', $class->id)
+                        ->where('student_id', $student->id)
+                        ->first();
+
+                    if ($existing) {
+                        $existing->update(['status' => 'active', 'source' => 'section']);
+                    } else {
+                        ClassStudent::create([
+                            'class_id'    => $class->id,
+                            'student_id'  => $student->id,
+                            'status'      => 'active',
+                            'source'      => 'section',
+                            'enrolled_at' => now(),
+                        ]);
+                    }
+                });
+            });
+        }, ['student_id' => $student->id, 'section_id' => $validated['section_id']]);
+
+        return response()->json(['message' => 'Reset to section schedule.']);
+    }
+
+    /* ═══════════════ STORE ═══════════════ */
+
     public function store(Request $request)
     {
         $validated = $request->validate(
@@ -233,7 +430,7 @@ class StudentController extends Controller
                     'sex'              => $validated['sex']              ?? null,
                     'date_of_birth'    => $validated['date_of_birth']    ?? null,
                     'contact_number'   => $validated['contact_number']   ?? null,
-                    'guardian_name'    => isset($validated['guardian_name'])    ? trim($validated['guardian_name'])    : null,
+                    'guardian_name'    => isset($validated['guardian_name']) ? trim($validated['guardian_name']) : null,
                     'guardian_contact' => $validated['guardian_contact'] ?? null,
                     'status'           => 'active',
                 ]);
@@ -248,8 +445,6 @@ class StudentController extends Controller
                         'enrolled_at'    => now(),
                     ]);
 
-                    // Sync into every classroom belonging to the section,
-                    // so the student appears in class rosters immediately.
                     $this->syncStudentToSection($student, $section->id);
                 }
             });
@@ -257,6 +452,8 @@ class StudentController extends Controller
 
         return redirect()->back()->with('success', 'Student registered successfully.');
     }
+
+    /* ═══════════════ UPDATE ═══════════════ */
 
     public function update(Request $request, Student $student)
     {
@@ -306,7 +503,6 @@ class StudentController extends Controller
                         ]);
                     }
 
-                    // Detach from old section's classrooms, attach to new section's.
                     $this->syncStudentToSection($student, $newSection->id, $previousSectionId);
                 }
             });
@@ -314,6 +510,8 @@ class StudentController extends Controller
 
         return redirect()->back()->with('success', 'Student profile updated successfully.');
     }
+
+    /* ═══════════════ DESTROY ═══════════════ */
 
     public function destroy(Student $student)
     {
@@ -338,6 +536,8 @@ class StudentController extends Controller
 
         return redirect()->back()->with('success', "Password reset to temporary key: {$temp}");
     }
+
+    /* ═══════════════ EXPORT ═══════════════ */
 
     public function export(Request $request)
     {
@@ -413,6 +613,8 @@ class StudentController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    /* ═══════════════ IMPORT ═══════════════ */
+
     public function import(Request $request)
     {
         $request->validate([
@@ -466,7 +668,7 @@ class StudentController extends Controller
                     $email = trim((string) $data['email']);
                     $lrn   = trim((string) $data['lrn']);
 
-                     $rowErrors = [];
+                    $rowErrors = [];
 
                     if (! preg_match('/^[\p{L}\s\'\-\.]+$/u', $name)) {
                         $rowErrors[] = "name may only contain letters, spaces, hyphens, apostrophes, and periods";
@@ -510,12 +712,10 @@ class StudentController extends Controller
                         $rowErrors[] = "sex must be 'male' or 'female'";
                     }
 
-                    // If any format errors accumulated, surface them all at once.
                     if (! empty($rowErrors)) {
                         throw new \RuntimeException('Format issues: ' . implode('; ', $rowErrors) . '.');
                     }
 
-                    // ─── Uniqueness ──────────────────────────────────────────────
                     if (User::where('email', $email)->exists()) {
                         throw new \RuntimeException("Email '{$email}' already exists.");
                     }
@@ -523,7 +723,6 @@ class StudentController extends Controller
                         throw new \RuntimeException("LRN '{$lrn}' already exists.");
                     }
 
-                    // ─── Persist ─────────────────────────────────────────────────
                     DB::transaction(function () use ($data, $name, $email, $lrn, $contact, $guardianName, $guardianContact, $dob, $sex, $sections) {
                         $user = User::create([
                             'name'                 => $name,
@@ -564,12 +763,15 @@ class StudentController extends Controller
                                     'enrolled_at'    => now(),
                                 ]);
 
-                                // Inline pivot sync — $this may not be reliably bound
-                                // inside this closure chain.
                                 ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
-                                    $class->students()->syncWithoutDetaching([
-                                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                                    ]);
+                                    ClassStudent::updateOrCreate(
+                                        ['class_id' => $class->id, 'student_id' => $student->id],
+                                        [
+                                            'status'      => 'active',
+                                            'source'      => 'section',
+                                            'enrolled_at' => now(),
+                                        ]
+                                    );
                                 });
                             }
                         }
@@ -592,90 +794,88 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Sync a student into every ClassRoom belonging to a section.
-     * Pass $previousSectionId to detach from the old section's classrooms first.
-     */
+    /* ═══════════════ HELPERS ═══════════════ */
+
     private function syncStudentToSection(Student $student, ?int $sectionId, ?int $previousSectionId = null): void
     {
         if ($previousSectionId && $previousSectionId !== $sectionId) {
-            ClassRoom::where('section_id', $previousSectionId)->each(function ($class) use ($student) {
-                $class->students()->detach($student->id);
-            });
+            $oldClassIds = ClassRoom::where('section_id', $previousSectionId)->pluck('id');
+            ClassStudent::where('student_id', $student->id)
+                ->whereIn('class_id', $oldClassIds)
+                ->where('source', 'section')
+                ->delete();
         }
 
         if ($sectionId) {
             ClassRoom::where('section_id', $sectionId)->each(function ($class) use ($student) {
-                $class->students()->syncWithoutDetaching([
-                    $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                ]);
+                ClassStudent::updateOrCreate(
+                    ['class_id' => $class->id, 'student_id' => $student->id],
+                    [
+                        'status'      => 'active',
+                        'source'      => 'section',
+                        'enrolled_at' => now(),
+                    ]
+                );
             });
         }
     }
 
-    /**
- * Shared validation rules for student create/update.
- * Pass a Student to skip unique checks against itself.
- */
-private function studentRules(?Student $student = null): array
-{
-    return [
-        'name' => [
-            'required', 'string', 'max:255',
-            'regex:/^[\p{L}\s\'\-\.]+$/u',
-        ],
-        'email' => [
-            'required', 'email', 'max:255',
-            $student
-                ? Rule::unique('users', 'email')->ignore($student->user_id)
-                : Rule::unique('users', 'email'),
-        ],
-        'password' => $student
-            ? ['nullable', Password::defaults()]
-            : ['required', Password::defaults()],
+    private function studentRules(?Student $student = null): array
+    {
+        return [
+            'name' => [
+                'required', 'string', 'max:255',
+                'regex:/^[\p{L}\s\'\-\.]+$/u',
+            ],
+            'email' => [
+                'required', 'email', 'max:255',
+                $student
+                    ? Rule::unique('users', 'email')->ignore($student->user_id)
+                    : Rule::unique('users', 'email'),
+            ],
+            'password' => $student
+                ? ['nullable', Password::defaults()]
+                : ['required', Password::defaults()],
 
-        'lrn' => [
-            'required', 'string',
-            'regex:/^\d{10,12}$/',                 // exactly 10–12 digits, nothing else
-            $student
-                ? Rule::unique('students', 'lrn')->ignore($student->id)
-                : Rule::unique('students', 'lrn'),
-        ],
+            'lrn' => [
+                'required', 'string',
+                'regex:/^\d{10,12}$/',
+                $student
+                    ? Rule::unique('students', 'lrn')->ignore($student->id)
+                    : Rule::unique('students', 'lrn'),
+            ],
 
-        'section_id' => ['nullable', 'integer', 'exists:sections,id'],
-        'sex'        => ['nullable', 'in:male,female'],
-        'date_of_birth' => ['nullable', 'date', 'before:today'],
+            'section_id' => ['nullable', 'integer', 'exists:sections,id'],
+            'sex'        => ['nullable', 'in:male,female'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
 
-        'contact_number' => [
-            'nullable', 'string',
-            'regex:/^\d{7,11}$/',                  // digits only, PH mobile or landline range
-        ],
+            'contact_number' => [
+                'nullable', 'string',
+                'regex:/^\d{7,11}$/',
+            ],
 
-        'guardian_name' => [
-            'nullable', 'string', 'max:255',
-            'regex:/^[\p{L}\s\'\-\.]+$/u',
-        ],
-        'guardian_contact' => [
-            'nullable', 'string',
-            'regex:/^\d{7,11}$/',
-        ],
+            'guardian_name' => [
+                'nullable', 'string', 'max:255',
+                'regex:/^[\p{L}\s\'\-\.]+$/u',
+            ],
+            'guardian_contact' => [
+                'nullable', 'string',
+                'regex:/^\d{7,11}$/',
+            ],
 
-        'status' => ['nullable', 'in:active,graduated,dropped_out,transferred_out'],
-    ];
-}
+            'status' => ['nullable', 'in:active,graduated,dropped_out,transferred_out'],
+        ];
+    }
 
-/**
- * Human-readable error messages for the shared rules.
- */
-private function studentMessages(): array
-{
-    return [
-        'name.regex'              => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
-        'guardian_name.regex'     => 'Guardian name may only contain letters, spaces, hyphens, apostrophes, and periods.',
-        'lrn.regex'               => 'LRN must be exactly 10–12 digits.',
-        'contact_number.regex'    => 'Contact number must contain only digits (7–11 digits).',
-        'guardian_contact.regex'  => 'Guardian contact must contain only digits (7–11 digits).',
-        'date_of_birth.before'    => 'Date of birth cannot be in the future.',
-    ];
-}
+    private function studentMessages(): array
+    {
+        return [
+            'name.regex'              => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+            'guardian_name.regex'     => 'Guardian name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+            'lrn.regex'               => 'LRN must be exactly 10–12 digits.',
+            'contact_number.regex'    => 'Contact number must contain only digits (7–11 digits).',
+            'guardian_contact.regex'  => 'Guardian contact must contain only digits (7–11 digits).',
+            'date_of_birth.before'    => 'Date of birth cannot be in the future.',
+        ];
+    }
 }

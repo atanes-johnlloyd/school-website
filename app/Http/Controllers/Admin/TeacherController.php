@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassRoom;
 use App\Models\Teacher;
+use App\Models\Term;
 use App\Models\User;
+use App\Models\ClassSchedule;
 use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,76 +31,83 @@ class TeacherController extends Controller
         ]);
     }
 
-    /**
-     * Shared validation rules for teacher create/update.
-     * Pass a Teacher to skip unique checks against itself.
-     */
+    /* ═══════════════ SCHEDULE ═══════════════ */
+
+    public function schedule(Teacher $teacher)
+    {
+        $activeTerm = Term::where('is_active', true)->first();
+
+        $classes = ClassRoom::where('teacher_id', $teacher->id)
+            ->when($activeTerm, fn ($q) => $q->where('term_id', $activeTerm->id))
+            ->with([
+                'subject:id,code,name',
+                'section:id,name,grade_level',
+                'schedules.room:id,code,name',
+            ])
+            ->get()
+            ->map(fn ($c) => [
+                'id'           => $c->id,
+                'subject'      => $c->subject?->name,
+                'subject_code' => $c->subject?->code,
+                'section'      => $c->section?->name,
+                'section_id'   => $c->section_id,
+                'schedules'    => $c->schedules->map(fn ($s) => [
+                    'day_of_week' => $s->day_of_week,
+                    'time_start'  => $s->time_start,
+                    'time_end'    => $s->time_end,
+                    'room'        => $s->room?->name,
+                ]),
+            ]);
+
+        return response()->json([
+            'term'    => $activeTerm ? ['id' => $activeTerm->id, 'name' => $activeTerm->name] : null,
+            'classes' => $classes,
+        ]);
+    }
+
+    /* ═══════════════ RULES / MESSAGES ═══════════════ */
+
     private function teacherRules(?Teacher $teacher = null): array
     {
         return [
-            'name' => [
-                'required', 'string', 'max:255',
-                'regex:/^[\p{L}\s\'\-\.]+$/u',
-            ],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s\'\-\.]+$/u'],
             'email' => [
                 'required', 'email:rfc,dns', 'max:255',
-                $teacher
-                    ? Rule::unique('users', 'email')->ignore($teacher->user_id)
-                    : Rule::unique('users', 'email'),
+                $teacher ? Rule::unique('users', 'email')->ignore($teacher->user_id) : Rule::unique('users', 'email'),
             ],
-            'password' => $teacher
-                ? ['nullable', Password::defaults()]
-                : ['required', Password::defaults()],
-
+            'password' => $teacher ? ['nullable', Password::defaults()] : ['required', Password::defaults()],
             'employee_no' => [
                 'required', 'string', 'min:3', 'max:30',
-                'regex:/^[A-Z0-9][A-Z0-9\-_]*$/i',   // alnum, dash, underscore; must start alnum
-                $teacher
-                    ? Rule::unique('teachers', 'employee_no')->ignore($teacher->id)
-                    : Rule::unique('teachers', 'employee_no'),
+                'regex:/^[A-Z0-9][A-Z0-9\-_]*$/i',
+                $teacher ? Rule::unique('teachers', 'employee_no')->ignore($teacher->id) : Rule::unique('teachers', 'employee_no'),
             ],
-
-            'sex'           => ['nullable', 'in:male,female'],
-            'date_of_birth' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
-            'date_hired'    => ['nullable', 'date', 'after:1950-01-01', 'before_or_equal:today'],
-
-            'contact_number' => [
-                'nullable', 'string',
-                'regex:/^\d{7,11}$/',
-            ],
-
-            'department' => [
-                'nullable', 'string', 'max:100',
-                'regex:/^[\p{L}\s\-&\.]+$/u',       // letters, spaces, hyphens, ampersands, periods
-            ],
-
-            'specialization' => [
-                'nullable', 'string', 'max:150',
-                'regex:/^[\p{L}\p{N}\s\-\.\,\/\&]+$/u',
-            ],
-
-            'is_active' => ['boolean'],
+            'sex'            => ['nullable', 'in:male,female'],
+            'date_of_birth'  => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'date_hired'     => ['nullable', 'date', 'after:1950-01-01', 'before_or_equal:today'],
+            'contact_number' => ['nullable', 'string', 'regex:/^\d{7,11}$/'],
+            'department'     => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}\s\-&\.]+$/u'],
+            'specialization' => ['nullable', 'string', 'max:150', 'regex:/^[\p{L}\p{N}\s\-\.\,\/\&]+$/u'],
+            'is_active'      => ['boolean'],
         ];
     }
 
-    /**
-     * Human-readable messages for the shared rules.
-     */
     private function teacherMessages(): array
     {
         return [
-            'name.regex'              => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
-            'employee_no.regex'       => 'Employee number may only contain letters, numbers, hyphens, and underscores.',
-            'employee_no.min'         => 'Employee number must be at least 3 characters.',
-            'contact_number.regex'    => 'Contact number must contain only digits (7–11 digits).',
-            'department.regex'        => 'Department may only contain letters, spaces, hyphens, ampersands, and periods.',
-            'specialization.regex'    => 'Specialization contains invalid characters.',
-            'date_of_birth.before'    => 'Date of birth cannot be in the future.',
-            'date_of_birth.after'     => 'Date of birth must be after 1900.',
+            'name.regex'                 => 'Name may only contain letters, spaces, hyphens, apostrophes, and periods.',
+            'employee_no.regex'          => 'Employee number may only contain letters, numbers, hyphens, and underscores.',
+            'employee_no.min'            => 'Employee number must be at least 3 characters.',
+            'contact_number.regex'       => 'Contact number must contain only digits (7–11 digits).',
+            'department.regex'           => 'Department may only contain letters, spaces, hyphens, ampersands, and periods.',
+            'specialization.regex'       => 'Specialization contains invalid characters.',
+            'date_of_birth.before'       => 'Date of birth cannot be in the future.',
+            'date_of_birth.after'        => 'Date of birth must be after 1900.',
             'date_hired.before_or_equal' => 'Date hired cannot be in the future.',
-            'date_hired.after'        => 'Date hired must be after 1950.',
+            'date_hired.after'           => 'Date hired must be after 1950.',
         ];
     }
+
+    /* ═══════════════ LIST ═══════════════ */
 
     public function list(Request $request)
     {
@@ -119,15 +129,10 @@ class TeacherController extends Controller
             'user.adminPosition:id,name',
         ]);
 
-        if (! empty($validated['status'])) {
-            $query->where('is_active', $validated['status'] === 'active');
-        }
-        if (! empty($validated['department'])) {
-            $query->where('department', $validated['department']);
-        }
-        if (! empty($validated['sex'])) {
-            $query->where('sex', $validated['sex']);
-        }
+        if (! empty($validated['status']))     $query->where('is_active', $validated['status'] === 'active');
+        if (! empty($validated['department'])) $query->where('department', $validated['department']);
+        if (! empty($validated['sex']))        $query->where('sex', $validated['sex']);
+
         if (! empty($validated['search'])) {
             $s = $validated['search'];
             $query->where(function ($q) use ($s) {
@@ -156,18 +161,18 @@ class TeacherController extends Controller
         $teachers = $query->paginate($validated['per_page'] ?? 10);
 
         $teachers->getCollection()->transform(fn (Teacher $t) => [
-            'id'               => $t->id,
-            'employee_no'      => $t->employee_no,
-            'name'             => $t->user?->name,
-            'email'            => $t->user?->email,
-            'sex'              => $t->sex,
-            'date_of_birth'    => $t->date_of_birth?->toDateString(),
-            'contact_number'   => $t->contact_number,
-            'date_hired'       => $t->date_hired?->toDateString(),
-            'department'       => $t->department,
-            'specialization'   => $t->specialization,
-            'is_active'        => (bool) $t->is_active,
-            'admin_position'   => $t->user?->adminPosition?->name,
+            'id'             => $t->id,
+            'employee_no'    => $t->employee_no,
+            'name'           => $t->user?->name,
+            'email'          => $t->user?->email,
+            'sex'            => $t->sex,
+            'date_of_birth'  => $t->date_of_birth?->toDateString(),
+            'contact_number' => $t->contact_number,
+            'date_hired'     => $t->date_hired?->toDateString(),
+            'department'     => $t->department,
+            'specialization' => $t->specialization,
+            'is_active'      => (bool) $t->is_active,
+            'admin_position' => $t->user?->adminPosition?->name,
         ]);
 
         return response()->json([
@@ -196,16 +201,16 @@ class TeacherController extends Controller
 
         return response()->json([
             'teacher' => [
-                'id'              => $teacher->id,
-                'employee_no'     => $teacher->employee_no,
-                'sex'             => $teacher->sex,
-                'date_of_birth'   => $teacher->date_of_birth?->toDateString(),
-                'contact_number'  => $teacher->contact_number,
-                'date_hired'      => $teacher->date_hired?->toDateString(),
-                'department'      => $teacher->department,
-                'specialization'  => $teacher->specialization,
-                'is_active'       => (bool) $teacher->is_active,
-                'created_at'      => $teacher->created_at?->toIso8601String(),
+                'id'             => $teacher->id,
+                'employee_no'    => $teacher->employee_no,
+                'sex'            => $teacher->sex,
+                'date_of_birth'  => $teacher->date_of_birth?->toDateString(),
+                'contact_number' => $teacher->contact_number,
+                'date_hired'     => $teacher->date_hired?->toDateString(),
+                'department'     => $teacher->department,
+                'specialization' => $teacher->specialization,
+                'is_active'      => (bool) $teacher->is_active,
+                'created_at'     => $teacher->created_at?->toIso8601String(),
                 'user' => [
                     'id'             => $teacher->user->id,
                     'name'           => $teacher->user->name,
@@ -428,7 +433,6 @@ class TeacherController extends Controller
                     $email = trim((string) $data['email']);
                     $empNo = trim((string) $data['employee_no']);
 
-                    // ── Format validation (mirrors store/update) ────────────────
                     $rowErrors = [];
 
                     if (! preg_match('/^[\p{L}\s\'\-\.]+$/u', $name)) {
@@ -489,7 +493,6 @@ class TeacherController extends Controller
                         throw new \RuntimeException('Format issues: ' . implode('; ', $rowErrors) . '.');
                     }
 
-                    // ── Uniqueness ───────────────────────────────────────────────
                     if (User::where('email', $email)->exists()) {
                         throw new \RuntimeException("Email '{$email}' already exists.");
                     }
@@ -497,7 +500,6 @@ class TeacherController extends Controller
                         throw new \RuntimeException("Employee number '{$empNo}' already exists.");
                     }
 
-                    // ── Persist ──────────────────────────────────────────────────
                     DB::transaction(function () use ($data, $name, $email, $empNo, $contact, $dept, $spec, $dob, $hired, $sex) {
                         $user = User::create([
                             'name'                 => $name,
@@ -537,5 +539,92 @@ class TeacherController extends Controller
             'created' => $created,
             'errors'  => $errors,
         ]);
+    }
+
+        /* ═══════════════ AVAILABLE CLASSES — for assignment picker ═══════════════ */
+
+    public function availableClasses(Teacher $teacher)
+    {
+        $activeTerm = Term::where('is_active', true)->first();
+        if (! $activeTerm) {
+            return response()->json(['classes' => []]);
+        }
+
+        // Classes already taught by this teacher — hide entirely.
+        $mineIds = ClassRoom::where('teacher_id', $teacher->id)
+            ->where('term_id', $activeTerm->id)
+            ->pluck('id')
+            ->all();
+
+        // This teacher's busy blocks in the active term.
+        $busyBlocks = ClassSchedule::whereHas('classroom', fn ($q) => $q
+                ->where('teacher_id', $teacher->id)
+                ->where('term_id', $activeTerm->id))
+            ->get()
+            ->map(fn ($s) => [
+                'day'   => $s->day_of_week,
+                'start' => $s->time_start,
+                'end'   => $s->time_end,
+            ])
+            ->all();
+
+        $candidates = ClassRoom::where('term_id', $activeTerm->id)
+            ->whereNotIn('id', $mineIds)
+            ->with([
+                'subject:id,code,name',
+                'teacher.user:id,name',
+                'section:id,name,adviser_id',
+                'schedules',
+            ])
+            ->get()
+            ->map(function ($c) use ($busyBlocks) {
+                $isTakenByOther = $c->teacher_id !== null;
+
+                // Locked when the current teacher is the adviser of the class's section.
+                $lockedAdvisory = $isTakenByOther
+                    && (int) $c->section?->adviser_id === (int) $c->teacher_id;
+
+                $conflict = null;
+                foreach ($c->schedules as $s) {
+                    foreach ($busyBlocks as $b) {
+                        if ($s->day_of_week === $b['day']
+                            && $s->time_start < $b['end']
+                            && $s->time_end > $b['start']) {
+                            $conflict = [
+                                'day'        => $s->day_of_week,
+                                'time_start' => $s->time_start,
+                                'time_end'   => $s->time_end,
+                            ];
+                            break 2;
+                        }
+                    }
+                }
+
+                $status = match (true) {
+                    $lockedAdvisory => 'locked_advisory',
+                    $isTakenByOther => 'taken',
+                    default         => 'unassigned',
+                };
+
+                return [
+                    'id'                 => $c->id,
+                    'subject'            => $c->subject?->name,
+                    'subject_code'       => $c->subject?->code,
+                    'section'            => $c->section?->name,
+                    'section_id'         => $c->section_id,
+                    'current_teacher'    => $c->teacher?->user?->name,
+                    'current_teacher_id' => $c->teacher_id,
+                    'status'             => $status,
+                    'available'          => $conflict === null && ! $lockedAdvisory,
+                    'conflict'           => $conflict,
+                    'schedules'          => $c->schedules->map(fn ($s) => [
+                        'day_of_week' => $s->day_of_week,
+                        'time_start'  => $s->time_start,
+                        'time_end'    => $s->time_end,
+                    ]),
+                ];
+            });
+
+        return response()->json(['classes' => $candidates]);
     }
 }

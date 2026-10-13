@@ -415,7 +415,6 @@ const confirmRemove = async (student) => {
 
 const closeModal = () => {
   closeEnrollModal()
-  reset()
   emit('close')
 }
 </script>

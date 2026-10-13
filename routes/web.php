@@ -140,6 +140,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
             Route::apiResource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
             Route::put('teachers/{teacher}/restore', [\App\Http\Controllers\Admin\TeacherController::class, 'restore'])->name('teachers.restore');
             Route::post('teachers/{teacher}/reset-password', [\App\Http\Controllers\Admin\TeacherController::class, 'resetPassword'])->name('teachers.reset-password');
+            Route::get('teachers/{teacher}/schedule', [\App\Http\Controllers\Admin\TeacherController::class, 'schedule'])
+                ->name('teachers.schedule');
+            Route::get('teachers/{teacher}/available-classes', [\App\Http\Controllers\Admin\TeacherController::class, 'availableClasses'])
+                ->name('teachers.available-classes');
         });
 
         // ─── Students ───
@@ -149,6 +153,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
             Route::post('/students/import', [\App\Http\Controllers\Admin\StudentController::class, 'import'])->name('students.import');
             Route::apiResource('students', \App\Http\Controllers\Admin\StudentController::class);
             Route::post('students/{student}/reset-password', [\App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
+            Route::get('students/{student}/schedule', [\App\Http\Controllers\Admin\StudentController::class, 'schedule'])
+                ->name('students.schedule');
+            Route::get('students/{student}/available-classes', [\App\Http\Controllers\Admin\StudentController::class, 'availableClasses'])
+                ->name('students.available-classes');
+            Route::post('students/{student}/classes', [\App\Http\Controllers\Admin\StudentController::class, 'addClass'])
+                ->name('students.classes.add');
+            Route::delete('students/{student}/classes/{class}', [\App\Http\Controllers\Admin\StudentController::class, 'removeClass'])
+                ->name('students.classes.remove');
         });
 
         // ─── Sections ───

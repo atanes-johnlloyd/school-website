@@ -385,14 +385,11 @@ class ApplicantController extends Controller
 
                 $targetSection->load('classrooms');
 
-                $targetSection->students()->syncWithoutDetaching([
-                    $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                ]);
-
                 foreach ($targetSection->classrooms as $classroom) {
-                    $classroom->students()->syncWithoutDetaching([
-                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                    ]);
+                    ClassStudent::updateOrCreate(
+                        ['class_id' => $classroom->id, 'student_id' => $student->id],
+                        ['status' => 'active', 'source' => 'section', 'enrolled_at' => now()]
+                    );
                 }
 
                 $applicant->update([

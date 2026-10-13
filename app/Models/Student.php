@@ -36,4 +36,28 @@ class Student extends Model
     {
         return $this->hasMany(QuizRetakeGrant::class);
     }
+
+    public function getIsIrregularAttribute(): bool
+    {
+        $enrollment = $this->enrollments()
+            ->where('status', 'enrolled')
+            ->latest('enrolled_at')
+            ->first();
+
+        if (! $enrollment?->section_id) return false;
+
+        $activeTerm = \App\Models\Term::where('is_active', true)->first();
+        if (! $activeTerm) return false;
+
+        $sectionClassIds = ClassRoom::where('section_id', $enrollment->section_id)
+            ->where('term_id', $activeTerm->id)
+            ->pluck('id')->sort()->values()->all();
+
+        $studentClassIds = $this->classroom()
+            ->wherePivot('status', 'active')
+            ->where('classes.term_id', $activeTerm->id)
+            ->pluck('classes.id')->sort()->values()->all();
+
+        return $sectionClassIds !== $studentClassIds;
+    }
 }

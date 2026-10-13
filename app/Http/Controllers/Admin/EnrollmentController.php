@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Section;
+use App\Models\ClassStudent;
 use App\Support\AuditContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -148,9 +149,10 @@ class EnrollmentController extends Controller
                 ]);
 
                 ClassRoom::where('section_id', $enrollment->section_id)->each(function ($class) use ($enrollment) {
-                    $class->students()->syncWithoutDetaching([
-                        $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
-                    ]);
+                    ClassStudent::updateOrCreate(
+                        ['class_id' => $class->id, 'student_id' => $enrollment->student_id],
+                        ['status' => 'active', 'source' => 'section', 'enrolled_at' => now()]
+                    );
                 });
             });
         });
@@ -219,9 +221,10 @@ class EnrollmentController extends Controller
                 ]);
 
                 foreach ($newSection->classrooms as $class) {
-                    $class->students()->syncWithoutDetaching([
-                        $enrollment->student_id => ['status' => 'active', 'enrolled_at' => now()],
-                    ]);
+                    ClassStudent::updateOrCreate(
+                        ['class_id' => $class->id, 'student_id' => $enrollment->student_id],
+                        ['status' => 'active', 'source' => 'section', 'enrolled_at' => now()]
+                    );
                 }
             });
         }, ['section_id' => $newSection->id]);

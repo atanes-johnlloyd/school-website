@@ -42,7 +42,7 @@ class ClassRoom extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'class_students', 'class_id', 'student_id')
-                    ->withPivot('status', 'enrolled_at')
+                    ->withPivot('status', 'enrolled_at', 'source')
                     ->withTimestamps();
     }
 

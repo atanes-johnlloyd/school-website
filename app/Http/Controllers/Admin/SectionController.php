@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\Term;
+use App\Models\ClassStudent;
 use App\Services\ScheduleGenerator;
 use App\Support\AuditContext;
 use Illuminate\Http\Request;
@@ -435,6 +436,17 @@ class SectionController extends Controller
     {
         try {
             DB::transaction(function () use ($section) {
+                $oldClassIds = ClassRoom::withTrashed()
+                    ->where('section_id', $section->id)
+                    ->pluck('id');
+
+                $sectionSourceStudentIds = ClassStudent::whereIn('class_id', $oldClassIds)
+                    ->where('source', 'section')
+                    ->pluck('student_id')
+                    ->unique()
+                    ->values()
+                    ->all();
+
                 $this->wipeSectionClasses($section);
 
                 $terms = Term::where('school_year_id', $section->school_year_id)
@@ -442,6 +454,16 @@ class SectionController extends Controller
 
                 foreach ($terms as $term) {
                     $this->generator->generateForSectionTerm($section, $term);
+                }
+
+                $newClassIds = ClassRoom::where('section_id', $section->id)->pluck('id');
+                foreach ($newClassIds as $classId) {
+                    foreach ($sectionSourceStudentIds as $studentId) {
+                        ClassStudent::updateOrCreate(
+                            ['class_id' => $classId, 'student_id' => $studentId],
+                            ['status' => 'active', 'source' => 'section', 'enrolled_at' => now()]
+                        );
+                    }
                 }
             });
 
@@ -623,6 +645,22 @@ class SectionController extends Controller
             'room_id'    => ['nullable', 'integer', 'exists:rooms,id'],
         ]);
 
+        // Prevent taking a class away from a teacher who advises that class's section.
+        if (array_key_exists('teacher_id', $validated)) {
+            $currentTeacherId = $classroom->teacher_id;
+            $newTeacherId     = $validated['teacher_id'];
+
+            if ($currentTeacherId !== null && (int) $currentTeacherId !== (int) $newTeacherId) {
+                $classroom->load('section:id,adviser_id');
+                if ((int) $classroom->section?->adviser_id === (int) $currentTeacherId) {
+                    return response()->json([
+                        'message' => 'Cannot reassign: the current teacher is the adviser of this class\'s section.',
+                        'errors'  => ['teacher_id' => ['Current teacher is the section adviser.']],
+                    ], 422);
+                }
+            }
+        }
+
         $classroom->load(['schedules', 'subject', 'section']);
 
         $blocks = $classroom->schedules
@@ -795,9 +833,10 @@ class SectionController extends Controller
                 ]);
 
                 ClassRoom::where('section_id', $section->id)->each(function ($class) use ($student) {
-                    $class->students()->syncWithoutDetaching([
-                        $student->id => ['status' => 'active', 'enrolled_at' => now()],
-                    ]);
+                    ClassStudent::updateOrCreate(
+                        ['class_id' => $class->id, 'student_id' => $student->id],
+                        ['status' => 'active', 'source' => 'section', 'enrolled_at' => now()]
+                    );
                 });
             });
         }, ['student_id' => $student->id]);
