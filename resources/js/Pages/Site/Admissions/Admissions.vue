@@ -1184,9 +1184,12 @@
 
               <!-- Progress line -->
               <div class="relative">
-                <div class="absolute left-[10%] right-[10%] top-4 h-1 bg-slate-200 rounded-full"></div>
-                <div class="absolute left-[10%] top-4 h-1 bg-[#005506] rounded-full transition-all duration-700"
-                  :style="{ width: progressBarWidth }"></div>
+                <!-- Track container -->
+                <div class="absolute left-[10%] right-[10%] top-4 h-1 bg-slate-200 rounded-full overflow-hidden">
+                  <!-- Progress bar nested inside track -->
+                  <div class="h-full bg-[#005506] rounded-full transition-all duration-700"
+                    :style="{ width: progressBarWidth }"></div>
+                </div>
 
                 <div class="relative flex justify-between">
                   <div v-for="(stage, i) in statusStages" :key="stage.id"
