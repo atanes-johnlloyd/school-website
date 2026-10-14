@@ -620,7 +620,7 @@ async function submit() {
     if (isEdit.value) {
       await axios.put(route('teacher.contributions.update', props.contribution.id), form.value)
       flash.success('Contribution updated.')
-      router.visit(route('teacher.contributions.show', props.contribution.id))
+      router.visit(route('teacher.contributions.show', props.contribution.id), { replace: true })
     } else {
       const payload = {
         ...form.value,
@@ -634,7 +634,7 @@ async function submit() {
           ? `${count} contributions created.`
           : 'Contribution created.'
       )
-      router.visit(data.redirect || route('teacher.contributions.index'))
+      router.visit(data.redirect || route('teacher.contributions.index'), { replace: true })
     }
   } catch (e) {
     const status = e.response?.status

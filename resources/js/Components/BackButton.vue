@@ -1,5 +1,5 @@
 <template>
-  <button type="button" @click="goBack" :class="class">
+  <button type="button" @click="goBack">
     <Icon icon="arrow-left" :size="iconSize" />
     <slot>Back</slot>
   </button>
@@ -15,15 +15,17 @@ const props = defineProps({
 })
 
 function goBack() {
-  // Prefer real browser back when there's history
-  if (window.history.length > 1) {
-    window.history.back()
-    return
-  }
-  // Fallback: land somewhere sensible if this was a fresh tab / bookmark
+  // Always navigate to the semantic parent route.
+  // We deliberately avoid history.back() here:
+  //   1. After a create/update redirect, history.back() returns to the form.
+  //   2. On a fresh tab / bookmark, there's nothing to go back to.
+  //   3. When landing from an email / external link, the previous page is
+  //      not part of our app.
+  // A named route gives deterministic, predictable behaviour in all cases.
   try {
     router.visit(route(props.fallback))
   } catch (e) {
+    // Route name not registered — last-resort fallback.
     router.visit('/')
   }
 }

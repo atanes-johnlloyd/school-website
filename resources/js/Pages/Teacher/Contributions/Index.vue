@@ -92,8 +92,8 @@
             <!-- Class + Status badges -->
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="bg-emerald-100/80 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] text-[10px] font-extrabold px-2.5 py-1 rounded-md border border-emerald-200/60 dark:border-emerald-900/40 inline-flex items-center gap-1 truncate max-w-[70%]">
-                <Icon icon="academic-cap" size="xs" />
-                {{ c.classroom.subject || 'Class' }}
+                <Icon :icon="c.scope === 'section' ? 'users' : 'academic-cap'" size="xs" />
+                {{ scopeLabel(c) }}
               </span>
               <span :class="c.is_published
                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-[#005506] dark:text-[#86EFAC] border-emerald-200 dark:border-emerald-900/40'
@@ -109,7 +109,7 @@
                 {{ c.title }}
               </h4>
               <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
-                {{ c.classroom.section }} • {{ c.purpose || 'Class activity' }}
+                {{ scopeSubline(c) }} • {{ c.purpose || 'Class activity' }}
               </p>
             </div>
 
@@ -247,6 +247,29 @@ function formatShortDate(v) {
 
 function isPast(v) {
   return v && new Date(v) < new Date()
+}
+
+/**
+ * Human label for a contribution's target scope.
+ * Section-scoped contributions have classroom = null and section = {...}.
+ * Class-scoped contributions have classroom = {...} and section = null.
+ * Falls back to "Class" if neither is populated (legacy rows).
+ */
+function scopeLabel(c) {
+  if (c.classroom?.subject) return c.classroom.subject
+  if (c.section?.name)      return `Section — ${c.section.name}`
+  return 'Class'
+}
+
+function scopeSubline(c) {
+  if (c.classroom?.section) return c.classroom.section
+  if (c.section?.name) {
+    return [
+      c.section.strand_code,
+      c.section.grade_level ? `Grade ${c.section.grade_level}` : null,
+    ].filter(Boolean).join(' • ') || c.section.name
+  }
+  return '—'
 }
 
 const vObserve = {
