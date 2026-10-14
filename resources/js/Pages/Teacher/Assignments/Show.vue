@@ -342,7 +342,22 @@ async function destroy() {
   if (!confirmed) return
 
   deleting.value = true
+
+  // Use the REFERRER (where the user came from), not the current URL.
+  // The current URL points at the assignment we're about to delete.
+  let redirectTo = null
+  try {
+    if (document.referrer) {
+      const u = new URL(document.referrer)
+      if (u.origin === window.location.origin) {
+        redirectTo = u.pathname + u.search
+      }
+    }
+  } catch (e) { /* malformed referrer — ignore */ }
+
   router.delete(route('teacher.assignments.destroy', props.assignment.id), {
+    data: redirectTo ? { redirect_to: redirectTo } : {},
+    preserveScroll: true,
     onSuccess: () => flash.success('Assignment deleted.'),
     onError: (err) => flash.error(err?.message || 'Failed to delete assignment.'),
     onFinish: () => { deleting.value = false },

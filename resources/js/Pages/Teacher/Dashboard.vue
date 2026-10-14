@@ -139,10 +139,14 @@
           </div>
 
           <div class="pt-3 sm:pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[11px] sm:text-xs">
-            <Link :href="route('teacher.tasks.index')" class="text-orange-700 dark:text-orange-400 font-extrabold hover:underline">
-              Open grading queue
+            <Link :href="route('teacher.tasks.index')"
+              class="group w-full pt-3 sm:pt-4 border-t border-slate-100 dark:border-[#3F4F43] flex items-center justify-between text-[11px] sm:text-xs">
+              <span class="text-orange-700 dark:text-orange-400 font-extrabold group-hover:underline">
+                Open grading queue
+              </span>
+              <Icon icon="arrow-right" size="xs"
+                class="text-slate-400 group-hover:text-orange-700 dark:group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
             </Link>
-            <Icon icon="arrow-right" size="xs" class="text-slate-400" />
           </div>
         </div>
 

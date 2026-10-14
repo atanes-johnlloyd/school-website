@@ -83,6 +83,14 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // ─────────────────────────────────────────────────────────────
+// Global Search (role-aware)
+// ─────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'password.changed'])->group(function () {
+    Route::get('/search',         [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
+    Route::get('/search/suggest', [\App\Http\Controllers\SearchController::class, 'suggest'])->name('search.suggest');
+});
+
+// ─────────────────────────────────────────────────────────────
 // Admin
 // ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified', 'password.changed', 'role:admin'])
@@ -602,5 +610,13 @@ Route::middleware(['auth', 'password.changed'])
             'reportCard',
         ])->name('students.report-card');
     });
+
+Route::middleware(['auth', 'password.changed'])
+    ->get('/search', [\App\Http\Controllers\SearchController::class, 'index'])
+    ->name('search');
+
+Route::middleware(['auth', 'password.changed'])
+    ->get('/search/suggest', [\App\Http\Controllers\SearchController::class, 'suggest'])
+    ->name('search.suggest');
 
 require __DIR__ . '/auth.php';

@@ -55,6 +55,8 @@ class ClassroomActivitySeeder extends Seeder
         $this->seedConversations($admin, $teacher, $student);
         $this->seedAuditLogs($admin);
 
+        $this->seedPlaceholderFiles();
+
         $this->command->info('✔ Classroom activity seeded.');
         $this->command->info('   class_students:        ' . ClassStudent::count());
         $this->command->info('   attendance_records:    ' . AttendanceRecord::count());
@@ -749,5 +751,55 @@ class ClassroomActivitySeeder extends Seeder
             2 => 'A common misconception among first-time learners.',
             default => 'A partially correct statement that misses a key condition.',
         };
+    }
+
+    /**
+     * Write a tiny placeholder PDF for every seeded submission / lesson
+     * attachment so Storage::exists() returns true and downloads work.
+     */
+    protected function seedPlaceholderFiles(): void
+    {
+        // Minimal valid PDF bytes — a blank page. Enough for a browser
+        // to open it or a download to succeed.
+        $pdf = "%PDF-1.4\n"
+            . "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+            . "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+            . "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
+            . "xref\n0 4\n0000000000 65535 f \n"
+            . "0000000009 00000 n \n"
+            . "0000000052 00000 n \n"
+            . "0000000101 00000 n \n"
+            . "trailer<</Size 4/Root 1 0 R>>\nstartxref\n160\n%%EOF";
+
+        // Submissions used by the assignment + quiz loops
+        $assignments = Assignment::all();
+        foreach ($assignments as $a) {
+            $students = ClassStudent::where('class_id', $a->class_id)->pluck('student_id');
+            foreach ($students as $sid) {
+                $path = "submissions/a{$a->id}/s{$sid}.pdf";
+                \Storage::disk('local')->put($path, $pdf);
+            }
+        }
+
+        // Lightweight assignments for other classes
+        $otherAssignments = Assignment::whereNotIn(
+            'class_id',
+            ClassStudent::select('class_id')->distinct()->pluck('class_id')
+        )->get();
+        foreach ($otherAssignments as $a) {
+            $students = ClassStudent::where('class_id', $a->class_id)->pluck('student_id')->take(4);
+            foreach ($students as $sid) {
+                $path = "submissions/a{$a->id}/s{$sid}.pdf";
+                \Storage::disk('local')->put($path, $pdf);
+            }
+        }
+
+        // Lesson attachments
+        foreach (Lesson::all() as $lesson) {
+            foreach (['pdf', 'pptx'] as $ext) {
+                $path = "lessons/{$lesson->class_id}/l{$lesson->id}-{$ext}." . $ext;
+                \Storage::disk('local')->put($path, $pdf);
+            }
+        }
     }
 }

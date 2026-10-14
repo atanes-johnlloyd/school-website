@@ -179,16 +179,37 @@ class AssignmentController extends Controller
             return back()->with('error', 'Cannot delete: some submissions have already been graded.');
         }
 
-        $classroomId = $assignment->class_id;
         $assignment->delete();
 
-        if ($request->wantsJson()) {
-            return response()->json(['message' => 'Assignment deleted.']);
+        // Where to send them back to.
+        $fallback = route('teacher.tasks.index');
+        $target   = $fallback;
+
+        if ($request->filled('redirect_to')) {
+            $candidate = (string) $request->input('redirect_to');
+
+            // Only trust internal paths. Reject absolute URLs, protocol-relative
+            // URLs, and anything that isn't a path on this app.
+            if (
+                str_starts_with($candidate, '/') &&
+                ! str_starts_with($candidate, '//') &&
+                ! preg_match('#^/[a-z]+:#i', $candidate)
+            ) {
+                // Strip any query string the user had — we don't want to carry
+                // filters back into the destination after a delete.
+                $path = parse_url($candidate, PHP_URL_PATH) ?: $candidate;
+                $target = url($path);
+            }
         }
 
-        return redirect()
-            ->route('teacher.classes.assignments.index', $classroomId)
-            ->with('success', 'Assignment deleted.');
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => 'Assignment deleted.',
+                'redirect' => $target,
+            ]);
+        }
+
+        return redirect()->to($target)->with('success', 'Assignment deleted.');
     }
 
     /* ═══════════════════════════════════════════════════════════ */

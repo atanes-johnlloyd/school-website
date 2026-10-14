@@ -185,11 +185,14 @@
                   </thead>
                   <tbody class="divide-y divide-slate-100 dark:divide-[#3F4F43] text-xs font-medium text-slate-700 dark:text-slate-200">
                     <tr v-for="(s, idx) in pagedStudents" :key="s.id"
+                      :data-student-id="s.id"
                       :class="[
                         'transition-colors',
-                        s.status === 'dropped'
-                          ? 'bg-rose-50/30 dark:bg-rose-950/10 opacity-75 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'
-                          : 'hover:bg-slate-50/80 dark:hover:bg-[#232D26]/40'
+                        highlightStudentId === s.id
+                          ? 'bg-amber-100/80 dark:bg-amber-950/40 ring-2 ring-amber-400 ring-inset'
+                          : s.status === 'dropped'
+                            ? 'bg-rose-50/30 dark:bg-rose-950/10 opacity-75 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'
+                            : 'hover:bg-slate-50/80 dark:hover:bg-[#232D26]/40'
                       ]">
                       <td class="py-3.5 px-3 sm:px-4 text-center font-bold text-slate-400">
                         {{ String((page - 1) * perPage + idx + 1).padStart(2, '0') }}
@@ -808,6 +811,7 @@ import Icon from '@/Components/Icon.vue'
 import heroImage from '../../../../assets/img/desktop-home-banner.png'
 import BackButton from '@/Components/BackButton.vue'
 import { useFlash } from '@/Composables/useFlash'
+import { nextTick } from 'vue'
 
 /* ═════════════════════════════════════════════════════════ */
 /* PROPS                                                     */
@@ -841,6 +845,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
 /* TABS STATE                                                */
 /* ═════════════════════════════════════════════════════════ */
 const activeTab = ref('students')
+const highlightStudentId = ref(null)
 
 const tabData = reactive({
   students:    { students: props.students },
@@ -914,16 +919,48 @@ function selectTab(id) {
   }
 }
 
-onMounted(() => {
-  try {
-    const params = new URLSearchParams(window.location.search)
-    const tab = params.get('tab')
-    if (tab && tabs.value.some(t => t.id === tab) && tab !== activeTab.value) {
-      activeTab.value = tab
-      loadTab(tab)
-    }
-  } catch (e) {
-    // Malformed URL — stay on Students
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search)
+
+  // 1. Honor ?tab= first — it determines what's rendered
+  const tab = params.get('tab')
+  if (tab && tabs.value.some(t => t.id === tab) && tab !== activeTab.value) {
+    activeTab.value = tab
+    loadTab(tab)
+  }
+
+  // 2. Then handle ?highlight= (only meaningful on Students tab)
+  const h = params.get('highlight')
+  if (! h) return
+
+  // If a highlight is present but the tab isn't students, force it —
+  // the whole point of the highlight is to land on the roster.
+  if (activeTab.value !== 'students') {
+    activeTab.value = 'students'
+  }
+
+  // Clear any lingering filters so the student isn't hidden
+  rosterSearch.value = ''
+  statusFilter.value = 'all'
+  highlightStudentId.value = Number(h)
+
+  // Find the student's index in the FULL filtered list, jump to their page
+  const idx = filteredStudents.value.findIndex(s => s.id === highlightStudentId.value)
+  if (idx >= 0) {
+    page.value = Math.floor(idx / perPage) + 1
+  }
+
+  // Wait for the table to re-render with the correct page
+  await nextTick()
+  await nextTick()   // second tick — pagedStudents recomputes between the two
+
+  const row = document.querySelector(`[data-student-id="${highlightStudentId.value}"]`)
+  if (row) {
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setTimeout(() => { highlightStudentId.value = null }, 4000)
+  } else {
+    // Student not found in this class roster — clear the highlight silently
+    highlightStudentId.value = null
   }
 })
 

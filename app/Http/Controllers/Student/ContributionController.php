@@ -86,10 +86,61 @@ class ContributionController extends Controller
             'contribution.classroom.section:id,name',
             'guardian:id,full_name,email,contact_number,relationship',
             'authorizations' => fn ($q) => $q->orderByDesc('id'),
-            'payments' => fn ($q) => $q->orderByDesc('id'),
+            'payments'       => fn ($q) => $q->orderByDesc('id'),
         ]);
 
-        return response()->json(['assignment' => $assignment]);
+        $c = $assignment->contribution;
+
+        $payload = [
+            'assignment' => [
+                'id'              => $assignment->id,
+                'title'           => $c->title,
+                'purpose'         => $c->purpose,
+                'description'     => $c->description,
+                'amount_owed'     => (float) $assignment->amount_owed,
+                'amount_type'     => $c->amount_type,
+                'min_amount'      => $c->min_amount ? (float) $c->min_amount : null,
+                'status'          => $assignment->status,
+                'is_required'     => (bool) $c->is_required,
+                'deadline_at'     => $c->deadline_at?->toIso8601String(),
+                'requires_consent'=> (bool) $c->requires_guardian_consent,
+                'created_by'      => $c->creator?->name,
+                'subject'         => $c->classroom?->subject?->name,
+                'section'         => $c->classroom?->section?->name,
+                'guardian'        => $assignment->guardian ? [
+                    'name'         => $assignment->guardian->full_name,
+                    'email'        => $assignment->guardian->email,
+                    'contact'      => $assignment->guardian->contact_number,
+                    'relationship' => $assignment->guardian->relationship,
+                ] : null,
+                'authorized_at'   => $assignment->authorized_at?->toIso8601String(),
+                'paid_at'         => $assignment->paid_at?->toIso8601String(),
+                'decline_reason'  => $assignment->decline_reason,
+                'can_request_consent' => in_array($assignment->status, ['pending', 'declined'], true)
+                    && $c->requires_guardian_consent,
+                'can_pay' => $assignment->status === 'authorized'
+                    || ($assignment->status === 'pending' && ! $c->requires_guardian_consent),
+                'authorizations' => $assignment->authorizations->map(fn ($a) => [
+                    'id'            => $a->id,
+                    'action'        => $a->action,
+                    'action_at'     => $a->action_at?->toIso8601String(),
+                    'decline_reason'=> $a->decline_reason,
+                    'expires_at'    => $a->expires_at?->toIso8601String(),
+                ]),
+                'payments' => $assignment->payments->map(fn ($p) => [
+                    'id'             => $p->id,
+                    'reference_no'   => $p->reference_no,
+                    'amount'         => (float) $p->amount,
+                    'status'         => $p->status,
+                    'payment_method' => $p->payment_method,
+                    'paid_at'        => $p->paid_at?->toIso8601String(),
+                ]),
+            ],
+        ];
+
+        return $request->wantsJson()
+            ? response()->json($payload)
+            : Inertia::render('Student/Contributions/Show', $payload);
     }
 
     /** Request guardian consent — sends email. */

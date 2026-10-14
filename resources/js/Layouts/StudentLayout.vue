@@ -10,7 +10,7 @@
     <main class="flex-1 flex flex-col min-w-0">
       <!-- navbartop handles its own print:hidden internally (multi-root) -->
       <navbartop
-        search-placeholder="Search subjects, assessments, grades..."
+        search-placeholder="Search classes, assignments, quizzes…"
         @open-sidebar="sidebarOpen = true"
         @font-size-changed="onFontSizeChanged"
       />

@@ -10,12 +10,77 @@
         <Icon icon="menu" size="lg" />
       </button>
 
-      <div class="relative w-full max-w-2xl">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 sm:pl-4 text-gray-500 dark:text-gray-400">
+      <!-- ═══ SEARCH + SUGGESTIONS ═══ -->
+      <div class="relative w-full max-w-2xl" ref="searchWrap">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 sm:pl-4 text-gray-500 dark:text-gray-400 z-10">
           <Icon icon="search" size="md" />
         </span>
-        <input type="text" :placeholder="searchPlaceholder"
-          class="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-full bg-white dark:bg-[#2D3A31] border border-gray-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907] text-xs sm:text-sm text-gray-700 dark:text-slate-200 shadow-sm" />
+
+        <input
+          ref="searchInput"
+          v-model="searchQuery"
+          @keyup.enter.prevent="goToFullResults"
+          @keydown.down.prevent="moveHighlight(1)"
+          @keydown.up.prevent="moveHighlight(-1)"
+          @keydown.esc="closeSuggestions"
+          @focus="onFocus"
+          type="text"
+          :placeholder="searchPlaceholder"
+          autocomplete="off"
+          class="w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3 rounded-full bg-white dark:bg-[#2D3A31] border border-gray-200 dark:border-[#3F4F43] focus:outline-none focus:ring-2 focus:ring-[#006907] text-xs sm:text-sm text-gray-700 dark:text-slate-200 shadow-sm" />
+
+        <!-- Loading spinner -->
+        <span v-if="suggestLoading" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/>
+            <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </span>
+
+        <!-- Suggestions dropdown -->
+        <Transition
+          enter-active-class="transition duration-100 ease-out"
+          enter-from-class="opacity-0 -translate-y-1"
+          leave-active-class="transition duration-75 ease-in"
+          leave-to-class="opacity-0">
+          <div v-if="showSuggestions"
+            class="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-[#2D3A31] rounded-2xl border border-gray-200 dark:border-[#3F4F43] shadow-xl overflow-hidden z-50">
+
+            <ul v-if="suggestions.length" class="max-h-96 overflow-y-auto py-1">
+              <li v-for="(s, i) in suggestions" :key="s.url + i">
+                <Link :href="s.url"
+                  @click="closeSuggestions"
+                  @mouseenter="highlightIndex = i"
+                  :class="[
+                    'flex items-center gap-3 px-4 py-2.5 transition-colors',
+                    highlightIndex === i
+                      ? 'bg-[#006907]/5 dark:bg-[#86EFAC]/10'
+                      : 'hover:bg-slate-50 dark:hover:bg-white/5'
+                  ]">
+                  <span class="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-[#232D26] px-2 py-0.5 rounded-md shrink-0">
+                    {{ s.type }}
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-xs font-bold text-slate-800 dark:text-white truncate">{{ s.title }}</span>
+                    <span v-if="s.meta" class="block text-[10px] text-slate-500 truncate">{{ s.meta }}</span>
+                  </span>
+                </Link>
+              </li>
+            </ul>
+
+            <div v-else-if="!suggestLoading" class="px-4 py-6 text-center">
+              <p class="text-xs text-slate-500">No matches for "{{ searchQuery }}".</p>
+            </div>
+
+            <div v-if="suggestions.length" class="border-t border-slate-100 dark:border-[#3F4F43]">
+              <button @click="goToFullResults"
+                class="w-full text-left px-4 py-2.5 text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-between">
+                <span>See all results for "{{ searchQuery }}"</span>
+                <kbd class="text-[9px] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#3F4F43] bg-slate-50 dark:bg-[#232D26] text-slate-500">↵</kbd>
+              </button>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
 
@@ -23,28 +88,28 @@
 
       <!-- Font size -->
       <div class="flex items-center bg-[#EAE7DF] dark:bg-[#3F4F43] rounded-full p-1 gap-1">
-      <button
-        @click="decreaseFont"
-        :class="fontSizeMode === 'sm'
-          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
-      >A-</button>
-      <button
-        @click="resetFont"
-        :class="fontSizeMode === 'base'
-          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black transition-colors"
-      >A</button>
-      <button
-        @click="increaseFont"
-        :class="fontSizeMode === 'lg'
-          ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
-        class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
-      >A+</button>
-    </div>
+        <button
+          @click="decreaseFont"
+          :class="fontSizeMode === 'sm'
+            ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+          class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
+        >A-</button>
+        <button
+          @click="resetFont"
+          :class="fontSizeMode === 'base'
+            ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+          class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-black transition-colors"
+        >A</button>
+        <button
+          @click="increaseFont"
+          :class="fontSizeMode === 'lg'
+            ? 'bg-white dark:bg-[#2D3A31] text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+          class="px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-colors"
+        >A+</button>
+      </div>
 
       <!-- Theme toggle -->
       <button @click="toggleDarkMode"
@@ -69,78 +134,75 @@
         </button>
 
         <div v-if="showNotifications"
-        class="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
+          class="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-[#2D3A31] rounded-xl shadow-xl border border-gray-100 dark:border-[#3F4F43] overflow-hidden z-50">
 
-        <!-- Header -->
-        <div class="p-3 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50 dark:bg-[#232D26] flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-white">Notifications</h4>
-            <span v-if="notificationCount > 0"
-              class="text-[10px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full">
-              {{ notificationCount }}
-            </span>
-          </div>
-          <button
-            v-if="genericNotificationCount > 0"
-            @click="markAllRead"
-            class="text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:underline"
-          >
-            Mark all read
-          </button>
-        </div>
-
-        <!-- Admin-only: unread contact messages -->
-        <Link
-          v-if="isAdmin && unreadContactCount > 0"
-          :href="route('admin.contact-messages.index')"
-          @click="showNotifications = false"
-          class="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-[#3F4F43] hover:bg-gray-50 dark:hover:bg-white/5"
-        >
-          <div class="min-w-0">
-            <p class="text-xs font-medium text-gray-900 dark:text-white truncate">
-              {{ unreadContactCount }} unread contact message{{ unreadContactCount === 1 ? '' : 's' }}
-            </p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400">From the public contact form</p>
-          </div>
-        </Link>
-
-        <!-- Generic notifications (all roles) -->
-        <ul v-if="notifications.length" class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-[#3F4F43]">
-          <li v-for="n in notifications" :key="n.id">
-            <button
-              @click="openNotification(n)"
-              class="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-              :class="!n.read_at ? 'bg-[#006907]/[0.04] dark:bg-[#86EFAC]/[0.06]' : ''"
-            >
-              <span class="mt-1.5 w-2 h-2 rounded-full shrink-0" :class="kindDot(n.kind)"></span>
-              <span class="min-w-0 flex-1">
-                <span class="flex items-center justify-between gap-2">
-                  <span class="text-xs text-gray-900 dark:text-white truncate" :class="!n.read_at ? 'font-bold' : 'font-semibold'">
-                    {{ n.title }}
-                  </span>
-                  <span class="text-[10px] text-gray-400 shrink-0">{{ n.created_at }}</span>
-                </span>
-                <span class="block text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mt-0.5">
-                  {{ n.body }}
-                </span>
+          <div class="p-3 border-b border-gray-100 dark:border-[#3F4F43] bg-gray-50 dark:bg-[#232D26] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-white">Notifications</h4>
+              <span v-if="notificationCount > 0"
+                class="text-[10px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full">
+                {{ notificationCount }}
               </span>
+            </div>
+            <button
+              v-if="genericNotificationCount > 0"
+              @click="markAllRead"
+              class="text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:underline"
+            >
+              Mark all read
             </button>
-          </li>
-        </ul>
-        <div v-else-if="!(isAdmin && unreadContactCount > 0)" class="p-6 text-center">
-          <p class="text-xs text-gray-500 dark:text-gray-400">No new notifications.</p>
-        </div>
+          </div>
 
-        <div v-if="notifications.length" class="border-t border-gray-100 dark:border-[#3F4F43]">
           <Link
-            :href="route('notifications.index')"
+            v-if="isAdmin && unreadContactCount > 0"
+            :href="route('admin.contact-messages.index')"
             @click="showNotifications = false"
-            class="block px-4 py-2.5 text-center text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:bg-gray-50 dark:hover:bg-white/5"
+            class="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-[#3F4F43] hover:bg-gray-50 dark:hover:bg-white/5"
           >
-            View all notifications
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-gray-900 dark:text-white truncate">
+                {{ unreadContactCount }} unread contact message{{ unreadContactCount === 1 ? '' : 's' }}
+              </p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">From the public contact form</p>
+            </div>
           </Link>
+
+          <ul v-if="notifications.length" class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-[#3F4F43]">
+            <li v-for="n in notifications" :key="n.id">
+              <button
+                @click="openNotification(n)"
+                class="w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                :class="!n.read_at ? 'bg-[#006907]/[0.04] dark:bg-[#86EFAC]/[0.06]' : ''"
+              >
+                <span class="mt-1.5 w-2 h-2 rounded-full shrink-0" :class="kindDot(n.kind)"></span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center justify-between gap-2">
+                    <span class="text-xs text-gray-900 dark:text-white truncate" :class="!n.read_at ? 'font-bold' : 'font-semibold'">
+                      {{ n.title }}
+                    </span>
+                    <span class="text-[10px] text-gray-400 shrink-0">{{ n.created_at }}</span>
+                  </span>
+                  <span class="block text-[11px] text-gray-600 dark:text-gray-300 line-clamp-2 mt-0.5">
+                    {{ n.body }}
+                  </span>
+                </span>
+              </button>
+            </li>
+          </ul>
+          <div v-else-if="!(isAdmin && unreadContactCount > 0)" class="p-6 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">No new notifications.</p>
+          </div>
+
+          <div v-if="notifications.length" class="border-t border-gray-100 dark:border-[#3F4F43]">
+            <Link
+              :href="route('notifications.index')"
+              @click="showNotifications = false"
+              class="block px-4 py-2.5 text-center text-[11px] font-bold text-[#006907] dark:text-[#86EFAC] hover:bg-gray-50 dark:hover:bg-white/5"
+            >
+              View all notifications
+            </Link>
+          </div>
         </div>
-      </div>
       </div>
 
       <!-- Profile -->
@@ -184,8 +246,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Link, usePage, router } from '@inertiajs/vue3'
+import axios from 'axios'
 import Icon from '@/Components/Icon.vue'
 
 defineProps({
@@ -238,9 +301,94 @@ const notificationCount = computed(() => {
   return genericNotificationCount.value
 })
 
-// --- DIRECT DOM FONT SCALING ---
-const fontSizeMode = ref('base')
+/* ═══════════════════════════════════════════════════════════
+   SEARCH + SUGGESTIONS
+   ═══════════════════════════════════════════════════════════ */
+const searchQuery = ref('')
+const searchInput = ref(null)
+const searchWrap = ref(null)
+const suggestions = ref([])
+const showSuggestions = ref(false)
+const suggestLoading = ref(false)
+const highlightIndex = ref(-1)
 
+let debounceId = null
+let requestId = 0   // used to discard stale responses
+
+watch(searchQuery, (q) => {
+  clearTimeout(debounceId)
+  highlightIndex.value = -1
+
+  const trimmed = q.trim()
+  if (trimmed.length < 2) {
+    suggestions.value = []
+    suggestLoading.value = false
+    showSuggestions.value = false
+    return
+  }
+
+  suggestLoading.value = true
+  debounceId = setTimeout(fetchSuggestions, 250)
+})
+
+async function fetchSuggestions() {
+  const q = searchQuery.value.trim()
+  if (q.length < 2) return
+
+  const myId = ++requestId
+  try {
+    const { data } = await axios.get(route('search.suggest'), { params: { q } })
+    if (myId !== requestId) return    // stale response — ignore
+    suggestions.value = data.items ?? []
+    showSuggestions.value = true
+  } catch (e) {
+    if (myId !== requestId) return
+    suggestions.value = []
+    showSuggestions.value = true
+  } finally {
+    if (myId === requestId) suggestLoading.value = false
+  }
+}
+
+function onFocus() {
+  if (searchQuery.value.trim().length >= 2 && suggestions.value.length) {
+    showSuggestions.value = true
+  }
+}
+
+function closeSuggestions() {
+  showSuggestions.value = false
+  highlightIndex.value = -1
+}
+
+function moveHighlight(delta) {
+  if (! showSuggestions.value || ! suggestions.value.length) return
+  const len = suggestions.value.length
+  highlightIndex.value = (highlightIndex.value + delta + len) % len
+}
+
+function goToFullResults() {
+  const q = searchQuery.value.trim()
+  if (! q) return
+
+  if (highlightIndex.value >= 0 && suggestions.value[highlightIndex.value]) {
+    router.visit(suggestions.value[highlightIndex.value].url)
+  } else {
+    router.visit(route('search', { q }))
+  }
+  closeSuggestions()
+}
+
+function onDocClick(e) {
+  if (searchWrap.value && ! searchWrap.value.contains(e.target)) {
+    closeSuggestions()
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FONT SCALING
+   ═══════════════════════════════════════════════════════════ */
+const fontSizeMode = ref('base')
 const FONT_SIZES = { sm: '14px', base: '16px', lg: '18px' }
 
 const applyFontScale = (mode) => {
@@ -264,16 +412,21 @@ const resetFont = () => {
   applyFontScale('base')
 }
 
-// --- DROPDOWN STATE ---
+/* ═══════════════════════════════════════════════════════════
+   DROPDOWNS
+   ═══════════════════════════════════════════════════════════ */
 const showNotifications = ref(false)
 const showProfile = ref(false)
+
 const toggleNotifications = () => { showNotifications.value = !showNotifications.value; showProfile.value = false }
 const toggleProfile = () => { showProfile.value = !showProfile.value; showNotifications.value = false }
 const closeDropdowns = () => { showNotifications.value = false; showProfile.value = false }
 
 const handleLogout = () => router.post(route('logout'))
 
-// --- DARK MODE TOGGLE (DEFAULT TO LIGHT MODE) ---
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════ */
 const isDark = ref(false)
 
 const toggleDarkMode = () => {
@@ -287,6 +440,9 @@ const toggleDarkMode = () => {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════ */
 const openNotification = (n) => {
   showNotifications.value = false
   const go = () => { if (n.url) router.visit(n.url) }
@@ -315,19 +471,30 @@ const kindDot = (kind) => ({
   danger:  'bg-red-500',
 }[kind] || 'bg-gray-400')
 
+/* ═══════════════════════════════════════════════════════════
+   LIFECYCLE
+   ═══════════════════════════════════════════════════════════ */
 onMounted(() => {
-  // Restore Font Scale Choice
+  // Restore font size
   const savedScale = localStorage.getItem('user_font_scale') || 'base'
-    applyFontScale(savedScale)
+  applyFontScale(savedScale)
 
-  // Restore Theme Choice (Only enable Dark Mode if explicitly saved)
+  // Restore theme
   const savedTheme = localStorage.getItem('theme')
   if (savedTheme === 'dark') {
     isDark.value = true
     document.documentElement.classList.add('dark')
   } else {
-    isDark.value = false;
+    isDark.value = false
     document.documentElement.classList.remove('dark')
   }
+
+  // Close suggestions on outside click
+  document.addEventListener('click', onDocClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocClick)
+  clearTimeout(debounceId)
 })
 </script>

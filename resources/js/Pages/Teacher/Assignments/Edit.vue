@@ -146,7 +146,7 @@
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Icon from '@/Components/Icon.vue'
@@ -187,22 +187,23 @@ async function destroy() {
     return
   }
 
-  const { confirmed } = await confirm({
-    title: 'Delete Assignment',
-    message: `Delete "${props.assignment.title}"?`,
-    details: [
-      'This action cannot be undone.',
-      'The assignment will be hidden. Student submissions are preserved in the database.',
-    ],
-    confirmLabel: 'Delete',
-    variant: 'danger',
-  })
+  const { confirmed } = await confirm({ /* ... */ })
   if (!confirmed) return
 
-  form.delete(route('teacher.assignments.destroy', props.assignment.id), {
+  let redirectTo = null
+  try {
+    if (document.referrer) {
+      const u = new URL(document.referrer)
+      if (u.origin === window.location.origin) {
+        redirectTo = u.pathname + u.search
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  router.delete(route('teacher.assignments.destroy', props.assignment.id), {
+    data: redirectTo ? { redirect_to: redirectTo } : {},
     onSuccess: () => flash.success('Assignment deleted.'),
     onError: (err) => flash.error(err?.message || 'Failed to delete assignment.'),
-    onFinish: () => {},
   })
 }
 

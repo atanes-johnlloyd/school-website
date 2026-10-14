@@ -31,7 +31,7 @@ import { useFlash } from '@/Composables/useFlash'
 defineProps({
   searchPlaceholder: {
     type: String,
-    default: 'Search learners (LRN), strand records, advisories...'
+    default: 'Search students, classes, tasks, quizzes…'
   }
 })
 

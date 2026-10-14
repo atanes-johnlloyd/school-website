@@ -59,7 +59,9 @@
                       {{ live_class.subject }}
                     </h2>
                     <p class="text-white/90 text-[11px] sm:text-sm font-medium">
-                      {{ live_class.instructor }} <span v-if="live_class.room"> • {{ live_class.room }}</span> • {{ live_class.time_start }} – {{ live_class.time_end }}
+                      {{ live_class.instructor }}
+                      <span v-if="live_class.room"> • {{ live_class.room }}</span>
+                      • {{ formatTime(live_class.time_start) }} – {{ formatTime(live_class.time_end) }}
                     </p>
                     <p class="text-white/70 text-[10px] font-medium">
                       School Year <span class="font-bold">{{ activeYear }}</span>
@@ -76,7 +78,7 @@
                       {{ live_class.subject_code }}
                     </div>
                     <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
-                      Ends at {{ live_class.time_end }}
+                      Ends at {{ formatTime(live_class.time_end) }}
                     </span>
                   </div>
 
@@ -85,7 +87,7 @@
                       Next Class
                     </span>
                     <div class="text-sm sm:text-lg font-black text-white leading-tight mt-0.5 truncate">
-                      {{ next_class ? next_class.time_start : '—' }}
+                      {{ next_class ? formatTime(next_class.time_start) : '—' }}
                     </div>
                     <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
                       {{ next_class ? next_class.subject : 'No more today' }}
@@ -134,7 +136,7 @@
                       Next Class
                     </span>
                     <div class="text-sm sm:text-lg font-black text-white leading-tight mt-0.5 truncate">
-                      {{ next_class ? next_class.time_start : '—' }}
+                      {{ next_class ? formatTime(next_class.time_start) : '—' }}
                     </div>
                     <span class="text-[9px] sm:text-[10px] text-emerald-100/70 block font-medium mt-0.5 truncate">
                       {{ next_class ? next_class.subject : 'No more today' }}
@@ -228,9 +230,9 @@
 
               <template v-if="slot.isBanner">
                 <div class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
-                  <span>{{ slot.timeStart }}</span>
+                  <span>{{ formatTime(slot.time_start) }}</span>
                   <span class="text-slate-400 dark:text-slate-500 font-normal">—</span>
-                  <span>{{ slot.timeEnd }}</span>
+                  <span>{{ formatTime(slot.time_end) }}</span>
                 </div>
                 <div class="col-span-10 bg-[#f7f6f0] dark:bg-[#1C261F] rounded-2xl p-4 border border-slate-200/80 dark:border-[#3F4F43] flex items-center justify-between px-6">
                   <div class="flex items-center gap-3">
@@ -252,9 +254,9 @@
 
               <template v-else>
                 <div class="col-span-2 bg-[#f5f7f2] dark:bg-[#232D26] rounded-2xl p-4 flex flex-col items-center justify-center text-center font-extrabold text-xs text-slate-700 dark:text-slate-300 space-y-1 border border-slate-200/60 dark:border-[#3F4F43]">
-                  <span>{{ slot.time_start }}</span>
+                  <span>{{ formatTime(slot.time_start) }}</span>
                   <span class="text-slate-400 dark:text-slate-500 font-normal">—</span>
-                  <span>{{ slot.time_end }}</span>
+                  <span>{{ formatTime(slot.time_end) }}</span>
                 </div>
 
                 <template v-for="day in visibleColumns" :key="day.id">
@@ -403,8 +405,8 @@ const displayRows = computed(() => {
       rows.push({
         isBanner: true,
         slot_id: `gap-${slot.time_end}-${next.time_start}`,
-        timeStart: slot.time_end,
-        timeEnd: next.time_start,
+        time_start: slot.time_end,        // ← was timeStart
+        time_end: next.time_start,        // ← was timeEnd
         bannerTitle: gapLabel(slot.time_end, gapMins),
         bannerSubtitle: gapSubtitle(gapMins),
         bannerBadge: `${gapMins} min`,
@@ -443,6 +445,15 @@ function isActive(item) {
 function resetFilters() {
   searchQuery.value = ''
   selectedDayFilter.value = 'all'
+}
+
+// Converts "06:00" → "6:00 AM", "13:30" → "1:30 PM"
+function formatTime(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string') return '—'
+  const [h, m] = hhmm.split(':').map(Number)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  return `${hour12}:${String(m).padStart(2, '0')} ${period}`
 }
 </script>
 

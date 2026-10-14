@@ -258,7 +258,6 @@
           </div>
           <a
             :href="submission.download_url"
-            target="_blank"
             class="bg-[#004d08] hover:bg-[#003805] text-white text-xs font-bold px-4 py-2 rounded-xl shrink-0 transition-colors"
           >
             Download

@@ -177,10 +177,15 @@ class AssignmentController extends Controller
     public function downloadSubmission(Request $request, Assignment $assignment)
     {
         abort_unless($assignment->classroom->hasStudent($request->user()), 403);
+
         $studentId  = $request->user()->student->id;
         $submission = $assignment->submissionFor($studentId);
-        abort_unless($submission?->file_path && Storage::exists($submission->file_path), 404);
 
-        return Storage::download($submission->file_path);
+        abort_unless(
+            $submission?->file_path && Storage::disk('local')->exists($submission->file_path),
+            404
+        );
+
+        return Storage::disk('local')->download($submission->file_path);
     }
 }
