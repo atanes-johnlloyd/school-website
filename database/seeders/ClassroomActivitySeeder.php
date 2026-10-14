@@ -532,7 +532,7 @@ class ClassroomActivitySeeder extends Seeder
                 [
                     'class_id'       => null,
                     'body'           => $body,
-                    'image_path'     => 'announcements/' . md5($title) . '.jpg',
+                    'image_path'    => 'announcements/default-cover.jpg',
                     'is_pinned'      => $pinned,
                     'is_school_wide' => true,
                     'priority'       => $priority,
