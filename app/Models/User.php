@@ -48,7 +48,8 @@ class User extends Authenticatable
             'password'             => 'hashed',
             'must_change_password' => 'boolean',
             'reset_expiry'         => 'datetime',
-            'last_login_at' => 'datetime',
+            'last_login_at'        => 'datetime',
+            'two_factor_expires_at'=> 'datetime', // <--- ADD THIS LINE
         ];
     }
 
@@ -124,11 +125,6 @@ class User extends Authenticatable
      */
     public function requiresTwoFactor(): bool
     {
-        //to be remove
-        if (! config('auth.two_factor.enabled', true)) {
-            return false;
-        }
-
         return $this->hasAnyRole(['admin', 'teacher']);
     }
     /**

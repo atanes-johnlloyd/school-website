@@ -97,6 +97,12 @@ class UserAndStaffSeeder extends Seeder
                 'position'    => 'Staff',
                 'avatar'      => 'staff/staff-soriano.jpg',
             ],
+            [
+                'name'        => 'John Lloyd Atanes',
+                'email'       => 'atanes.johnlloyd@ncst.edu.ph',
+                'position'    => 'System Admin', // You can change this to 'Staff', 'Registrar', etc. depending on their role
+                'avatar'      => 'staff/default-admin.jpg',
+            ],
         ];
 
         foreach ($admins as $a) {
