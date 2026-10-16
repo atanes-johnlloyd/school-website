@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
 
 const props = defineProps({
     show: {
@@ -17,25 +17,25 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
-const dialog = ref();
-const showSlot = ref(props.show);
 
 watch(
     () => props.show,
-    () => {
-        if (props.show) {
-            document.body.style.overflow = 'hidden';
-            showSlot.value = true;
-            dialog.value?.showModal();
-        } else {
-            document.body.style.overflow = '';
-            setTimeout(() => {
-                dialog.value?.close();
-                showSlot.value = false;
-            }, 200);
-        }
-    },
+    (val) => {
+        document.body.style.overflow = val ? 'hidden' : '';
+    }
 );
+
+onMounted(() => {
+    document.addEventListener('keydown', closeOnEscape);
+    if (props.show) {
+        document.body.style.overflow = 'hidden';
+    }
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', closeOnEscape);
+    document.body.style.overflow = '';
+});
 
 const close = () => {
     if (props.closeable) {
@@ -44,30 +44,11 @@ const close = () => {
 };
 
 const closeOnEscape = (e) => {
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && props.show) {
         e.preventDefault();
-        if (props.show) {
-            close();
-        }
+        close();
     }
 };
-
-onMounted(async () => {
-    document.addEventListener('keydown', closeOnEscape);
-    await nextTick();
-    if (props.show) {
-        document.body.style.overflow = 'hidden';
-        showSlot.value = true;
-        dialog.value?.showModal();
-    }
-});
-
-onUnmounted(() => {
-    document.removeEventListener('keydown', closeOnEscape);
-    if (!document.querySelector('dialog[open]')) {
-        document.body.style.overflow = '';
-    }
-});
 
 const maxWidthClass = computed(() => {
     return {
@@ -84,50 +65,59 @@ const maxWidthClass = computed(() => {
 </script>
 
 <template>
-    <dialog
-        class="z-50 m-0 min-h-full min-w-full overflow-y-auto bg-transparent backdrop:bg-transparent"
-        ref="dialog"
-    >
-        <!-- Added flex items-center justify-center min-h-screen for absolute viewport centering -->
-        <div
-            class="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-screen"
-            scroll-region
-        >
-            <Transition
-                enter-active-class="ease-out duration-300"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="ease-in duration-200"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
+    <Teleport to="body">
+        <Transition leave-active-class="duration-200">
+            <div
+                v-show="show"
+                class="fixed inset-0 z-[100] overflow-y-auto p-4 sm:p-6 flex items-center justify-center"
+                scroll-region
             >
-                <div
-                    v-show="show"
-                    class="fixed inset-0 transform transition-all"
-                    @click="close"
+                <!-- 
+                  Static Blur Layer: 
+                  Rendered once, not animated. This prevents the "delayed blur" 
+                  effect caused by trying to fade `backdrop-filter` over time.
+                  You can change `backdrop-blur-xs` to `backdrop-blur-sm` or 
+                  `backdrop-blur-md` for a stronger effect.
+                -->
+                <div 
+                    class="fixed inset-0 bg-black/50 backdrop-blur-xs transform-gpu" 
+                    aria-hidden="true"
+                ></div>
+
+                <!-- Fading Dark Overlay (Click to close) -->
+                <Transition
+                    enter-active-class="ease-out duration-200"
+                    enter-from-class="opacity-0"
+                    enter-to-class="opacity-100"
+                    leave-active-class="ease-in duration-150"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
                 >
                     <div
-                        class="absolute inset-0 bg-black/50 backdrop-blur-xs"
-                    />
-                </div>
-            </Transition>
+                        v-show="show"
+                        class="fixed inset-0 bg-black/40"
+                        @click="close"
+                    ></div>
+                </Transition>
 
-            <Transition
-                enter-active-class="ease-out duration-300"
-                enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enter-to-class="opacity-100 translate-y-0 sm:scale-100"
-                leave-active-class="ease-in duration-200"
-                leave-from-class="opacity-100 translate-y-0 sm:scale-100"
-                leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-                <div
-                    v-show="show"
-                    class="my-auto transform overflow-hidden rounded-3xl bg-transparent shadow-2xl transition-all w-full"
-                    :class="maxWidthClass"
+                <!-- Modal Card -->
+                <Transition
+                    enter-active-class="ease-out duration-300"
+                    enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+                    leave-active-class="ease-in duration-200"
+                    leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+                    leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
-                    <slot v-if="showSlot" />
-                </div>
-            </Transition>
-        </div>
-    </dialog>
+                    <div
+                        v-show="show"
+                        class="relative z-10 my-auto w-full transform overflow-hidden rounded-3xl shadow-2xl transition-all"
+                        :class="maxWidthClass"
+                    >
+                        <slot v-if="show" />
+                    </div>
+                </Transition>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
