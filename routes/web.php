@@ -525,11 +525,24 @@ Route::middleware(['auth', 'verified', 'password.changed', 'role:student'])
         Route::post('/quiz-attempts/{attempt}/submit', [\App\Http\Controllers\Student\QuizController::class, 'submit'])->name('quiz-attempts.submit');
         Route::get('/quiz-attempts/{attempt}/result', [\App\Http\Controllers\Student\QuizController::class, 'result'])->name('quiz-attempts.result');
 
-        // ─── Contributions (read-only status board — NEW) ───
+        // ─── Contributions (student) ───
+        // IMPORTANT: the literal routes (return, status) MUST come before
+        // the {assignment} wildcard, or Laravel will treat "return" as an ID.
+        Route::get('/contributions/return', [\App\Http\Controllers\Student\ContributionController::class, 'returnFromCheckout'])
+            ->name('contributions.return');
+
+        Route::get('/contributions/payments/{payment}/status', [\App\Http\Controllers\Student\ContributionController::class, 'status'])
+            ->name('contributions.status');
+
         Route::get('/contributions', [\App\Http\Controllers\Student\ContributionController::class, 'index'])
             ->name('contributions.index');
+
         Route::get('/contributions/{assignment}', [\App\Http\Controllers\Student\ContributionController::class, 'show'])
             ->name('contributions.show');
+
+        Route::post('/contributions/{assignment}/checkout', [\App\Http\Controllers\Student\ContributionController::class, 'checkout'])
+            ->name('contributions.checkout');
+
         Route::post('/contributions/{assignment}/notify-guardian', [\App\Http\Controllers\Student\ContributionController::class, 'notifyGuardian'])
             ->middleware('throttle:3,10')
             ->name('contributions.notify-guardian');
