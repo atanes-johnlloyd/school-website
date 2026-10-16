@@ -1,2 +1,10 @@
 *
 !.gitignore
+!announcements/
+announcements/*
+!announcements/brigada-eskwela.jpg
+!announcements/enrollment-open.jpg
+!announcements/first-quarter-exam.jpg
+!announcements/ninoy-aquino-day.jpg
+!announcements/opening-classes.jpg
+!announcements/voucher-orientation.jpg
