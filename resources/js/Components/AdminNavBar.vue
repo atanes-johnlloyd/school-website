@@ -115,9 +115,17 @@
       <!-- Profile Button & Fixed Dropdown -->
       <div class="relative pl-2 sm:pl-4 border-l border-gray-300 dark:border-[#3F4F43]">
         <button @click="toggleProfile" class="flex items-center gap-3 focus:outline-none group">
-          <span class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] bg-[#006907] text-white text-xs font-black flex items-center justify-center cursor-pointer shadow-xs group-hover:scale-105 transition-transform">
+          
+          <!-- ADDED: Check for avatar_url first -->
+          <span v-if="currentUser?.avatar_url" class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] overflow-hidden shrink-0 cursor-pointer shadow-xs group-hover:scale-105 transition-transform">
+            <img :src="currentUser.avatar_url" :alt="currentUser.name" class="w-full h-full object-cover" />
+          </span>
+          
+          <!-- FALLBACK: Show initials if no image -->
+          <span v-else class="w-10 h-10 md:w-11 md:h-11 rounded-full border-2 border-[#F9C20C] bg-[#006907] text-white text-xs font-black flex items-center justify-center cursor-pointer shadow-xs group-hover:scale-105 transition-transform">
             {{ userInitials }}
           </span>
+          
           <div class="hidden sm:block text-left">
             <p class="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-slate-100 leading-none">
               {{ currentUser?.name || 'Administrator' }}

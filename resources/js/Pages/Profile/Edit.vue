@@ -11,7 +11,13 @@
     <AdminSidebar v-else-if="isAdmin" />
 
     <main class="flex-1 relative overflow-y-auto min-h-screen flex flex-col justify-between w-full min-w-0">
+            <!-- Admin gets the admin navbar; teacher/student get the generic one -->
+      <AdminNavBar
+        v-if="isAdmin"
+        @font-size-changed="(size) => fontSizeMode = size"
+      />
       <navbartop
+        v-else
         searchPlaceholder="Search..."
         @open-sidebar="isSidebarOpen = true"
         @font-size-changed="(size) => fontSizeMode = size"
@@ -376,6 +382,7 @@ import Sidebar from '@/Components/Sidebar.vue'
 import Sidebart from '@/Components/Sidebart.vue'
 import AdminSidebar from '@/Components/AdminSidebar.vue'
 import navbartop from '@/Components/navbartop.vue'
+import AdminNavBar from '@/Components/AdminNavBar.vue' 
 import Icon from '@/Components/Icon.vue'
 
 import heroBg from '@/../assets/img/local/dashboard.png'
