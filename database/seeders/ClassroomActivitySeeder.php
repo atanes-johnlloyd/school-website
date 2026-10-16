@@ -24,7 +24,6 @@ use App\Models\QuizAttempt;
 use App\Models\QuizQuestion;
 use App\Models\SchoolYear;
 use App\Models\Student;
-use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;
@@ -36,12 +35,13 @@ class ClassroomActivitySeeder extends Seeder
 {
     public function run(): void
     {
-        $admin   = User::where('email', 'sysadmin@salawagshs.deped.gov.ph')->first();
+        $admin = User::where('email', 'sysadmin@salawagshs.deped.gov.ph')->first();
         $teacher = User::where('email', 'jocelyn.fernandez@salawagshs.deped.gov.ph')->first();
         $student = User::where('email', 'rosario.reyes@gmail.com')->first();
 
         if (! $admin || ! $teacher || ! $student) {
             $this->command->error('  ! Missing required users — run earlier seeders first.');
+
             return;
         }
 
@@ -58,12 +58,12 @@ class ClassroomActivitySeeder extends Seeder
         $this->seedPlaceholderFiles();
 
         $this->command->info('✔ Classroom activity seeded.');
-        $this->command->info('   class_students:        ' . ClassStudent::count());
-        $this->command->info('   attendance_records:    ' . AttendanceRecord::count());
-        $this->command->info('   grades:                ' . Grade::count());
-        $this->command->info('   assignments:           ' . Assignment::count());
-        $this->command->info('   quizzes:               ' . Quiz::count());
-        $this->command->info('   announcements:         ' . Announcement::count());
+        $this->command->info('   class_students:        '.ClassStudent::count());
+        $this->command->info('   attendance_records:    '.AttendanceRecord::count());
+        $this->command->info('   grades:                '.Grade::count());
+        $this->command->info('   assignments:           '.Assignment::count());
+        $this->command->info('   quizzes:               '.Quiz::count());
+        $this->command->info('   announcements:         '.Announcement::count());
     }
 
     /* =================================================================
@@ -105,7 +105,7 @@ class ClassroomActivitySeeder extends Seeder
                 ClassStudent::updateOrCreate(
                     ['class_id' => $classId, 'student_id' => $en->student_id],
                     [
-                        'status'      => $en->status === 'completed' ? 'completed' : 'active',
+                        'status' => $en->status === 'completed' ? 'completed' : 'active',
                         'enrolled_at' => $en->enrolled_at ?? now(),
                     ]
                 );
@@ -149,21 +149,21 @@ class ClassroomActivitySeeder extends Seeder
             foreach ($days as $date) {
                 foreach ($studentIds as $sIdx => $studentId) {
                     $status = match (($studentId + $sIdx + crc32($date)) % 25) {
-                        0, 1   => 'absent',
-                        2      => 'late',
-                        3      => 'excused',
+                        0, 1 => 'absent',
+                        2 => 'late',
+                        3 => 'excused',
                         default => 'present',
                     };
 
                     AttendanceRecord::updateOrCreate(
                         [
-                            'class_id'        => $class->id,
-                            'student_id'      => $studentId,
+                            'class_id' => $class->id,
+                            'student_id' => $studentId,
                             'attendance_date' => $date,
                         ],
                         [
-                            'status'    => $status,
-                            'notes'     => $status === 'excused' ? 'Medical certificate on file.' : null,
+                            'status' => $status,
+                            'notes' => $status === 'excused' ? 'Medical certificate on file.' : null,
                             'marked_by' => $class->teacher_id
                                 ? Teacher::find($class->teacher_id)?->user_id
                                 : $admin?->id,
@@ -174,24 +174,24 @@ class ClassroomActivitySeeder extends Seeder
 
             foreach ($studentIds as $studentId) {
                 $seed = $class->id * 31 + $studentId;
-                $ww   = 78 + ($seed % 18);
-                $pt   = 80 + (($seed >> 3) % 16);
-                $qe   = 76 + (($seed >> 5) % 20);
+                $ww = 78 + ($seed % 18);
+                $pt = 80 + (($seed >> 3) % 16);
+                $qe = 76 + (($seed >> 5) % 20);
                 $final = round(($ww * 0.25) + ($pt * 0.50) + ($qe * 0.25), 2);
 
                 Grade::updateOrCreate(
                     ['class_id' => $class->id, 'student_id' => $studentId],
                     [
-                        'written_work_score'     => $ww,
+                        'written_work_score' => $ww,
                         'performance_task_score' => $pt,
-                        'quarterly_exam_score'   => $qe,
-                        'final_grade'            => $final,
-                        'remarks'                => $final >= 75 ? 'passed' : 'failed',
-                        'is_finalized'           => true,
-                        'finalized_by'           => $class->teacher_id
+                        'quarterly_exam_score' => $qe,
+                        'final_grade' => $final,
+                        'remarks' => $final >= 75 ? 'passed' : 'failed',
+                        'is_finalized' => true,
+                        'finalized_by' => $class->teacher_id
                             ? Teacher::find($class->teacher_id)?->user_id
                             : $admin?->id,
-                        'finalized_at'           => Carbon::now()->subDays(7),
+                        'finalized_at' => Carbon::now()->subDays(7),
                     ]
                 );
             }
@@ -221,22 +221,22 @@ class ClassroomActivitySeeder extends Seeder
             foreach ($histClasses as $class) {
                 foreach ($gradStudents as $studentId) {
                     $seed = $class->id * 17 + $studentId + crc32($label);
-                    $ww   = 80 + ($seed % 15);
-                    $pt   = 82 + (($seed >> 2) % 14);
-                    $qe   = 79 + (($seed >> 4) % 18);
+                    $ww = 80 + ($seed % 15);
+                    $pt = 82 + (($seed >> 2) % 14);
+                    $qe = 79 + (($seed >> 4) % 18);
                     $final = round(($ww * 0.25) + ($pt * 0.50) + ($qe * 0.25), 2);
 
                     Grade::updateOrCreate(
                         ['class_id' => $class->id, 'student_id' => $studentId],
                         [
-                            'written_work_score'     => $ww,
+                            'written_work_score' => $ww,
                             'performance_task_score' => $pt,
-                            'quarterly_exam_score'   => $qe,
-                            'final_grade'            => $final,
-                            'remarks'                => $final >= 75 ? 'passed' : 'failed',
-                            'is_finalized'           => true,
-                            'finalized_by'           => $admin?->id,
-                            'finalized_at'           => Carbon::parse($year->end_date),
+                            'quarterly_exam_score' => $qe,
+                            'final_grade' => $final,
+                            'remarks' => $final >= 75 ? 'passed' : 'failed',
+                            'is_finalized' => true,
+                            'finalized_by' => $admin?->id,
+                            'finalized_at' => Carbon::parse($year->end_date),
                         ]
                     );
                 }
@@ -266,8 +266,8 @@ class ClassroomActivitySeeder extends Seeder
                 $module = ClassModule::updateOrCreate(
                     ['class_id' => $class->id, 'position' => $m - 1],
                     [
-                        'title'        => "Module {$m}: " . ($m === 1 ? 'Foundations' : 'Applications') . " of {$subjectName}",
-                        'description'  => "Covers key concepts, worked examples, and formative activities for {$subjectName}.",
+                        'title' => "Module {$m}: ".($m === 1 ? 'Foundations' : 'Applications')." of {$subjectName}",
+                        'description' => "Covers key concepts, worked examples, and formative activities for {$subjectName}.",
                         'is_published' => true,
                     ]
                 );
@@ -277,10 +277,10 @@ class ClassroomActivitySeeder extends Seeder
                         ['class_id' => $class->id, 'position' => ($m - 1) * 3 + ($l - 1)],
                         [
                             'class_module_id' => $module->id,
-                            'title'           => "Lesson {$m}.{$l} — " . $this->lessonTitle($l),
-                            'body'            => "In this lesson, learners will explore {$this->lessonTopic($l)}. Review the attached handout and complete the practice items at the end of the section.",
-                            'thumbnail_path'  => "lessons/{$class->id}-m{$m}l{$l}.jpg",
-                            'is_published'    => true,
+                            'title' => "Lesson {$m}.{$l} — ".$this->lessonTitle($l),
+                            'body' => "In this lesson, learners will explore {$this->lessonTopic($l)}. Review the attached handout and complete the practice items at the end of the section.",
+                            'thumbnail_path' => "lessons/{$class->id}-m{$m}l{$l}.jpg",
+                            'is_published' => true,
                         ]
                     );
 
@@ -337,11 +337,11 @@ class ClassroomActivitySeeder extends Seeder
                 $assignment = Assignment::updateOrCreate(
                     ['class_id' => $class->id, 'title' => "{$titleSuffix} — {$subjectName}"],
                     [
-                        'category'     => $cat,
+                        'category' => $cat,
                         'instructions' => 'Read the attached module and submit on or before the deadline. Late submissions are accepted with a penalty.',
-                        'due_at'       => Carbon::now()->addDays($dueOffset),
-                        'points'       => 100,
-                        'allow_late'   => true,
+                        'due_at' => Carbon::now()->addDays($dueOffset),
+                        'points' => 100,
+                        'allow_late' => true,
                         'is_published' => $isPublished,
                     ]
                 );
@@ -352,13 +352,14 @@ class ClassroomActivitySeeder extends Seeder
                             ['assignment_id' => $assignment->id, 'student_id' => $studentId],
                             ['status' => 'not_submitted']
                         );
+
                         continue;
                     }
 
                     $status = match (($studentId + $idx + $sIdx) % 10) {
-                        0       => 'not_submitted',
-                        1       => 'late',
-                        2, 3    => 'submitted',
+                        0 => 'not_submitted',
+                        1 => 'late',
+                        2, 3 => 'submitted',
                         default => 'graded',
                     };
 
@@ -370,13 +371,13 @@ class ClassroomActivitySeeder extends Seeder
                         ['assignment_id' => $assignment->id, 'student_id' => $studentId],
                         [
                             'submitted_at' => $submittedAt,
-                            'file_path'    => $submittedAt ? "submissions/a{$assignment->id}/s{$studentId}.pdf" : null,
+                            'file_path' => $submittedAt ? "submissions/a{$assignment->id}/s{$studentId}.pdf" : null,
                             'text_content' => $submittedAt ? 'Please see the attached file for my submission.' : null,
-                            'status'       => $status,
-                            'grade'        => $status === 'graded' ? 78 + ($studentId % 20) : null,
-                            'feedback'     => $status === 'graded' ? 'Well organized. See margin notes for improvement areas.' : null,
-                            'graded_by'    => $status === 'graded' ? $teacher?->id : null,
-                            'graded_at'    => $status === 'graded' ? Carbon::now()->subDay() : null,
+                            'status' => $status,
+                            'grade' => $status === 'graded' ? 78 + ($studentId % 20) : null,
+                            'feedback' => $status === 'graded' ? 'Well organized. See margin notes for improvement areas.' : null,
+                            'graded_by' => $status === 'graded' ? $teacher?->id : null,
+                            'graded_at' => $status === 'graded' ? Carbon::now()->subDay() : null,
                         ]
                     );
                 }
@@ -410,21 +411,21 @@ class ClassroomActivitySeeder extends Seeder
             $quiz = Quiz::updateOrCreate(
                 ['class_id' => $class->id, 'title' => "Quiz 1 — {$subjectName}"],
                 [
-                    'class_module_id'        => null,
-                    'category'               => 'written_work',
-                    'description'            => 'A short formative assessment covering Module 1.',
-                    'instructions'           => 'Read each item carefully. You have 30 minutes.',
-                    'time_limit_minutes'     => 30,
-                    'attempts_allowed'       => 1,
-                    'shuffle_questions'      => true,
-                    'shuffle_options'        => true,
-                    'passing_score'          => 75,
-                    'available_from'         => Carbon::now()->subDays(5),
-                    'available_until'        => Carbon::now()->addDays(5),
-                    'is_published'           => true,
+                    'class_module_id' => null,
+                    'category' => 'written_work',
+                    'description' => 'A short formative assessment covering Module 1.',
+                    'instructions' => 'Read each item carefully. You have 30 minutes.',
+                    'time_limit_minutes' => 30,
+                    'attempts_allowed' => 1,
+                    'shuffle_questions' => true,
+                    'shuffle_options' => true,
+                    'passing_score' => 75,
+                    'available_from' => Carbon::now()->subDays(5),
+                    'available_until' => Carbon::now()->addDays(5),
+                    'is_published' => true,
                     'show_score_immediately' => true,
-                    'show_correct_answers'   => true,
-                    'show_explanations'      => true,
+                    'show_correct_answers' => true,
+                    'show_explanations' => true,
                 ]
             );
 
@@ -432,14 +433,14 @@ class ClassroomActivitySeeder extends Seeder
             for ($q = 1; $q <= 5; $q++) {
                 $question = Question::updateOrCreate(
                     [
-                        'teacher_id'    => $teacherProfile->id,
+                        'teacher_id' => $teacherProfile->id,
                         'question_text' => "Q{$q} for {$subjectName}: Sample stem assessing Module 1 knowledge.",
                     ],
                     [
-                        'subject_id'  => $class->subject_id,
-                        'category'    => "Quiz 1 — {$subjectName}",
-                        'type'        => 'multiple_choice',
-                        'points'      => 2,
+                        'subject_id' => $class->subject_id,
+                        'category' => "Quiz 1 — {$subjectName}",
+                        'type' => 'multiple_choice',
+                        'points' => 2,
                         'explanation' => "This tests understanding of the fundamental concept covered in Module 1, Lesson {$q}.",
                     ]
                 );
@@ -449,7 +450,7 @@ class ClassroomActivitySeeder extends Seeder
                         ['question_id' => $question->id, 'position' => $o],
                         [
                             'option_text' => $this->optionText($o),
-                            'is_correct'  => $o === 0,
+                            'is_correct' => $o === 0,
                         ]
                     );
                 }
@@ -470,14 +471,14 @@ class ClassroomActivitySeeder extends Seeder
                 $attempt = QuizAttempt::updateOrCreate(
                     ['quiz_id' => $quiz->id, 'student_id' => $studentId],
                     [
-                        'attempt_number'   => 1,
-                        'started_at'       => Carbon::now()->subHours(3),
-                        'expires_at'       => Carbon::now()->subHours(2),
-                        'submitted_at'     => Carbon::now()->subHours(2)->subMinutes(5),
+                        'attempt_number' => 1,
+                        'started_at' => Carbon::now()->subHours(3),
+                        'expires_at' => Carbon::now()->subHours(2),
+                        'submitted_at' => Carbon::now()->subHours(2)->subMinutes(5),
                         'submitted_reason' => 'manual',
-                        'status'           => 'graded',
-                        'warning_count'    => 0,
-                        'score'            => $correctCount * 2,
+                        'status' => 'graded',
+                        'warning_count' => 0,
+                        'score' => $correctCount * 2,
                     ]
                 );
 
@@ -493,8 +494,8 @@ class ClassroomActivitySeeder extends Seeder
                         ['quiz_attempt_id' => $attempt->id, 'question_id' => $question->id],
                         [
                             'question_option_id' => $isCorrect ? $correctOption?->id : $wrongOption?->id,
-                            'is_correct'         => $isCorrect,
-                            'points_awarded'     => $isCorrect ? 2 : 0,
+                            'is_correct' => $isCorrect,
+                            'points_awarded' => $isCorrect ? 2 : 0,
                         ]
                     );
                 }
@@ -513,31 +514,37 @@ class ClassroomActivitySeeder extends Seeder
 
         $schoolWide = [
             ['Enrollment for S.Y. 2026–2027 is Now Open', 'urgent', true, -3, 45,
-             'Enrollment runs until June 30, 2026. Incoming Grade 11 and Grade 12 transferees should bring Form 138, PSA birth certificate, and 2x2 ID photos. Walk-in applicants welcome at the Registrar\'s Office from 8 AM to 4 PM.'],
+                'Enrollment runs until June 30, 2026. Incoming Grade 11 and Grade 12 transferees should bring Form 138, PSA birth certificate, and 2x2 ID photos. Walk-in applicants welcome at the Registrar\'s Office from 8 AM to 4 PM.',
+                'enrollment-open.jpg'],
             ['Opening of Classes — August 3, 2026', 'important', true, -8, 30,
-             'The first day of S.Y. 2026–2027 will be on August 3, 2026. Flag ceremony at 7:00 AM. Class advisers will meet their sections after the assembly.'],
+                'The first day of S.Y. 2026–2027 will be on August 3, 2026. Flag ceremony at 7:00 AM. Class advisers will meet their sections after the assembly.',
+                'opening-classes.jpg'],
             ['First Quarter Examination Schedule', 'important', true, -2, 20,
-             'The quarterly exams for the 1st Term will be held on October 12–16, 2026. Coordinate with your class advisers for room assignments. Bring your own pens, calculators (for Math/Science), and school ID.'],
+                'The quarterly exams for the 1st Term will be held on October 12–16, 2026. Coordinate with your class advisers for room assignments. Bring your own pens, calculators (for Math/Science), and school ID.',
+                'first-quarter-exam.jpg'],
             ['No Classes on August 21 (Ninoy Aquino Day)', 'normal', false, -1, 25,
-             'Malacañang has declared August 21, 2026 a regular holiday. No synchronous or asynchronous classes will take place. Regular schedule resumes August 22.'],
+                'Malacañang has declared August 21, 2026 a regular holiday. No synchronous or asynchronous classes will take place. Regular schedule resumes August 22.',
+                'ninoy-aquino-day.jpg'],
             ['Brigada Eskwela 2026', 'normal', false, -15, 10,
-             'Join us on August 1–5, 2026 for the annual Brigada Eskwela. Parents, alumni, and community volunteers are welcome. Bring your own cleaning materials if possible.'],
+                'Join us on August 1–5, 2026 for the annual Brigada Eskwela. Parents, alumni, and community volunteers are welcome. Bring your own cleaning materials if possible.',
+                'brigada-eskwela.jpg'],
             ['SHS Voucher Program Orientation', 'normal', false, -5, 15,
-             'Grade 10 completers and transferees are invited to a voucher orientation on July 5, 2026, 9 AM at the school gymnasium. Discusses DepEd SHS-VP coverage and requirements.'],
+                'Grade 10 completers and transferees are invited to a voucher orientation on July 5, 2026, 9 AM at the school gymnasium. Discusses DepEd SHS-VP coverage and requirements.',
+                'voucher-orientation.jpg'],
         ];
 
-        foreach ($schoolWide as [$title, $priority, $pinned, $pubOffset, $expOffset, $body]) {
+        foreach ($schoolWide as [$title, $priority, $pinned, $pubOffset, $expOffset, $body, $image]) {
             Announcement::updateOrCreate(
                 ['title' => $title, 'created_by' => $admin->id],
                 [
-                    'class_id'       => null,
-                    'body'           => $body,
-                    'image_path'     => 'announcements/' . md5($title) . '.jpg',
-                    'is_pinned'      => $pinned,
+                    'class_id' => null,
+                    'body' => $body,
+                    'image_path' => 'announcements/'.$image,
+                    'is_pinned' => $pinned,
                     'is_school_wide' => true,
-                    'priority'       => $priority,
-                    'published_at'   => Carbon::now()->addDays($pubOffset),
-                    'expires_at'     => Carbon::now()->addDays($expOffset),
+                    'priority' => $priority,
+                    'published_at' => Carbon::now()->addDays($pubOffset),
+                    'expires_at' => Carbon::now()->addDays($expOffset),
                 ]
             );
         }
@@ -556,29 +563,29 @@ class ClassroomActivitySeeder extends Seeder
             Announcement::updateOrCreate(
                 ['class_id' => $class->id, 'title' => "Welcome to {$subjectName}"],
                 [
-                    'created_by'     => $author->id,
-                    'body'           => "Please review the course outline and prepare your notebooks for our first session. All activities, quizzes, and assignments will be posted here. Let's have a productive term!",
-                    'image_path'     => null,
-                    'is_pinned'      => true,
+                    'created_by' => $author->id,
+                    'body' => "Please review the course outline and prepare your notebooks for our first session. All activities, quizzes, and assignments will be posted here. Let's have a productive term!",
+                    'image_path' => null,
+                    'is_pinned' => true,
                     'is_school_wide' => false,
-                    'priority'       => 'normal',
-                    'published_at'   => Carbon::now()->subDays(6),
-                    'expires_at'     => Carbon::now()->addDays(60),
+                    'priority' => 'normal',
+                    'published_at' => Carbon::now()->subDays(6),
+                    'expires_at' => Carbon::now()->addDays(60),
                 ]
             );
 
             if ($class->id % 2 === 0) {
                 Announcement::updateOrCreate(
-                    ['class_id' => $class->id, 'title' => "Reminder: Submit Pending Requirements"],
+                    ['class_id' => $class->id, 'title' => 'Reminder: Submit Pending Requirements'],
                     [
-                        'created_by'     => $author->id,
-                        'body'           => 'A few of you still have missing submissions. Please coordinate with me during consultation hours or send a message through the LMS.',
-                        'image_path'     => null,
-                        'is_pinned'      => false,
+                        'created_by' => $author->id,
+                        'body' => 'A few of you still have missing submissions. Please coordinate with me during consultation hours or send a message through the LMS.',
+                        'image_path' => null,
+                        'is_pinned' => false,
                         'is_school_wide' => false,
-                        'priority'       => 'important',
-                        'published_at'   => Carbon::now()->subDays(2),
-                        'expires_at'     => Carbon::now()->addDays(14),
+                        'priority' => 'important',
+                        'published_at' => Carbon::now()->subDays(2),
+                        'expires_at' => Carbon::now()->addDays(14),
                     ]
                 );
             }
@@ -592,30 +599,30 @@ class ClassroomActivitySeeder extends Seeder
     {
         $messages = [
             ['Juan Dela Cruz',   'juan.delacruz@gmail.com',   'Inquiry about enrollment requirements',
-             'Good day! I would like to ask about the requirements for incoming Grade 11 students for S.Y. 2026-2027. My daughter studies in Paliparan National High School.', false],
+                'Good day! I would like to ask about the requirements for incoming Grade 11 students for S.Y. 2026-2027. My daughter studies in Paliparan National High School.', false],
             ['Maria Santos',     'maria.santos@gmail.com',    'Request for Transcript of Records',
-             'Hello, I would like to request a copy of my TOR. What is the process and are there any fees? Thank you.', true],
+                'Hello, I would like to request a copy of my TOR. What is the process and are there any fees? Thank you.', true],
             ['Pedro Reyes',      'pedro.reyes@gmail.com',     'Schedule of entrance exam',
-             'When is the next entrance exam for transferees? My son is from another division and would like to transfer to Salawag SHS.', false],
+                'When is the next entrance exam for transferees? My son is from another division and would like to transfer to Salawag SHS.', false],
             ['Ana Villanueva',   'ana.villanueva@gmail.com',  'Inquiry on SHS Voucher coverage',
-             'Is the SHS Voucher Program still available for private school completers this year? How do we apply?', true],
-            ['Rogelio Bautista', 'rogelio.bautista@gmail.com','Request for school calendar',
-             'Please send me a copy of the school calendar for SY 2026-2027 including holidays and exam weeks.', false],
+                'Is the SHS Voucher Program still available for private school completers this year? How do we apply?', true],
+            ['Rogelio Bautista', 'rogelio.bautista@gmail.com', 'Request for school calendar',
+                'Please send me a copy of the school calendar for SY 2026-2027 including holidays and exam weeks.', false],
             ['Luzviminda Tan',   'luz.tan@gmail.com',         'Concern about student portal access',
-             'My daughter cannot log in to her student portal. Password reset is not working. Please advise.', false],
+                'My daughter cannot log in to her student portal. Password reset is not working. Please advise.', false],
             ['Carlo Mendoza',    'carlo.mendoza@techph.com',  'Partnership inquiry — industry linkage',
-             'We are a local IT company interested in offering internship slots for ICT strand students. Who can we coordinate with?', true],
+                'We are a local IT company interested in offering internship slots for ICT strand students. Who can we coordinate with?', true],
             ['Ferdinand Lim',    'ferdie.lim@gmail.com',      'Concern about class schedule',
-             'My son is in Grade 11 and I noticed his schedule has classes on Friday. Is Friday really a full day? His previous school only had classes Monday to Thursday.', true],
+                'My son is in Grade 11 and I noticed his schedule has classes on Friday. Is Friday really a full day? His previous school only had classes Monday to Thursday.', true],
             ['Josefina Aquino',  'josefina.aquino@gmail.com', 'Walk-in enrollment inquiry',
-             'Good afternoon. Can we still walk in to enroll tomorrow or do we need to submit online first? Thank you.', false],
+                'Good afternoon. Can we still walk in to enroll tomorrow or do we need to submit online first? Thank you.', false],
         ];
 
         foreach ($messages as [$name, $email, $subject, $body, $read]) {
             ContactMessage::updateOrCreate(
                 ['email' => $email, 'subject' => $subject],
                 [
-                    'name'    => $name,
+                    'name' => $name,
                     'message' => $body,
                     'is_read' => $read,
                 ]
@@ -637,7 +644,7 @@ class ClassroomActivitySeeder extends Seeder
         $this->attachParticipant($c1, $student);
 
         $this->say($c1, $student, "Ma'am, will the quarterly exam cover all 5 modules or just the last two?", -180);
-        $this->say($c1, $teacher, "It covers Modules 1 and 2 only. I uploaded a reviewer under Lessons. Please review it this weekend.", -175);
+        $this->say($c1, $teacher, 'It covers Modules 1 and 2 only. I uploaded a reviewer under Lessons. Please review it this weekend.', -175);
         $this->say($c1, $student, "Thank you, Ma'am! I'll review it tonight.", -170);
 
         $c2 = Conversation::updateOrCreate(['subject' => 'Submission of Q1 grade sheets']);
@@ -646,7 +653,7 @@ class ClassroomActivitySeeder extends Seeder
 
         $this->say($c2, $admin, "Hi Ma'am Fernandez, reminder to submit your Q1 grade sheets by Friday EOD.", -300);
         $this->say($c2, $teacher, "Noted. I'm done with two sections; the third is still being finalized.", -290);
-        $this->say($c2, $admin, "Perfect. Attach the PDF in the Gradebook export when ready.", -285);
+        $this->say($c2, $admin, 'Perfect. Attach the PDF in the Gradebook export when ready.', -285);
 
         $teacher2 = User::where('email', 'antonio.cruz@salawagshs.deped.gov.ph')->first();
         if ($teacher2) {
@@ -707,16 +714,16 @@ class ClassroomActivitySeeder extends Seeder
             DB::table('audit_logs')->updateOrInsert(
                 [
                     'user_id' => $admin->id,
-                    'action'  => $action,
+                    'action' => $action,
                     'created_at' => Carbon::now()->subMinutes(15 * ($i + 1)),
                 ],
                 [
                     'auditable_type' => $type,
-                    'auditable_id'   => $targetId,
-                    'old_values'     => null,
-                    'new_values'     => $newValues ? json_encode($newValues) : null,
-                    'ip_address'     => '192.168.1.' . (10 + $i),
-                    'user_agent'     => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                    'auditable_id' => $targetId,
+                    'old_values' => null,
+                    'new_values' => $newValues ? json_encode($newValues) : null,
+                    'ip_address' => '192.168.1.'.(10 + $i),
+                    'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
                 ]
             );
         }
@@ -762,14 +769,14 @@ class ClassroomActivitySeeder extends Seeder
         // Minimal valid PDF bytes — a blank page. Enough for a browser
         // to open it or a download to succeed.
         $pdf = "%PDF-1.4\n"
-            . "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
-            . "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
-            . "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
-            . "xref\n0 4\n0000000000 65535 f \n"
-            . "0000000009 00000 n \n"
-            . "0000000052 00000 n \n"
-            . "0000000101 00000 n \n"
-            . "trailer<</Size 4/Root 1 0 R>>\nstartxref\n160\n%%EOF";
+            ."1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+            ."2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+            ."3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
+            ."xref\n0 4\n0000000000 65535 f \n"
+            ."0000000009 00000 n \n"
+            ."0000000052 00000 n \n"
+            ."0000000101 00000 n \n"
+            ."trailer<</Size 4/Root 1 0 R>>\nstartxref\n160\n%%EOF";
 
         // Submissions used by the assignment + quiz loops
         $assignments = Assignment::all();
@@ -797,7 +804,7 @@ class ClassroomActivitySeeder extends Seeder
         // Lesson attachments
         foreach (Lesson::all() as $lesson) {
             foreach (['pdf', 'pptx'] as $ext) {
-                $path = "lessons/{$lesson->class_id}/l{$lesson->id}-{$ext}." . $ext;
+                $path = "lessons/{$lesson->class_id}/l{$lesson->id}-{$ext}.".$ext;
                 \Storage::disk('local')->put($path, $pdf);
             }
         }

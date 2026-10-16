@@ -114,11 +114,7 @@ const isFaculty   = computed(() => page.component === 'Site/FacultyStaff/Faculty
           About Us
         </Link>
 
-        <Link :href="route('faculty-staff')"
-          class="transition-colors"
-          :class="isFaculty ? 'text-amber-400 font-bold' : 'text-white hover:text-amber-400'">
-          Faculty & Staff
-        </Link>
+       
 
         <div class="h-5 w-[1px] bg-white/40"></div>
 
@@ -213,8 +209,7 @@ const isFaculty   = computed(() => page.component === 'Site/FacultyStaff/Faculty
       <Link :href="route('about-us')" @click="isMobileMenuOpen = false"
         :class="isAbout ? 'text-amber-400 font-bold' : 'hover:text-[#87EA8E]'">About Us</Link>
 
-      <Link :href="route('faculty-staff')" @click="isMobileMenuOpen = false"
-        :class="isFaculty ? 'text-amber-400 font-bold' : 'hover:text-[#87EA8E]'">Faculty & Staff</Link>
+
 
       <!-- ============ GUEST (mobile) ============ -->
       <Link v-if="!user" :href="route('login')" @click="isMobileMenuOpen = false"
