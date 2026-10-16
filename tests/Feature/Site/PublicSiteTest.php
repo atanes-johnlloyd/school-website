@@ -3,9 +3,10 @@
 namespace Tests\Feature\Site;
 
 use App\Models\Announcement;
-use App\Models\Teacher;
+use App\Models\ClassRoom;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
@@ -30,17 +31,40 @@ class PublicSiteTest extends TestCase
         $response = $this->getJson(route('site.home'));
 
         $response->assertOk()
-                ->assertJsonStructure([
-                    'school' => ['name', 'address'],
-                    'stats'  => ['students', 'sections', 'subjects'],   // ← removed 'teachers'
-                    'tracks',
-                    'latestNews',
-                ]);
+            ->assertJsonStructure([
+                'school' => ['name', 'address'],
+                'stats' => ['students', 'sections', 'subjects'],   // ← removed 'teachers'
+                'tracks',
+                'latestNews',
+            ]);
     }
 
     public function test_root_url_renders_home(): void
     {
         $this->get(route('home'))->assertOk();
+    }
+
+    public function test_seeded_school_wide_news_use_unique_existing_images(): void
+    {
+        $news = Announcement::schoolWide()
+            ->whereIn('title', [
+                'Enrollment for S.Y. 2026–2027 is Now Open',
+                'Opening of Classes — August 3, 2026',
+                'First Quarter Examination Schedule',
+                'No Classes on August 21 (Ninoy Aquino Day)',
+                'Brigada Eskwela 2026',
+                'SHS Voucher Program Orientation',
+            ])
+            ->get();
+
+        $imagePaths = $news->pluck('image_path');
+
+        $this->assertCount(6, $imagePaths);
+        $this->assertSame(6, $imagePaths->unique()->count());
+
+        foreach ($imagePaths as $imagePath) {
+            $this->assertTrue(Storage::disk('public')->exists($imagePath), "Missing seeded news image: {$imagePath}");
+        }
     }
 
     // ─── About ──────────────────────────────────────
@@ -57,23 +81,23 @@ class PublicSiteTest extends TestCase
     {
         // School-wide, published
         Announcement::create([
-            'created_by'    => $this->admin()->id,
-            'class_id'      => null,
-            'title'         => 'School Wide Notice',
-            'body'          => 'Body',
+            'created_by' => $this->admin()->id,
+            'class_id' => null,
+            'title' => 'School Wide Notice',
+            'body' => 'Body',
             'is_school_wide' => true,
-            'published_at'  => now(),
+            'published_at' => now(),
         ]);
 
         // Class-scoped, published (should NOT appear)
-        $classroom = \App\Models\ClassRoom::first();
+        $classroom = ClassRoom::first();
         Announcement::create([
-            'created_by'    => $this->admin()->id,
-            'class_id'      => $classroom->id,
-            'title'         => 'Class Notice',
-            'body'          => 'Body',
+            'created_by' => $this->admin()->id,
+            'class_id' => $classroom->id,
+            'title' => 'Class Notice',
+            'body' => 'Body',
             'is_school_wide' => false,
-            'published_at'  => now(),
+            'published_at' => now(),
         ]);
 
         $response = $this->getJson(route('site.news.index'));
@@ -86,12 +110,12 @@ class PublicSiteTest extends TestCase
     public function test_draft_school_wide_news_is_hidden(): void
     {
         Announcement::create([
-            'created_by'    => $this->admin()->id,
-            'class_id'      => null,
-            'title'         => 'Draft School News',
-            'body'          => 'Body',
+            'created_by' => $this->admin()->id,
+            'class_id' => null,
+            'title' => 'Draft School News',
+            'body' => 'Body',
             'is_school_wide' => true,
-            'published_at'  => null,   // draft
+            'published_at' => null,   // draft
         ]);
 
         $response = $this->getJson(route('site.news.index'));
@@ -103,13 +127,13 @@ class PublicSiteTest extends TestCase
     public function test_expired_news_is_hidden(): void
     {
         Announcement::create([
-            'created_by'    => $this->admin()->id,
-            'class_id'      => null,
-            'title'         => 'Expired Notice',
-            'body'          => 'Body',
+            'created_by' => $this->admin()->id,
+            'class_id' => null,
+            'title' => 'Expired Notice',
+            'body' => 'Body',
             'is_school_wide' => true,
-            'published_at'  => now()->subDays(10),
-            'expires_at'    => now()->subDay(),
+            'published_at' => now()->subDays(10),
+            'expires_at' => now()->subDay(),
         ]);
 
         $this->getJson(route('site.news.show', Announcement::where('title', 'Expired Notice')->first()->id))
@@ -138,15 +162,15 @@ class PublicSiteTest extends TestCase
     {
         $this->actingAs($this->admin())
             ->postJson(route('admin.school-news.store'), [
-                'title'        => 'Enrollment Now Open',
-                'body'         => 'Details inside.',
+                'title' => 'Enrollment Now Open',
+                'body' => 'Details inside.',
                 'is_published' => true,
-                'is_pinned'    => true,
+                'is_pinned' => true,
             ])
             ->assertCreated();
 
         $this->assertDatabaseHas('announcements', [
-            'title'          => 'Enrollment Now Open',
+            'title' => 'Enrollment Now Open',
             'is_school_wide' => true,
         ]);
     }
@@ -158,7 +182,7 @@ class PublicSiteTest extends TestCase
         $this->actingAs($teacher)
             ->postJson(route('admin.school-news.store'), [
                 'title' => 'Fake',
-                'body'  => 'Fake',
+                'body' => 'Fake',
             ])
             ->assertForbidden();
     }
@@ -166,11 +190,11 @@ class PublicSiteTest extends TestCase
     public function test_admin_can_delete_school_wide_announcement(): void
     {
         $announcement = Announcement::create([
-            'created_by'    => $this->admin()->id,
-            'title'         => 'Delete Me',
-            'body'          => 'Body',
+            'created_by' => $this->admin()->id,
+            'title' => 'Delete Me',
+            'body' => 'Body',
             'is_school_wide' => true,
-            'published_at'  => now(),
+            'published_at' => now(),
         ]);
 
         $this->actingAs($this->admin())

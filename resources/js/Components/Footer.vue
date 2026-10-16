@@ -10,7 +10,7 @@ const props = defineProps({
   contact: {
     type: Object,
     default: () => ({
-      email:    '3sadasda@deped.gov.ph',
+      email:    'salawagseniorhighschool@gmail.com',
       landline: '(046) 416-0000',
       // strip non-digits for the tel: href
       landlineHref: '+460464160000',
