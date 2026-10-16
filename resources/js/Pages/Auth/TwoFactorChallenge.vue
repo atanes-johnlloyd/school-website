@@ -124,8 +124,14 @@ const onInput = (e) => {
 
 const submit = () => {
   if (form.code.length !== 6) return
+  
   form.post(route('login.verify.submit'), {
     onFinish: () => form.reset('code'),
+    onError: (errors) => {
+      // If the code is wrong, Inertia automatically populates form.errors.code
+      // No need to manually force anything here, but this prevents 
+      // the page from crashing if a 500 error occurs.
+    }
   })
 }
 
@@ -146,9 +152,15 @@ const startCooldown = () => {
 
 const resend = () => {
   if (resendCooldown.value > 0) return
+  
   useForm({}).post(route('login.verify.resend'), {
     preserveScroll: true,
     onSuccess: () => startCooldown(),
+    onError: () => {
+      // If we hit a 429 error, start the cooldown anyway
+      // so the user stops hammering the server.
+      startCooldown()
+    }
   })
 }
 

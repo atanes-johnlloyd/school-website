@@ -24,8 +24,22 @@ class LoginTwoFactorController extends Controller
             return redirect()->route('login');
         }
 
+        $user = User::find($request->session()->get('auth.2fa.user_id'));
+
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        // If there's no active code, or the existing one has expired, 
+        // automatically send a new one. This prevents sending duplicate emails
+        // if the user simply refreshes the page.
+        if (blank($user->two_factor_code) || ! $user->two_factor_expires_at || $user->two_factor_expires_at->isPast()) {
+            $plain = $user->generateTwoFactorCode();
+            $this->sendTwoFactorCode($user, $plain, $request);
+        }
+
         return Inertia::render('Auth/TwoFactorChallenge', [
-            'email' => User::find($request->session()->get('auth.2fa.user_id'))?->email,
+            'email' => $user->email,
         ]);
     }
 
@@ -95,7 +109,16 @@ class LoginTwoFactorController extends Controller
         }
 
         $plain = $user->generateTwoFactorCode();
+        $this->sendTwoFactorCode($user, $plain, $request);
 
+        return back()->with('success', 'A new code has been sent to your email.');
+    }
+
+    /**
+     * Shared method to send the OTP email.
+     */
+    protected function sendTwoFactorCode(User $user, string $plain, Request $request): void
+    {
         try {
             \Mail::to($user->email)->send(new \App\Mail\TemplateMail(
                 templateKey: 'login-otp',
@@ -108,11 +131,9 @@ class LoginTwoFactorController extends Controller
                 emailSubject: 'Your Login Code - Salawag SHS',
             ));
         } catch (\Throwable $e) {
-            \Log::warning('[MAIL] Login OTP resend failed', [
+            \Log::warning('[MAIL] Login OTP send failed', [
                 'user_id' => $user->id, 'error' => $e->getMessage(),
             ]);
         }
-
-        return back()->with('success', 'A new code has been sent to your email.');
     }
 }
